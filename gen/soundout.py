@@ -202,6 +202,81 @@ def _stretch(a: np.ndarray, target: int) -> np.ndarray:
     return out
 
 
+def tidy_word(a: np.ndarray, gap_ms=45, drop_gap_ms=130) -> np.ndarray:
+    """Clean up a synthesised single word.
+
+    Kokoro is trained on connected speech, and given a bare word it detaches
+    the onset: measured, "Skye" comes out as /s/ + a silent gap + "kye", which
+    is heard as "e-Skye". "Rubble" does the same with its /r/. Adding
+    punctuation does not help - tested bare, with a period, and inside a
+    carrier, and the gap survives all three.
+
+    Two conservative repairs, in order of how safe they are:
+
+      1. Compress internal silence. This removes no speech at all - it only
+         shortens the gaps - so it cannot damage a correctly-spoken word.
+      2. Drop a trailing fragment separated by a long gap and much quieter
+         than the body. "pup" gains a detached vocalic release that is heard
+         as "puppy"; a real word does not have a quiet island after a long
+         silence.
+
+    Only ever applied to GENERATED audio. Her recordings are used verbatim -
+    see gen/voice.py - so none of this touches the voice Alex actually hears
+    at levels 1-5.
+    """
+    if a.size < int(SR * 0.05):
+        return a
+    n = int(SR * 0.02)
+    e = [float(np.sqrt(np.mean(a[i * n:(i + 1) * n] ** 2))) for i in range(len(a) // n)]
+    if not e:
+        return a
+    mx = max(e) or 1.0
+    on = [x / mx > 0.08 for x in e]
+    if not any(on):
+        return a
+
+    first, last = on.index(True), len(on) - 1 - on[::-1].index(True)
+
+    # (2) a quiet, detached tail is an artefact, not part of the word
+    i = last
+    while i > first:
+        if on[i]:
+            j = i
+            while j > first and on[j]:
+                j -= 1
+            run_peak = max(e[j + 1:i + 1], default=0)
+            silence_before = 0
+            k = j
+            while k > first and not on[k]:
+                silence_before += 1
+                k -= 1
+            if (silence_before * 20 >= drop_gap_ms and run_peak < mx * 0.45
+                    and k > first):
+                last = k
+                i = k
+                continue
+            break
+        i -= 1
+
+    # (1) compress internal silence. Indices are kept in the ORIGINAL bucket
+    # space - slicing a `body` array first and then indexing it with the
+    # unshifted map misaligns every segment by one bucket.
+    lo = max(0, first - 1)
+    hi = min(len(on) - 1, last + 1)
+    out, run = [], 0
+    limit = max(1, int(gap_ms / 20))
+    for idx in range(lo, hi + 1):
+        seg = a[idx * n:(idx + 1) * n]
+        if on[idx]:
+            run = 0
+            out.append(seg)
+        else:
+            run += 1
+            if run <= limit:
+                out.append(seg)
+    return np.concatenate(out) if out else a
+
+
 def _longest_burst(a: np.ndarray, thresh=0.30) -> np.ndarray:
     """Return the longest continuously-voiced stretch of a clip.
 

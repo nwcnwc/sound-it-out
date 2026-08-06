@@ -18,7 +18,7 @@ import numpy as np
 import soundfile as sf
 
 from gen.paths import MODELS, VOICE_DIR
-from gen.soundout import SR, Voice as KokoroVoice, slower
+from gen.soundout import SR, Voice as KokoroVoice, slower, tidy_word
 
 
 def _safe(name: str) -> str:
@@ -101,8 +101,9 @@ class VoiceSource:
                 return slower(a, 0.80) if slow else a
             except Exception:
                 pass  # fall through to the built-in voice rather than fail
+        # Generated only. Recordings above are returned untouched.
         self.used["generated"] += 1
-        a = self.kokoro.say(text)
+        a = tidy_word(self.kokoro.say(text))
         return slower(a, 0.80) if slow else a
 
     def phoneme(self, ipa: str) -> np.ndarray:
