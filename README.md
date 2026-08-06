@@ -120,7 +120,42 @@ Only **novel sentences** are synthesized on the user's machine, which is what ke
 natural. (Sentences assembled from concatenated word clips sound robotic; sentences must be
 generated whole.)
 
-### Voice
+### Voice: her voice, two ways
+
+The voice is the parent's, sourced two different ways depending on the level. This is
+the central decision, and it puts the quality risk where it does least harm.
+
+| Levels | Content | Source |
+|---|---|---|
+| 1–2 | ~50 sight words | **recorded, used verbatim** |
+| 3–5 | ~44 phoneme sounds | **recorded, used verbatim** |
+| 6–8 | 10k dictionary, arbitrary sentences | **cloned from her voice** |
+
+Levels 1–5 are where Alex will be for a year or more, and every sound there is
+genuinely her — nothing synthesised. Cloning only fills the long tail, which he will
+not reach for months, and which could never be recorded by hand anyway. If the clone
+disappoints, it degrades content he isn't using yet.
+
+**Cloning model: [Chatterbox](https://www.resemble.ai/resources/best-open-source-ai-voice-cloning-tools)**
+(Resemble AI, **MIT licensed**, zero-shot from a 5–20 s reference, runs offline).
+MIT matters here — XTTS-v2 is the most widely deployed but is non-commercial licensed,
+and this should stay unencumbered.
+
+**The recording session must include connected speech.** Isolated words and phonemes
+carry almost no prosody, and prosody is precisely what a cloner needs to learn. Five to
+ten minutes of her reading ordinary prose aloud is the difference between the later
+levels sounding like her and sounding like a robot wearing her voice. See
+[RECORDING.md](RECORDING.md).
+
+**Consent is not an afterthought.** This is a real person's voice being modelled. It is
+her own child, her own recording, her own machine, and it never leaves the house — but
+the recordings and the cloned model belong to her, and nothing here should ever be
+shipped or shared without her say-so.
+
+**Cost:** bundling a cloning model adds roughly 2–4 GB to the installer on top of the
+~500 MB baseline. Worth it; worth knowing.
+
+### Fallback voice
 
 **[Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M)** (Apache-2.0) — 82M parameters,
 ~330MB, CPU-only, genuinely human rather than robotic. Bundled as ONNX so there is no Python
