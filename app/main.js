@@ -314,6 +314,9 @@ function registerIpc () {
     }
   })
 
+  ipcMain.handle('studio:plan', async (_e, o) => sidecar.call('studio.plan', o || {}))
+  ipcMain.handle('studio:submit', async (_e, o) => sidecar.call('studio.submit', o || {}))
+
   ipcMain.handle('path:open', (_e, p) => { shell.openPath(p); return { ok: true } })
 
   ipcMain.handle('url:open', (_e, u) => {

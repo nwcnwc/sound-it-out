@@ -236,7 +236,24 @@
       </p>
     </div>
 
-    <ol class="voice-parts" id="voice-parts">
+    <div class="studio-cta">
+      <div>
+        <h2>Record it here, one at a time</h2>
+        <p>
+          Each sound or word appears on screen, you say it a few times, and the app keeps
+          the best one. It tells you straight away if something needs another go &mdash;
+          no waiting until the end to find out.
+        </p>
+      </div>
+      <div class="studio-cta-actions">
+        <button class="btn btn-primary" id="studio-sounds" type="button">Record the sounds</button>
+        <button class="btn btn-second" id="studio-words" type="button">Record the words</button>
+      </div>
+    </div>
+
+    <details class="import-alt">
+      <summary>Or bring in a recording made on a phone</summary>
+      <div class="import-alt-body">
 
       <li class="vpart" data-part="phonemes">
         <div class="vpart-num">1</div>
@@ -288,8 +305,38 @@
 
     </ol>
 
+      </div>
+    </details>
+
     <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
   </section>
+
+  <!-- The recording studio: a full-window overlay, because reading aloud from a
+       prompt needs the whole screen and nothing else competing for attention. -->
+  <div class="studio" id="studio" hidden>
+    <div class="studio-bar">
+      <span class="studio-progress" id="studio-progress"></span>
+      <button class="btn btn-quiet" id="studio-close" type="button">Finish for now</button>
+    </div>
+
+    <div class="studio-stage">
+      <p class="studio-say" id="studio-say"></p>
+      <div class="studio-word" id="studio-word"></div>
+      <p class="studio-state" id="studio-state" role="status" aria-live="polite"></p>
+
+      <div class="studio-takes" id="studio-takes"></div>
+
+      <div class="meter" id="studio-meter"><div class="meter-fill" id="studio-meter-fill"></div></div>
+
+      <div class="studio-actions">
+        <button class="btn btn-primary btn-big" id="studio-go" type="button">Start recording</button>
+        <button class="btn btn-second" id="studio-redo" type="button" hidden>Do that one again</button>
+        <button class="btn btn-quiet" id="studio-skip" type="button">Skip this one</button>
+      </div>
+
+      <p class="studio-result" id="studio-result" hidden></p>
+    </div>
+  </div>
 
   <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
 
@@ -417,6 +464,7 @@
 </main>
 
 <script src="mock.js"></script>
-<script src="app.js"></script>
+<script src="recorder.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

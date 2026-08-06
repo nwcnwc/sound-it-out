@@ -26,6 +26,8 @@ contextBridge.exposeInMainWorld('soundout', {
   openExternal: (u) => ipcRenderer.invoke('url:open', u),
   chooseRecording: () => ipcRenderer.invoke('recordings:choose'),
   importRecording: (opts) => ipcRenderer.invoke('recordings:import', opts),
+  studioPlan: (opts) => ipcRenderer.invoke('studio:plan', opts),
+  studioSubmit: (opts) => ipcRenderer.invoke('studio:submit', opts),
   checkForUpdate: () => ipcRenderer.invoke('update:check'),
   installUpdate: (asset) => ipcRenderer.invoke('update:install', asset),
   chooseDirectory: () => ipcRenderer.invoke('dir:choose'),

@@ -233,6 +233,37 @@ def m_recordings_import(params):
     }
 
 
+def m_studio_plan(params):
+    from gen import studio
+
+    items = studio.plan(params.get("part", "phonemes"), params.get("order", "rows"))
+    return {"part": params.get("part", "phonemes"),
+            "takes": studio.TAKES_DEFAULT,
+            "items": [i.as_dict() for i in items]}
+
+
+def m_studio_submit(params):
+    """Score the takes for one item, keep the best, and say why."""
+    from gen import studio
+
+    it = params["item"]
+    item = studio.Item(key=it["key"], kind=it["kind"], display=it["display"],
+                       say=it.get("say", ""), length=it.get("length", "free"),
+                       ipa=it.get("ipa", ""))
+    sr = int(params.get("sampleRate", 48000))
+    takes = [studio.decode(t, sr) for t in params.get("takes", [])]
+    if not takes:
+        raise ValueError("No audio was received.")
+
+    result = studio.choose(takes, item)
+    saved = None
+    if result["audio"] is not None and not params.get("dryRun"):
+        saved = studio.save(item, result["audio"])
+    return {"key": item.key, "best": result["best"], "takes": result["takes"],
+            "reason": result["reason"], "allFailed": result["allFailed"],
+            "saved": saved}
+
+
 def m_ping(_params):
     return {"pong": True}
 
@@ -247,6 +278,8 @@ METHODS = {
     "render.chrome": m_render_chrome,
     "cloning.install": m_install_cloning,
     "recordings.import": m_recordings_import,
+    "studio.plan": m_studio_plan,
+    "studio.submit": m_studio_submit,
 }
 
 

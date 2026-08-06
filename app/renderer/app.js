@@ -66,6 +66,7 @@ async function boot () {
 
   setUpTabs()
   initVoice()
+  initStudio()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -977,3 +978,192 @@ function initVoice () {
 }
 
 const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md'
+
+
+/* ------------------------------------------------------------- the studio
+ *
+ * Prompt an item, record a few takes, score them, keep the best. The scoring
+ * lives in gen/studio.py; this is only the pacing and the words on screen.
+ *
+ * Deliberately automatic: she is reading aloud, often holding a child, and
+ * pressing a button between every one of ~40 sounds x 3 takes would be the
+ * thing that makes her stop. Press once, and it runs the takes itself.
+ */
+
+const studio = {
+  items: [], i: 0, takes: 3, part: 'phonemes',
+  buf: [], running: false, cancelled: false
+}
+
+const TAKE_MS = { hold: 2600, crisp: 1200, free: 1600 }
+const GAP_MS = 500
+
+function sEl (id) { return $(id) }
+
+async function openStudio (part) {
+  studio.part = part
+  studio.cancelled = false
+  try {
+    const plan = await api.studioPlan({ part })
+    studio.items = plan.items || []
+    studio.takes = plan.takes || 3
+  } catch (err) {
+    alert('Could not work out what to record: ' + (err.message || err))
+    return
+  }
+  if (!studio.items.length) {
+    alert('There is nothing to record yet. Add some words on the Words tab first.')
+    return
+  }
+  studio.i = 0
+  $('studio').hidden = false
+  document.body.classList.add('studio-open')
+  try {
+    await Recorder.init()
+  } catch (err) {
+    sEl('studio-state').textContent =
+      'The microphone could not be used. Check that this app is allowed to use it, then try again.'
+    return
+  }
+  showItem()
+}
+
+function closeStudio () {
+  studio.cancelled = true
+  studio.running = false
+  Recorder.release()
+  $('studio').hidden = true
+  document.body.classList.remove('studio-open')
+  refreshVoiceState()
+}
+
+function showItem () {
+  const it = studio.items[studio.i]
+  if (!it) return finishStudio()
+  sEl('studio-progress').textContent = `${studio.i + 1} of ${studio.items.length}`
+  sEl('studio-word').textContent = it.display
+  sEl('studio-say').textContent = it.say
+  sEl('studio-state').textContent = ''
+  sEl('studio-result').hidden = true
+  sEl('studio-redo').hidden = true
+  sEl('studio-go').hidden = false
+  sEl('studio-go').disabled = false
+  sEl('studio-go').textContent = studio.i === 0 ? 'Start recording' : 'Record this one'
+  renderTakeDots(0)
+}
+
+function renderTakeDots (done) {
+  const host = sEl('studio-takes')
+  host.innerHTML = ''
+  for (let i = 0; i < studio.takes; i++) {
+    const d = document.createElement('span')
+    d.className = 'take-dot' + (i < done ? ' is-done' : '')
+    host.appendChild(d)
+  }
+}
+
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
+async function recordItem () {
+  const it = studio.items[studio.i]
+  studio.running = true
+  studio.buf = []
+  sEl('studio-go').hidden = true
+  sEl('studio-skip').disabled = true
+
+  const dur = TAKE_MS[it.length] || TAKE_MS.free
+
+  for (let t = 0; t < studio.takes; t++) {
+    if (studio.cancelled) return
+    renderTakeDots(t)
+    for (let c = 3; c > 0; c--) {
+      sEl('studio-state').textContent = `Ready… ${c}`
+      await wait(360)
+      if (studio.cancelled) return
+    }
+    sEl('studio-state').textContent = t === 0 ? 'Say it now' : 'Again'
+    sEl('studio-word').classList.add('is-live')
+    Recorder.start()
+    const meter = setInterval(() => {
+      sEl('studio-meter-fill').style.width = Math.round(Recorder.level() * 100) + '%'
+    }, 60)
+    await wait(dur)
+    clearInterval(meter)
+    sEl('studio-meter-fill').style.width = '0%'
+    const take = Recorder.stop()
+    sEl('studio-word').classList.remove('is-live')
+    studio.buf.push(take)
+    renderTakeDots(t + 1)
+    if (t < studio.takes - 1) await wait(GAP_MS)
+  }
+
+  sEl('studio-state').textContent = 'Checking…'
+  try {
+    const r = await api.studioSubmit({
+      item: it,
+      sampleRate: studio.buf[0].sampleRate,
+      takes: studio.buf.map((b) => b.b64)
+    })
+    showTakeResult(r)
+  } catch (err) {
+    showTakeResult({ allFailed: true, reason: String(err.message || err) })
+  }
+  studio.running = false
+  sEl('studio-skip').disabled = false
+}
+
+function showTakeResult (r) {
+  const box = sEl('studio-result')
+  box.hidden = false
+  sEl('studio-state').textContent = ''
+  if (r.allFailed) {
+    box.className = 'studio-result is-bad'
+    const why = (r.takes || []).map((t) => t.fatal).filter(Boolean)[0] || r.reason
+    box.textContent = 'None of those could be used. ' + (why || '') + ' Have another go.'
+    sEl('studio-redo').hidden = false
+    sEl('studio-go').hidden = true
+    return
+  }
+  box.className = 'studio-result is-good'
+  box.textContent = 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
+  sEl('studio-redo').hidden = false
+  // Move on by itself - stopping after every item would double the session.
+  setTimeout(() => {
+    if (!studio.cancelled && !studio.running && !sEl('studio').hidden) {
+      studio.i += 1
+      showItem()
+      if (studio.items[studio.i]) recordItem()
+    }
+  }, 1400)
+}
+
+function finishStudio () {
+  sEl('studio-word').textContent = 'All done'
+  sEl('studio-say').textContent = 'That is the whole list recorded.'
+  sEl('studio-state').textContent = ''
+  sEl('studio-go').hidden = true
+  sEl('studio-redo').hidden = true
+}
+
+async function refreshVoiceState () {
+  try {
+    const st = await api.getState()
+    state.capabilities = st.capabilities
+    state.levels = st.levels
+    voiceCounts(st.capabilities)
+    if (typeof renderLevels === 'function') renderLevels()
+  } catch { /* the screen is still usable without a refresh */ }
+}
+
+function initStudio () {
+  const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
+  on('studio-sounds', () => openStudio('phonemes'))
+  on('studio-words', () => openStudio('words'))
+  on('studio-close', closeStudio)
+  on('studio-go', recordItem)
+  on('studio-skip', () => { studio.i += 1; showItem() })
+  on('studio-redo', () => { sEl('studio-result').hidden = true; recordItem() })
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('studio').hidden) closeStudio()
+  })
+}
