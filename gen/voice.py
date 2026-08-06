@@ -53,11 +53,16 @@ class VoiceSource:
             cloning = clone.is_available()
         except Exception:
             cloning = False  # optional module; absence is normal, not an error
+        built_in = (MODELS / "kokoro-v1.0.onnx").exists()
         return {
             "recordings": n_words > 0 or n_phon > 0,
             "recorded_words": n_words,
             "recorded_phonemes": n_phon,
-            "fallback_voice": (MODELS / "kokoro-v1.0.onnx").exists(),
+            # `kokoro` is the published name in the UI contract; `fallback_voice`
+            # is what levels.py reads. Same fact, both emitted - the UI reported
+            # the built-in voice as missing when only one of them existed.
+            "kokoro": built_in,
+            "fallback_voice": built_in,
             "cloning": cloning,
         }
 
