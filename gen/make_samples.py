@@ -32,10 +32,13 @@ PAW_PATROL = [
 # Preview of a later level: sounding out with letter highlighting.
 # (grapheme, IPA phoneme) - IPA is fed to Kokoro directly so the sound is
 # exact rather than whatever the model guesses from the spelling.
+# Continuant-heavy words first: m, s, f, n, l can all be held and drawn out,
+# so they demonstrate blending best. Stops (p, t, k, b, d, g) physically
+# cannot be sustained - "pin" is kept last so its /p/ can be judged directly.
 CVC = [
+    [("m", "m"), ("a", "æ"), ("n", "n")],
     [("s", "s"), ("a", "æ"), ("t", "t")],
     [("p", "p"), ("i", "ɪ"), ("n", "n")],
-    [("m", "m"), ("a", "æ"), ("p", "p")],
 ]
 
 SENTENCE = "Chase is on the case."
@@ -63,7 +66,7 @@ def sound_out(v: Voice, words, reps=2):
         for _ in range(reps):
             for idx, (_, ipa) in enumerate(parts):
                 shown = [(g, i == idx) for i, (g, _) in enumerate(parts)]
-                segs.append(Segment(shown, v.say(ipa, phonemes=True), pad=0.55))
+                segs.append(Segment(shown, v.say(ipa, phonemes=True), pad=0.28))
             segs.append(whole(word, blended, pad=1.6))
     return segs
 

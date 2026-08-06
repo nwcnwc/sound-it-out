@@ -86,7 +86,7 @@ class Voice:
             sf.write(path, samples, SR)
         # Isolated consonants come back with a schwa attached - strip it.
         if phonemes and len(text) == 1:
-            samples = trim_schwa(samples, text)
+            samples = shape_phoneme(samples, text)
         return samples
 
 
@@ -94,17 +94,35 @@ def silence(seconds: float) -> np.ndarray:
     return np.zeros(int(seconds * SR), dtype="float32")
 
 
-# --------------------------------------------------------- schwa removal
+# ------------------------------------------------------ phoneme shaping
 
-# Kokoro appends a schwa to isolated consonants: asked for /s/ it produces
-# "sss-uh", asked for /t/ it produces "tuh". Measured on af_heart, the tail is
-# unmistakable - spectral centroid collapses from ~7000Hz to ~1400Hz while RMS
-# *rises*. That is a vowel, and it is fatal here: "cuh-a-tuh" does not blend
-# into "cat", and schwa-polluted consonants are the single most common reason
-# home phonics fails. So we cut the tail off.
+# Two constraints pull against each other, and the balance matters more than
+# either one alone:
+#
+#   1. Kokoro appends a schwa to isolated consonants ("sss-uh", "tuh"). Left
+#      in, "cuh-a-tuh" never blends into "cat".
+#   2. A sound that is merely *short* is useless for teaching. Phonics
+#      instruction stretches sounds out - "ssssss", "mmmmm" - so the child can
+#      hear each one and join them. A clipped 75ms /t/ is technically
+#      schwa-free and pedagogically dead.
+#
+# The first pass over-corrected for (1) and broke (2). So: cut the schwa, then
+# *sustain* what remains by looping its steady state, the way a sampler holds a
+# note. Fricatives, nasals and vowels all have a genuine steady state, so they
+# stretch cleanly to any length.
+#
+# Stop consonants (p t k b d g) are the exception, and no amount of engineering
+# fixes them: a stop is defined by a closure and a release, with no sustainable
+# phase in between. No human teacher can hold a /t/ either - the standard
+# guidance is just "keep it crisp". They keep their fullest natural release.
 
 VOWELS = set("æɑɒɔəɜɛɪiʊuʌeaoyɐɘɵʏøœɞʉɨ")
+STOPS = set("ptkbdgʔ")
 SONORANTS = set("mnŋlrɹjwɫ")  # voiced+low-frequency; centroid test won't work
+
+SUSTAIN_VOWEL = 0.80   # seconds
+SUSTAIN_CONS = 0.68
+STOP_MAX = 0.30
 
 
 def _buckets(a, ms=25):
@@ -128,10 +146,36 @@ def _fade(a, ms=18):
     return a
 
 
-def trim_schwa(a: np.ndarray, ipa: str) -> np.ndarray:
-    """Cut the trailing schwa from an isolated consonant clip."""
-    if not a.size or ipa in VOWELS:
-        return a  # a vowel is supposed to be a sustained vowel
+def _xfade(a: np.ndarray, b: np.ndarray, n: int) -> np.ndarray:
+    """Join two clips with an equal-power crossfade, to avoid a seam click."""
+    n = min(n, len(a), len(b))
+    if n < 2:
+        return np.concatenate([a, b])
+    r = np.linspace(0.0, 1.0, n, dtype="float32")
+    mid = a[-n:] * np.cos(r * np.pi / 2) + b[:n] * np.sin(r * np.pi / 2)
+    return np.concatenate([a[:-n], mid, b[n:]])
+
+
+def _sustain(a: np.ndarray, target: int, xf_ms=45) -> np.ndarray:
+    """Stretch a clip to `target` samples by looping its steady middle."""
+    if len(a) >= target:
+        return a[:target]
+    core = a[int(len(a) * 0.25) : int(len(a) * 0.90)]  # steady portion
+    if len(core) < int(SR * 0.02):
+        return a  # under 20ms, there is nothing to loop
+    # Isolated frication can be as short as ~75ms, so the crossfade has to
+    # shrink to fit rather than disqualifying the clip from sustaining.
+    n = max(2, min(int(SR * xf_ms / 1000), len(core) // 3))
+    out = a
+    while len(out) < target:
+        out = _xfade(out, core, n)
+    return out[:target]
+
+
+def shape_phoneme(a: np.ndarray, ipa: str) -> np.ndarray:
+    """Strip the schwa, then stretch the sound out so it can be taught with."""
+    if not a.size:
+        return a
 
     # Kokoro leaves leading near-silence (measured up to 400ms on /g/), which
     # would throw off every offset below. Cut to the real onset first.
@@ -144,34 +188,32 @@ def trim_schwa(a: np.ndarray, ipa: str) -> np.ndarray:
     live = [x for x in b if x[2] >= 0.01]
     if not live:
         return a
+    bs = int(SR * 0.025)
 
-    if ipa in SONORANTS:
-        # /m/, /n/, /l/ are voiced and low-frequency, so the centroid test
-        # can't separate them from the schwa. But they lead with the murmur
-        # and decay into it - so keep the leading portion.
-        cut = live[0][0] + 7  # ~175ms from onset
+    if ipa in STOPS:
+        # Unsustainable by nature. Keep the natural release - crisp, but not
+        # so clipped it stops sounding like the letter at all.
+        return _fade(a[: min(len(a), int(SR * STOP_MAX))], 30)
+
+    if ipa in VOWELS:
+        region = a
+    elif ipa in SONORANTS:
+        # Voiced and low-frequency, so the centroid test can't separate them
+        # from the schwa - but they lead with the murmur, so keep the front.
+        region = a[: min(len(a), (live[0][0] + 8) * bs)]
     else:
-        # Obstruents: find the high-frequency burst/frication, then cut where
-        # the centroid falls back into vowel territory.
+        # Fricatives: keep the high-centroid frication and drop the tail where
+        # the centroid falls back into vowel territory. That *is* the schwa.
         peak = max(live, key=lambda x: x[3])[0]
-        cut = None
-        run = 0
+        end = len(b)
         for i, _, rms, cen in b:
-            if i <= peak:
-                continue
-            run = run + 1 if (cen and cen < 2000 and rms > 0.02) else 0
-            if run >= 2:
-                cut = i - 1
+            if i > peak and cen and cen < 2200 and rms > 0.02:
+                end = i
                 break
-        # The centroid test misses cases where the schwa never dips below the
-        # threshold (measured: /k/, /f/, /g/). No human can release a stop with
-        # zero vocalic noise either - the teaching guidance is just "as short as
-        # possible" - so fall back to a hard cap from the burst.
-        cap = peak + (3 if ipa in "ptkbdg" else 6)  # stops 75ms, fricatives 150ms
-        cut = cap if cut is None else min(cut, cap)
+        region = a[: min(len(a), max(end, peak + 2) * bs)]
 
-    end = min(max(cut, 2) * int(SR * 0.025), len(a))
-    return _fade(a[:end])
+    target = int(SR * (SUSTAIN_VOWEL if ipa in VOWELS else SUSTAIN_CONS))
+    return _fade(_sustain(region, target), 60)
 
 
 # ------------------------------------------------------------ storyboard
@@ -200,36 +242,37 @@ def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
 # -------------------------------------------------------------- render
 
 
+# A word must NEVER break mid-word - "Chas / e" is worse than useless to a
+# child learning to recognise word shapes. Estimating glyph widths got this
+# wrong (Andika is wider than it looks), so the page measures itself instead:
+# binary-search the largest font size that actually fits, in the browser that
+# is actually rendering it. `white-space:nowrap` makes overflow measurable
+# rather than silently wrapping.
 HTML = """<!doctype html><html><head><meta charset="utf-8"><style>
-* {{ margin:0; padding:0; box-sizing:border-box; }}
-html,body {{ width:1920px; height:1080px; overflow:hidden; }}
-body {{
-  background:{bg}; display:flex; align-items:center; justify-content:center;
-  /* 5% TV safe area - older sets overscan and would clip the edges */
-  padding:54px 96px;
-}}
-.word {{
-  font-family:'Andika'; font-weight:{weight}; font-size:{size}px;
-  color:{fg}; letter-spacing:0.04em; line-height:1.15;
-  text-align:center; white-space:pre-wrap; word-break:break-word;
-}}
-.hl {{ color:{highlight}; }}
-.dim {{ color:{dim}; }}
-</style></head><body><div class="word">{spans}</div></body></html>"""
-
-
-def _font_size(text: str, scale: float) -> int:
-    """Fit to the 1728px safe width. Andika averages ~0.54em per glyph.
-
-    Cap is 560px rather than the frame height: on a TV viewed from a sofa,
-    bigger is better, and short words should fill the screen rather than
-    float in the middle of it.
-    """
-    n = max(len(text), 1)
-    if "\n" in text or n > 28:  # multi-line: fit the longest line
-        longest = max(len(l) for l in text.split("\n"))
-        return int(min(300, 1728 / (longest * 0.54)) * scale)
-    return int(min(560, 1728 / (n * 0.54)) * scale)
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1920px; height:1080px; overflow:hidden; background:__BG__; }
+/* 5% TV safe area - older sets overscan and would clip the edges */
+#stage { position:absolute; left:96px; top:54px; width:1728px; height:972px;
+         display:flex; align-items:center; justify-content:center; }
+#word  { font-family:'Andika',sans-serif; font-weight:__WEIGHT__; color:__FG__;
+         letter-spacing:0.04em; line-height:1.15; text-align:center;
+         white-space:__WRAP__; overflow-wrap:normal; word-break:keep-all; }
+.hl { color:__HL__; }
+.dim { color:__DIM__; }
+</style></head><body>
+<div id="stage"><div id="word">__SPANS__</div></div>
+<script>
+var s = document.getElementById('stage'), w = document.getElementById('word');
+var lo = 16, hi = __MAX__;
+while (hi - lo > 1) {
+  var m = (lo + hi) >> 1;
+  w.style.fontSize = m + 'px';
+  if (w.scrollWidth <= s.clientWidth && w.scrollHeight <= s.clientHeight) lo = m;
+  else hi = m;
+}
+w.style.fontSize = Math.floor(lo * __SCALE__) + 'px';
+document.title = 'fit' + lo;
+</script></body></html>"""
 
 
 def render_frame(seg: Segment, theme: Theme, out: Path):
@@ -239,14 +282,18 @@ def render_frame(seg: Segment, theme: Theme, out: Path):
         f"{html.escape(p)}</span>"
         for p, on in seg.parts
     )
-    page = HTML.format(
-        bg=theme.bg,
-        fg=seg.color or theme.word_colors.get(text.strip(), theme.fg),
-        highlight=theme.highlight,
-        dim=theme.dim,
-        weight=theme.weight,
-        size=_font_size(text, seg.scale),
-        spans=spans,
+    # Multi-word text may wrap between words; a single word never may.
+    wrap = "normal" if " " in text.strip() else "nowrap"
+    page = (
+        HTML.replace("__BG__", theme.bg)
+        .replace("__FG__", seg.color or theme.word_colors.get(text.strip(), theme.fg))
+        .replace("__HL__", theme.highlight)
+        .replace("__DIM__", theme.dim)
+        .replace("__WEIGHT__", str(theme.weight))
+        .replace("__WRAP__", wrap)
+        .replace("__MAX__", "560")
+        .replace("__SCALE__", str(seg.scale))
+        .replace("__SPANS__", spans)
     )
     tmp = out.with_suffix(".html")
     tmp.write_text(page)
@@ -254,7 +301,8 @@ def render_frame(seg: Segment, theme: Theme, out: Path):
         [
             "google-chrome", "--headless=new", "--disable-gpu", "--no-sandbox",
             "--hide-scrollbars", "--force-device-scale-factor=1",
-            "--default-background-color=00000000",
+            # let the fit script run to completion before the frame is captured
+            "--virtual-time-budget=4000",
             f"--screenshot={out}", "--window-size=1920,1080",
             f"file://{tmp}",
         ],

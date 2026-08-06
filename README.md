@@ -219,14 +219,38 @@ from ~7000 Hz to ~1400 Hz while RMS *rises*. That is a vowel.
 This is not cosmetic. "cuh-a-tuh" does not blend into "cat", and schwa-polluted consonants
 are the most common reason home phonics stalls.
 
-`trim_schwa()` in `gen/soundout.py` strips it: cut leading silence, find the burst/frication
-by spectral centroid, cut where the centroid falls back into vowel territory, with a hard
-duration cap as backstop (the centroid test alone missed /k/, /f/ and /g/). Results now sit
-at 75–150 ms for stops, ~180 ms for fricatives, vowels untouched — physiologically plausible.
+But cutting the schwa is only half the problem, and over-correcting for it breaks the other
+half: **a sound that is merely short is useless for teaching.** Phonics instruction stretches
+sounds out — "ssssss", "mmmmm" — so the child can hear each one and join them. A clipped
+75 ms /t/ is technically schwa-free and pedagogically dead.
+
+`shape_phoneme()` in `gen/soundout.py` does both: strip the schwa, then **sustain** what
+remains by looping its steady state with equal-power crossfades, the way a sampler holds a
+note. Kokoro itself can't get there — `speed` is clamped at 0.5× and even a doubled IPA
+length mark only reaches ~394 ms.
+
+| Class | Result |
+|---|---|
+| Fricatives `s f ʃ v z` | 680 ms sustained |
+| Nasals / liquids `m n l r` | 680 ms sustained |
+| Vowels | 800 ms sustained |
+| **Stops `p t k b d g`** | **~150–200 ms — cannot be sustained** |
+
+**Stops are a hard physical limit, not an engineering gap.** A stop consonant is defined by a
+closure and a release with no sustainable phase in between — no human teacher can hold a /t/
+either. Standard practice is to keep them crisp and teach continuants first, which is why the
+`s a t p i n` order front-loads sounds that *can* be stretched.
 
 **Still unverified by ear.** Duration and spectrum are proxies; whether a clip *sounds* like
 "t" or "tuh" is a perceptual judgement. Every Level 3 clip needs a human listen before it
 ships. `samples/phoneme-check/all-sounds.wav` is that check.
+
+## Known open question: sentence line breaks
+
+Sentences currently auto-fit to the largest size that fits, which puts "Chase is on the case."
+on two lines at large type. One line at smaller type may be better for a beginning reader —
+line returns add a tracking demand — but it trades away size on a TV viewed from a sofa.
+Undecided; it is a one-line change in `_font_size` handling either way.
 
 ## Status
 
