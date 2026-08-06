@@ -1,7 +1,7 @@
 # Voice cloning (optional)
 
 Levels 6–8 — the 10,000-word dictionary and arbitrary sentences — are spoken in a
-**cloned** version of the parent's voice. Levels 1–5 are her actual recordings played
+**cloned** version of the parent's voice. Levels 1–5 are their actual recordings played
 back verbatim and have nothing to do with any of this.
 
 **The app ships without this module and is fully functional without it.** `gen/clone.py`
@@ -19,13 +19,13 @@ This models a real person's voice. Read this bit even if you skip the rest.
   and the speaker profile derived from it are her property, not the project's.
 - Everything happens **on her machine**. No audio is uploaded; the only network access is
   the one-off model download from Hugging Face, and after that the module works offline.
-- **Nothing is shipped or shared without her explicit say-so.** Not the recordings, not
+- **Nothing is shipped or shared without their explicit say-so.** Not the recordings, not
   `profile.pt`, not generated audio, not "just for the demo". A speaker profile is a
-  usable copy of her voice; treat it like a house key.
+  usable copy of their voice; treat it like a house key.
 - `uninstall(keep_profiles=False)` deletes it all. Profiles are kept by default precisely
   so that deleting them is a decision she makes, not a side effect of clearing a cache.
 - Every clip Chatterbox generates carries Resemble's imperceptible **Perth watermark**.
-  That is a feature here: audio made from her voice is identifiable as synthetic.
+  That is a feature here: audio made from their voice is identifiable as synthetic.
 
 ---
 
@@ -66,7 +66,7 @@ the model is not learning a sound inventory. It is learning **prosody** — rhyt
 melody of a rising question, how long she holds a stressed vowel, where she breathes.
 None of that exists inside a single word said on its own; the information is in the
 *joins*. Feed it isolated words and you get a voice with her timbre and nobody's rhythm:
-a robot wearing her voice.
+a robot wearing their voice.
 
 ### Why the passage is six minutes when the model reads fifteen seconds
 

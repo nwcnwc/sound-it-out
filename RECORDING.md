@@ -19,7 +19,7 @@ levels, which are a long way off, use a computer-generated version of your voice
 - **Leave a clear gap** (2 seconds of silence) between each item. That's what lets us
   split them automatically.
 - **If you fluff one, just pause and say it again.** We keep the last good take.
-- Don't perform. Ordinary, warm, how you'd talk to him.
+- Don't perform. Ordinary, warm, how you'd talk to them.
 
 ---
 
@@ -107,15 +107,15 @@ them. One word per line. Lines starting with `#` are just notes.
 2. it becomes what your child actually sees on the TV.
 
 Add "Bluey" and you'll be asked to record "Bluey", and then "Bluey" starts appearing in
-his videos. There's no second step.
+their videos. There's no second step.
 
 The **[People]** group is the one to change first. It ships with example names — Alex,
-Mum, Dad, Nana, Grandad — and those should be your real ones: his brothers and sisters,
-your pets, anyone he sees often. This group matters more than the rest put together.
+Mum, Dad, Nana, Grandad — and those should be your real ones: their brothers and sisters,
+your pets, anyone they see often. This group matters more than the rest put together.
 The research on reading and Down syndrome is specific about it: start with words that
-mean something to him personally, because those are the ones he'll learn fastest.
+mean something to them personally, because those are the ones they'll learn fastest.
 
-Start small. Ten words he loves beats fifty he doesn't.
+Start small. Ten words they love beats fifty they don't.
 
 ### Print your checklist
 
@@ -138,7 +138,7 @@ to your child. Normal pace, normal expression. Let the questions sound like ques
 
 It's six short sections with breaks, so you can stop and start.
 
-This part is never played back to him. It's what lets the computer learn the shape of
+This part is never played back to them. It's what lets the computer learn the shape of
 your voice — the rhythm, the melody, how your sentences rise and fall. Single words
 can't teach it any of that, because single words don't contain it. This passage is the
 difference between the later levels sounding like you and sounding like a robot wearing

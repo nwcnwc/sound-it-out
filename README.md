@@ -4,8 +4,7 @@ A fully offline desktop app (macOS, Windows, Linux) that produces looping, TV-fr
 phonics videos: a letter, blend, or word on screen, sounded out with a highlight moving
 across the letters, then spoken in a warm human voice.
 
-Built for an early reader with Down syndrome, to play continuously on a large-screen TV
-at home. No internet, no accounts, no subscriptions, no ads.
+Built for early readers with Down syndrome, to play continuously on a large-screen TV. No internet, no accounts, no subscriptions, no ads.
 
 ---
 
@@ -23,8 +22,8 @@ A scaffolded progression of **9 levels**. Each is mastered before the next is in
 > all — and recommends those first words be **personally meaningful**. Reading then builds
 > the phonological awareness that phonics needs, rather than requiring it up front.
 >
-> This is why Level 1 is Paw Patrol: not decoration, but exactly the recommended starting
-> point for this particular child.
+> This is why the shipped Level 1 is a favourite TV show: not decoration, but exactly the
+> recommended starting point.
 
 | Level | Content | Examples |
 |---|---|---|
@@ -60,7 +59,7 @@ theme to level would force one of those two things to break.
 **From Level 3, letters are introduced in phonics order, not alphabetical order:**
 `s a t p i n` → `m d g o c k` → `ck e u r` → `h b f l` → the rest.
 This is the standard synthetic-phonics sequence, and the reason for it is motivational:
-after just the first six letters he can already decode *sat, pin, tap, nap, pit, tin, sit,
+after just the first six letters a child can already decode *sat, pin, tap, nap, pit, tin, sit,
 tip*. Alphabetical order makes you wait until `t` before any word is possible.
 
 ### 2. Paste mode (advanced)
@@ -127,21 +126,21 @@ Only **novel sentences** are synthesized on the user's machine, which is what ke
 natural. (Sentences assembled from concatenated word clips sound robotic; sentences must be
 generated whole.)
 
-### Voice: her voice, two ways
+### Voice: the parent's, two ways
 
-The voice is the child's parent's, sourced two different ways depending on the level. This is
+The voice is a parent's, sourced two different ways depending on the level. This is
 the central decision, and it puts the quality risk where it does least harm.
 
 | Levels | Content | Source |
 |---|---|---|
 | 1–2 | ~50 sight words | **recorded, used verbatim** |
 | 3–6 | ~44 phoneme sounds | **recorded, used verbatim** |
-| 7–9 | 10k dictionary, arbitrary sentences | **cloned from her voice** |
+| 7–9 | 10k dictionary, arbitrary sentences | **cloned from their voice** |
 
 Levels 1–5 are where a new reader stays for a year or more, and every sound there is
-genuinely her — nothing synthesised. Cloning only fills the long tail, which he will
+genuinely theirs — nothing synthesised. Cloning only fills the long tail, which the child will
 not reach for months, and which could never be recorded by hand anyway. If the clone
-disappoints, it degrades content he isn't using yet.
+disappoints, it degrades content the child isn't using yet.
 
 **Cloning model: [Chatterbox](https://www.resemble.ai/resources/best-open-source-ai-voice-cloning-tools)**
 (Resemble AI, **MIT licensed**, zero-shot from a 5–20 s reference, runs offline).
@@ -150,14 +149,14 @@ and this should stay unencumbered.
 
 **The recording session must include connected speech.** Isolated words and phonemes
 carry almost no prosody, and prosody is precisely what a cloner needs to learn. Five to
-ten minutes of her reading ordinary prose aloud is the difference between the later
-levels sounding like her and sounding like a robot wearing her voice. See
+ten minutes of them reading ordinary prose aloud is the difference between the later
+levels sounding like them and sounding like a robot wearing their voice. See
 [RECORDING.md](RECORDING.md).
 
 **Consent is not an afterthought.** This is a real person's voice being modelled. It is
-her own child, her own recording, her own machine, and it never leaves the house — but
-the recordings and the cloned model belong to her, and nothing here should ever be
-shipped or shared without her say-so.
+their own child, their own recording, their own machine, and it never leaves the house — but
+the recordings and the cloned model belong to them, and nothing here should ever be
+shipped or shared without their say-so.
 
 **Cost:** bundling a cloning model adds roughly 2–4 GB to the installer on top of the
 ~500 MB baseline. Worth it; worth knowing.
