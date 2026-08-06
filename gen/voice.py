@@ -14,15 +14,11 @@ so a single missing clip degrades one word rather than breaking a level.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 import soundfile as sf
 
-from gen.paths import MODELS
+from gen.paths import MODELS, VOICE_DIR
 from gen.soundout import SR, Voice as KokoroVoice, slower
-
-from gen.paths import VOICE_DIR  # noqa: E402
 
 
 def _safe(name: str) -> str:
