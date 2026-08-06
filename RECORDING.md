@@ -114,20 +114,24 @@ words are the strongest possible starting vocabulary.
 
 ---
 
-## Part 3 — Reading aloud (~5 min) — **please don't skip this**
+## Part 3 — The reading passage (~6 min) — **please don't skip this**
 
-Read anything ordinary out loud for about five minutes. A picture book, a magazine
-article, a recipe, anything with full sentences.
+Read **[PASSAGE.md](PASSAGE.md)** out loud, start to finish, naturally — as if reading
+to Alex. Normal pace, normal expression. Let the questions sound like questions.
 
-Read it **naturally**, as if reading to Alex. Normal pace, normal expression.
+It's six short sections with breaks, so you can stop and start.
 
-This part is never played back to him directly. It's what lets the computer learn the
-shape of your voice — the rhythm, the melody, the way sentences rise and fall. Single
-words can't teach it that, because single words don't have any of it. Five minutes of
-you reading properly is the difference between the later levels sounding like you and
-sounding like a robot wearing your voice.
+This part is never played back to him. It's what lets the computer learn the shape of
+your voice — the rhythm, the melody, how your sentences rise and fall. Single words
+can't teach it any of that, because single words don't contain it. This passage is the
+difference between the later levels sounding like you and sounding like a robot wearing
+your voice.
 
-If you can bear it, ten minutes is better than five.
+**Why that particular passage, and not just any book?** It's written to contain every
+single sound in English several times over — verified by machine, 43 of 43 covered,
+nothing scarce. A random book leaves gaps, and any sound the computer never hears from
+you, it has to invent. That's why one or two sentences read a little oddly; they're
+there to catch the rare sounds like the *oy* in "boy" and the *s* in "treasure".
 
 ---
 
