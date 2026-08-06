@@ -916,7 +916,7 @@ def check_passage(path, outdir=None, dry_run=False) -> tuple:
             "source": str(path),
             "sample_rate": SR,
             "duration_s": round(dur, 2),
-            "purpose": "voice cloning reference - never played back to Alex",
+            "purpose": "voice cloning reference - never played back to the child",
             "imported": datetime.datetime.now().isoformat(timespec="seconds"),
         }, indent=2) + "\n")
     return issues, notes, out

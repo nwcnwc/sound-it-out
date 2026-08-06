@@ -53,7 +53,7 @@ her.
   clips are cached on disk, so each sentence is fixed the first time it is made and stays
   that way — but two sentences sharing a word will not share that word's delivery.
 
-The design already assumes this. Cloning fills content Alex will not reach for months;
+The design already assumes this. Cloning fills content the child will not reach for months;
 if it disappoints, it degrades material he is not using yet.
 
 ### Why the reference must be connected speech

@@ -12,7 +12,7 @@
 #
 # This is the same list used for two things, so you only write it once:
 #   1. Your recording checklist - the words you'll be asked to say.
-#   2. What Alex actually sees on the TV.
+#   2. What your child actually sees on the TV.
 #
 # So if you add "Bluey" here, you'll be asked to record "Bluey", and then
 # "Bluey" starts appearing in his videos. Nothing else to do.

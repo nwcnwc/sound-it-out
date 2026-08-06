@@ -1,6 +1,6 @@
 """Sound It Out - optional voice cloning for levels 6-8.
 
-Levels 1-5 are her own recordings played back verbatim, and that is where Alex
+Levels 1-5 are her own recordings played back verbatim, and that is where the child
 will be for a year or more. Cloning only fills the long tail - the 10k
 dictionary and arbitrary sentences - which could never be recorded by hand. So
 this module is optional *by construction*, not by convention:

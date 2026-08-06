@@ -1,6 +1,6 @@
 """Tests for the recording importer.
 
-Everything here is synthetic. There is no real recording of the parent to test
+Everything here is synthetic. There is no real recording of a parent to test
 against - there won't be until she sits down and makes one - so the audio is
 built from numpy: hiss where a fricative goes, a low buzz where a vowel goes, a
 click where a stop goes, and near-silent room tone in between. Those stand-ins

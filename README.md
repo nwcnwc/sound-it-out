@@ -13,7 +13,7 @@ at home. No internet, no accounts, no subscriptions, no ads.
 
 ### 1. Learn mode (primary)
 
-A scaffolded progression of **8 levels**. Each is mastered before the next is introduced.
+A scaffolded progression of **9 levels**. Each is mastered before the next is introduced.
 
 > **Important: sight words come first, not phonics.** This reverses the obvious ordering,
 > and the reason is specific to Down syndrome. Children with DS are typically strong visual
@@ -33,20 +33,27 @@ A scaffolded progression of **8 levels**. Each is mastered before the next is in
 | 3 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
 | 4 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
 | 5 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
-| 6 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
-| 7 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
-| 8 | Whole words → sentences | the 10k dictionary, then connected text |
+| 6 | **Building up** — the whole arc in one video | `s` → `sa` → `sat` → *Sam sat on a mat.* |
+| 7 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
+| 8 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
+| 9 | Whole words → sentences | the 10k dictionary, then connected text |
 
-Levels 3–8 are synthetic phonics, where items **do not need to be real words** — nonsense
+**Level 6 is the join.** Letters grow into words and words grow into a sentence in one
+continuous video, with each newly added letter highlighted. Separate levels teach letters
+and words as different things; this one shows the first becoming the second. Four chapters,
+each introducing new letters and ending on a sentence built only from letters already
+taught — a check that runs at import refuses to start if that rule is ever broken.
+
+Levels 3–9 are synthetic phonics, where items **do not need to be real words** — nonsense
 items are used deliberately (see [Why nonsense words](#why-nonsense-words)).
 
-Eight levels is not arbitrary: it maps onto [See and Learn Language and Reading](https://www.seeandlearn.org/en-gb/language-and-reading/)
+The level count is not arbitrary: it maps onto [See and Learn Language and Reading](https://www.seeandlearn.org/en-gb/language-and-reading/)
 (7 steps, DS-specific) for the sight-word stages and *Letters and Sounds* (6 phases) for the
 phonics stages, with the overlap merged.
 
 **Themes are a skin, not a level.** Paw Patrol styling can decorate any level; the *words* at
 each level are set by decoding difficulty. This matters because character names are mostly
-undecodable early — `Chase` needs a `ch` digraph and a split digraph, which is Level 6 work.
+undecodable early — `Chase` needs a `ch` digraph and a split digraph, which is Level 7 work.
 As a *sight* word at Level 1 it is perfect; as a *phonics* word it is far too hard. Coupling
 theme to level would force one of those two things to break.
 
@@ -122,16 +129,16 @@ generated whole.)
 
 ### Voice: her voice, two ways
 
-The voice is the parent's, sourced two different ways depending on the level. This is
+The voice is the child's parent's, sourced two different ways depending on the level. This is
 the central decision, and it puts the quality risk where it does least harm.
 
 | Levels | Content | Source |
 |---|---|---|
 | 1–2 | ~50 sight words | **recorded, used verbatim** |
-| 3–5 | ~44 phoneme sounds | **recorded, used verbatim** |
-| 6–8 | 10k dictionary, arbitrary sentences | **cloned from her voice** |
+| 3–6 | ~44 phoneme sounds | **recorded, used verbatim** |
+| 7–9 | 10k dictionary, arbitrary sentences | **cloned from her voice** |
 
-Levels 1–5 are where Alex will be for a year or more, and every sound there is
+Levels 1–5 are where a new reader stays for a year or more, and every sound there is
 genuinely her — nothing synthesised. Cloning only fills the long tail, which he will
 not reach for months, and which could never be recorded by hand anyway. If the clone
 disappoints, it degrades content he isn't using yet.

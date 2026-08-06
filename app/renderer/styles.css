@@ -1,7 +1,7 @@
 /* Sound It Out - app chrome.
    Everything here is local. No web fonts, no CDN: the app must work with the
    network cable pulled out. Andika ships with the app and is used only where a
-   word is shown the way Alex will see it, so previews match the video output. */
+   word is shown the way the child will see it, so previews match the video output. */
 
 @font-face {
   font-family: 'Andika';

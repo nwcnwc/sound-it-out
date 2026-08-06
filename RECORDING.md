@@ -1,8 +1,8 @@
 # Recording session guide
 
-For the parent. About 40 minutes. A phone is fine.
+For the parent doing the recording. About 40 minutes. A phone is fine.
 
-Everything you record here becomes the voice Alex hears every day. Levels 1–5 use
+Everything you record here becomes the voice your child hears every day. Levels 1–5 use
 your recordings **exactly as you say them** — nothing is synthesised. Only the later
 levels, which are a long way off, use a computer-generated version of your voice.
 
@@ -35,7 +35,7 @@ This is the most important part, and the easiest to get subtly wrong.
 - `s` is a long hiss, *sssss* — **not** "suh"
 - `m` is a long hum, *mmmmm* — **not** "muh"
 
-Why this matters: if you record "cuh", "a", "tuh", then Alex hears "cuh-a-tuh", which
+Why this matters: if you record "cuh", "a", "tuh", then your child hears "cuh-a-tuh", which
 doesn't turn into "cat". This is the single most common reason home phonics stalls.
 
 ### Stretch the ones that stretch
@@ -104,7 +104,7 @@ them. One word per line. Lines starting with `#` are just notes.
 **The same file does two jobs**, so you only write your list once:
 
 1. it becomes your recording checklist, and
-2. it becomes what Alex actually sees on the TV.
+2. it becomes what your child actually sees on the TV.
 
 Add "Bluey" and you'll be asked to record "Bluey", and then "Bluey" starts appearing in
 his videos. There's no second step.
@@ -134,7 +134,7 @@ the quickest way to get your own words in.)*
 ## Part 3 — The reading passage (~6 min) — **please don't skip this**
 
 Read **[PASSAGE.md](PASSAGE.md)** out loud, start to finish, naturally — as if reading
-to Alex. Normal pace, normal expression. Let the questions sound like questions.
+to your child. Normal pace, normal expression. Let the questions sound like questions.
 
 It's six short sections with breaks, so you can stop and start.
 

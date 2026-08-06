@@ -7,7 +7,7 @@ Resolution order, per item:
     3. The built-in Kokoro voice              -> generated
 
 This is the whole point of the design: (1) covers levels 1-5, which is where
-Alex will be for a long time, and nothing there is synthesised. The fallbacks
+a new reader stays for a long time, and nothing there is synthesised. The fallbacks
 exist so the app is useful on day one, before any recording has happened, and
 so a single missing clip degrades one word rather than breaking a level.
 """

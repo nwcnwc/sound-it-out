@@ -9,7 +9,7 @@ Voice sourcing per level is the other half of the design:
     levels 1-6   her recordings, used verbatim
     levels 7-9   generated - her cloned voice if installed, else the fallback
 
-That split is deliberate. Levels 1-6 are where Alex lives for a year or more,
+That split is deliberate. Levels 1-6 are where a new reader stays for a year or more,
 and every sound there is genuinely his mum. Generation only covers the long
 tail he will not reach for months, so if the clone disappoints it degrades
 content that is not yet in use.
@@ -218,7 +218,7 @@ def _build_up(voice, reps, pause):
     then the finished words are grown into a sentence the same way. The point
     is the join: separate videos teach letters and words as different things,
     where this shows one becoming the other. It is also, almost word for word,
-    what the parent asked for.
+    what was asked for.
     """
     segs = []
     inner = max(1, reps - 1)

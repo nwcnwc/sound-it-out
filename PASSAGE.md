@@ -2,7 +2,7 @@
 
 **Read this out loud, normally, at your own pace. About 6 minutes.**
 
-Read it the way you'd read a story to Alex — warm, unhurried, with your normal
+Read it the way you'd read a story to your child — warm, unhurried, with your normal
 expression. Let the questions sound like questions and the exclamations sound like
 exclamations. That variation is the whole point; a flat read teaches the computer a
 flat voice.

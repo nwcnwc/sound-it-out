@@ -3,7 +3,7 @@
  * Talks only to window.soundout (app/preload.js), or to the stand-in in
  * mock.js when this page is opened outside Electron.
  *
- * Guiding rule for everything below: the person using this is the parent,
+ * Guiding rule for everything below: the person using this is the child's parent,
  * probably with a child pulling at her arm. Few controls, big targets, plain
  * words, and any message about a failure has to say what to do next.
  */

@@ -221,7 +221,7 @@ def tidy_word(a: np.ndarray, gap_ms=45, drop_gap_ms=130) -> np.ndarray:
          silence.
 
     Only ever applied to GENERATED audio. Her recordings are used verbatim -
-    see gen/voice.py - so none of this touches the voice Alex actually hears
+    see gen/voice.py - so none of this touches the voice the child actually hears
     at levels 1-5.
     """
     if a.size < int(SR * 0.05):
