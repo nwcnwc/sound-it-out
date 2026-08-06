@@ -119,14 +119,28 @@ async function runJob (opts) {
         jobId, stage: 'frames', done: 0, total: frames.length,
         message: 'Drawing the words...'
       })
-      await renderFrames(frames, path.join(jobDir, 'frames'), {
-        onProgress: (done, total) => {
-          check()
-          send('job:progress', {
-            jobId, stage: 'frames', done, total, message: 'Drawing the words...'
-          })
-        }
-      })
+      try {
+        await renderFrames(frames, path.join(jobDir, 'frames'), {
+          onProgress: (done, total) => {
+            check()
+            send('job:progress', {
+              jobId, stage: 'frames', done, total, message: 'Drawing the words...'
+            })
+          }
+        })
+      } catch (err) {
+        if (String(err.message) === 'CANCELLED') throw err
+        // Chromium's renderer cannot start in some constrained environments
+        // (containers that intercept syscalls, locked-down /dev/shm). Rather
+        // than fail the whole video, hand the same HTML to the Python side,
+        // which drives an external Chrome. Identical markup, identical output.
+        console.warn('[frames] built-in renderer failed, falling back:', err.message)
+        send('job:progress', {
+          jobId, stage: 'frames', done: 0, total: frames.length,
+          message: 'Drawing the words...'
+        })
+        await sidecar.call('render.chrome', { jobId })
+      }
       check()
 
       // 3. Python: mux
