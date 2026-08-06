@@ -65,6 +65,7 @@ async function boot () {
   }
 
   setUpTabs()
+  initVoice()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -844,3 +845,135 @@ function escapeHtml (s) {
 }
 
 boot()
+
+
+/* ---------------------------------------------------------------- your voice
+ *
+ * The import pipeline existed long before this screen did, which meant the one
+ * feature the whole voice design rests on could only be reached from a
+ * terminal. This is the way in.
+ */
+
+const PART_NAMES = { phonemes: 'sounds', words: 'words', passage: 'reading passage' }
+
+function voiceCounts (caps) {
+  const p = (caps && caps.recorded_phonemes) || 0
+  const w = (caps && caps.recorded_words) || 0
+  setText('count-phonemes', p ? `\u2014 ${p} recorded` : '')
+  setText('count-words', w ? `\u2014 ${w} recorded` : '')
+  const foot = $('voice-foot')
+  if (foot) {
+    foot.textContent = (p || w)
+      ? `Your child now hears you for ${p + w} of the things in the early levels.`
+      : 'Nothing recorded yet \u2014 the computer voice is being used for now.'
+  }
+}
+
+function setText (id, txt) { const el = $(id); if (el) el.textContent = txt }
+
+function renderImportResult (part, r) {
+  const box = $('result-' + part)
+  if (!box) return
+  box.hidden = false
+  box.innerHTML = ''
+
+  if (!r.ok) {
+    box.className = 'vpart-result is-bad'
+    box.textContent = r.error || 'That recording could not be read.'
+    return
+  }
+
+  const fails = (r.issues || []).filter((i) => i.severity === 'fail')
+  const checks = (r.issues || []).filter((i) => i.severity !== 'fail')
+  box.className = 'vpart-result ' + (fails.length ? 'is-warn' : 'is-good')
+
+  const head = document.createElement('p')
+  head.className = 'vres-head'
+  if (part === 'passage') {
+    head.textContent = fails.length
+      ? 'That recording needs another go.'
+      : 'Saved. That is everything needed for the later levels.'
+  } else {
+    head.textContent = `Found ${r.found} of ${r.expected} ${PART_NAMES[part]}` +
+      (r.saved ? `, and saved ${r.saved}.` : '.')
+  }
+  box.appendChild(head)
+
+  if (r.found != null && r.expected != null && r.found !== r.expected) {
+    const m = document.createElement('p')
+    m.className = 'vres-note'
+    m.textContent = r.found < r.expected
+      ? 'Fewer than expected. Usually that means two items ran together, or one was skipped \u2014 the names after that point may be wrong, so it is worth checking.'
+      : 'More than expected, which usually means a retake. The last version of each was kept.'
+    box.appendChild(m)
+  }
+
+  for (const [title, list, cls] of [
+    ['Worth re-recording', fails, 'bad'],
+    ['Worth a listen', checks, 'warn']
+  ]) {
+    if (!list.length) continue
+    const h = document.createElement('p')
+    h.className = 'vres-subhead'
+    h.textContent = `${title} (${list.length})`
+    box.appendChild(h)
+    const ul = document.createElement('ul')
+    ul.className = 'vres-list vres-' + cls
+    for (const i of list.slice(0, 40)) {
+      const li = document.createElement('li')
+      li.textContent = i.message
+      ul.appendChild(li)
+    }
+    box.appendChild(ul)
+  }
+
+  if (!fails.length && !checks.length && part !== 'passage') {
+    const ok = document.createElement('p')
+    ok.className = 'vres-note'
+    ok.textContent = 'Nothing sounded wrong. That is a good take.'
+    box.appendChild(ok)
+  }
+}
+
+async function importPart (part) {
+  const btn = document.querySelector(`.vpart-pick[data-part="${part}"]`)
+  const chosen = await window.soundout.chooseRecording()
+  if (!chosen || !chosen.ok) return
+
+  setText('file-' + part, chosen.path.split(/[\\/]/).pop())
+  if (btn) { btn.disabled = true; btn.textContent = 'Working on it\u2026' }
+  const box = $('result-' + part)
+  if (box) { box.hidden = false; box.className = 'vpart-result'; box.textContent = 'Splitting the recording up\u2026 this takes a moment.' }
+
+  try {
+    const r = await window.soundout.importRecording({ path: chosen.path, part })
+    renderImportResult(part, r)
+    // levels and counts depend on what is now recorded
+    const st = await window.soundout.getState()
+    state.capabilities = st.capabilities
+    state.levels = st.levels
+    voiceCounts(st.capabilities)
+    if (typeof renderLevels === 'function') renderLevels()
+  } catch (err) {
+    renderImportResult(part, { ok: false, error: String(err && err.message || err) })
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Choose the recording\u2026' }
+  }
+}
+
+function initVoice () {
+  for (const b of document.querySelectorAll('.vpart-pick')) {
+    b.addEventListener('click', () => importPart(b.dataset.part))
+  }
+  const g = $('open-guide')
+  if (g) {
+    g.addEventListener('click', (e) => {
+      e.preventDefault()
+      // window.open is blocked in the renderer; the main process opens links.
+      if (api.openExternal) api.openExternal(GUIDE_URL)
+    })
+  }
+  voiceCounts(state.capabilities)
+}
+
+const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md'

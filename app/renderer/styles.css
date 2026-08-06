@@ -790,3 +790,51 @@ dl.format dd { margin: .2rem 0 0; color: var(--ink-soft); font-size: .95rem; }
 .big-icon.ok  { background: var(--accent-wash); color: var(--accent); }
 .big-icon.bad { background: var(--bad-wash); color: var(--bad); }
 .progress-card .path-box { margin-top: 1rem; text-align: left; }
+
+/* ------------------------------------------------------------- your voice */
+
+.voice-intro { max-width: 62ch; margin: 0 0 1.6rem; }
+.voice-intro p { margin: 0 0 .6rem; }
+
+.voice-parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+
+.vpart {
+  display: grid; grid-template-columns: 2.6rem 1fr; gap: 1rem;
+  padding: 1.1rem 1.2rem; border: 1px solid var(--line);
+  border-radius: 14px; background: var(--surface);
+}
+.vpart-num {
+  width: 2.2rem; height: 2.2rem; border-radius: 50%;
+  display: grid; place-content: center;
+  background: var(--accent-wash); color: var(--accent);
+  font-weight: 700;
+}
+.vpart-body h2 { font-size: 1.05rem; margin: .1rem 0 .35rem; }
+.vpart-body > p { margin: 0 0 .8rem; max-width: 58ch; color: var(--ink-soft); }
+.vpart-count { font-weight: 400; color: var(--ink-soft); font-size: .9rem; }
+.vpart-file { color: var(--ink-soft); font-size: .9rem; align-self: center; }
+
+.vpart-result {
+  margin-top: .9rem; padding: .85rem 1rem; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--surface-2); font-size: .95rem;
+}
+.vpart-result.is-good { border-color: var(--accent-wash); background: var(--accent-wash); }
+.vpart-result.is-warn { border-color: var(--warm-line); background: var(--warm-wash); }
+.vpart-result.is-bad  { border-color: var(--bad);  background: var(--bad-wash); }
+
+.vres-head { margin: 0 0 .4rem; font-weight: 600; }
+.vres-note { margin: .3rem 0; color: var(--ink-soft); }
+.vres-subhead { margin: .7rem 0 .25rem; font-weight: 600; font-size: .92rem; }
+.vres-list { margin: 0; padding-left: 1.1rem; }
+.vres-list li { margin: .15rem 0; }
+
+.voice-foot { margin-top: 1.4rem; color: var(--ink-soft); }
+
+.voice-intro .link, a.link {
+  color: var(--accent); text-decoration-color: var(--line-firm);
+  text-underline-offset: 2px; font-weight: 600;
+}
+.voice-intro .link:hover, a.link:hover { color: var(--accent-hi); }
+.voice-intro .link:focus-visible, a.link:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px;
+}

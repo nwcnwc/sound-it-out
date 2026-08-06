@@ -27,6 +27,8 @@
             aria-selected="true" data-screen="words">Words</button>
     <button class="tab" role="tab" id="tab-make" aria-controls="screen-make"
             aria-selected="false" tabindex="-1" data-screen="make">Make a video</button>
+    <button class="tab" role="tab" id="tab-voice" aria-controls="screen-voice"
+            aria-selected="false" tabindex="-1" data-screen="voice">Your voice</button>
     <button class="tab" role="tab" id="tab-settings" aria-controls="screen-settings"
             aria-selected="false" tabindex="-1" data-screen="settings">Settings</button>
   </nav>
@@ -210,6 +212,85 @@
   </section>
 
   <!-- ========================================================= SETTINGS -->
+
+  <section class="screen" id="screen-voice" role="tabpanel" aria-labelledby="tab-voice" tabindex="-1" hidden>
+
+    <div class="page-head">
+      <h1>Your voice</h1>
+      <p class="lede">
+        Record yourself once, and your child hears you instead of the computer &mdash;
+        for everything in the early levels, exactly as you said it.
+      </p>
+    </div>
+
+    <div class="voice-intro">
+      <p>
+        There are three things to record. Read
+        <a href="#" id="open-guide" class="link">the recording guide</a> first &mdash;
+        it takes about 40 minutes with a phone, and the guide explains the one rule
+        that really matters.
+      </p>
+      <p class="hint">
+        Record each part as <b>one long recording</b> with a couple of seconds of silence
+        between items. Bring the file here and it gets split up automatically.
+      </p>
+    </div>
+
+    <ol class="voice-parts" id="voice-parts">
+
+      <li class="vpart" data-part="phonemes">
+        <div class="vpart-num">1</div>
+        <div class="vpart-body">
+          <h2>The sounds <span class="vpart-count" id="count-phonemes"></span></h2>
+          <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. These are what
+             sounding-out is built from, so they matter most.</p>
+          <div class="rowbar">
+            <button class="btn btn-second vpart-pick" type="button" data-part="phonemes">
+              Choose the recording&hellip;
+            </button>
+            <span class="vpart-file" id="file-phonemes"></span>
+          </div>
+          <div class="vpart-result" id="result-phonemes" hidden></div>
+        </div>
+      </li>
+
+      <li class="vpart" data-part="words">
+        <div class="vpart-num">2</div>
+        <div class="vpart-body">
+          <h2>The words <span class="vpart-count" id="count-words"></span></h2>
+          <p>Your word list, read normally. Print your list from the
+             <b>Words</b> tab first so you know what to say.</p>
+          <div class="rowbar">
+            <button class="btn btn-second vpart-pick" type="button" data-part="words">
+              Choose the recording&hellip;
+            </button>
+            <span class="vpart-file" id="file-words"></span>
+          </div>
+          <div class="vpart-result" id="result-words" hidden></div>
+        </div>
+      </li>
+
+      <li class="vpart" data-part="passage">
+        <div class="vpart-num">3</div>
+        <div class="vpart-body">
+          <h2>The reading passage <span class="vpart-count" id="count-passage"></span></h2>
+          <p>Six minutes of ordinary reading aloud. This one is never played to your child
+             &mdash; it is what lets the later levels sound like you.</p>
+          <div class="rowbar">
+            <button class="btn btn-second vpart-pick" type="button" data-part="passage">
+              Choose the recording&hellip;
+            </button>
+            <span class="vpart-file" id="file-passage"></span>
+          </div>
+          <div class="vpart-result" id="result-passage" hidden></div>
+        </div>
+      </li>
+
+    </ol>
+
+    <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
+  </section>
+
   <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
 
     <div class="page-head">

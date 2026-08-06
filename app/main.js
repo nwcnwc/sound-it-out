@@ -23,6 +23,7 @@ const { pathToFileURL } = require('url')
 const { Sidecar } = require('./sidecar')
 const { renderFrames } = require('./frames')
 const updater = require('./updater')
+const appMenu = require('./menu')
 
 const APP_ROOT = path.join(__dirname, '..')
 const isPackaged = app.isPackaged
@@ -295,7 +296,32 @@ function registerIpc () {
     }
   })
 
+  ipcMain.handle('recordings:choose', async () => {
+    const r = await dialog.showOpenDialog(win, {
+      title: 'Choose your recording',
+      properties: ['openFile'],
+      filters: [{ name: 'Audio', extensions: ['m4a', 'mp3', 'wav', 'aac', 'ogg', 'opus', 'flac', 'mp4'] }]
+    })
+    return { ok: !r.canceled, path: r.canceled ? null : r.filePaths[0] }
+  })
+
+  ipcMain.handle('recordings:import', async (_e, opts) => {
+    try {
+      const r = await sidecar.call('recordings.import', opts || {})
+      return { ok: true, ...r }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
   ipcMain.handle('path:open', (_e, p) => { shell.openPath(p); return { ok: true } })
+
+  ipcMain.handle('url:open', (_e, u) => {
+    // Only ever our own docs; refuse anything else rather than becoming a
+    // general-purpose link opener driven by renderer content.
+    if (/^https:\/\/github\.com\/nwcnwc\//.test(String(u))) shell.openExternal(u)
+    return { ok: true }
+  })
 
   ipcMain.handle('dir:choose', async () => {
     const r = await dialog.showOpenDialog(win, { properties: ['openDirectory', 'createDirectory'] })
@@ -314,6 +340,36 @@ app.whenReady().then(() => {
   })
   sidecar.start()
   registerIpc()
+
+  // Replaces Electron's default menu, whose Help items link to electronjs.org.
+  appMenu.build({
+    onCheckForUpdates: async () => {
+      try {
+        const r = await updater.checkForUpdate()
+        if (r.available) {
+          send('update:available', r)
+        } else {
+          dialog.showMessageBox(win, {
+            type: 'info',
+            title: 'Sound It Out',
+            message: 'You have the latest version.',
+            detail: `Version ${app.getVersion()}.`,
+            buttons: ['OK']
+          })
+        }
+      } catch {
+        dialog.showMessageBox(win, {
+          type: 'info',
+          title: 'Sound It Out',
+          message: 'Could not check for updates.',
+          detail: 'This usually means the computer is offline. ' +
+                  'Sound It Out works normally without checking.',
+          buttons: ['OK']
+        })
+      }
+    }
+  })
+
   createWindow()
 
   // Check once, quietly, a few seconds after launch. Never blocks startup and

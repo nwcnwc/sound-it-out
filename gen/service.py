@@ -176,6 +176,63 @@ def m_install_cloning(params):
     )
 
 
+def m_recordings_import(params):
+    """Split one long recording into clips, check them, and save.
+
+    The pipeline existed from early on but had no way in from the app, so the
+    only way to use it was a terminal - which defeats the point, since the
+    person doing the recording is not a developer.
+    """
+    from gen import recordings as R
+
+    src = Path(params["path"]).expanduser()
+    part = params.get("part", "words")
+    if not src.exists():
+        raise ValueError(f"Can't find that file: {src}")
+
+    _progress("import", "reading", 0, 1, "Listening to the recording...")
+
+    if part == "passage":
+        issues, notes, out = R.check_passage(src, None, params.get("dryRun", False))
+        return {
+            "part": part,
+            "saved": 0,
+            "outdir": str(out) if out else None,
+            "issues": [{"label": i.label, "severity": i.severity,
+                        "message": i.message} for i in issues],
+            "notes": list(notes),
+            "report": R.format_report(part, None, issues, src, out, extra=notes),
+        }
+
+    labels = (R.phoneme_labels(params.get("order", "rows")) if part == "phonemes"
+              else R.word_labels())
+    _progress("import", "splitting", 0, 1, "Finding each item...")
+    al = R.split_recording(src, labels, min_silence=float(
+        params.get("minSilence", R.MIN_SILENCE)))
+
+    _progress("import", "checking", 0, 1, "Checking the sounds...")
+    issues = list(al.health) + R.quality_report(al.clips, part=part)
+
+    written = []
+    if not params.get("dryRun"):
+        outdir = R.default_outdir(part)
+        written = R.save_clips(al.clips, outdir, source=src, issues=issues,
+                               review=al.review, part=part)
+    else:
+        outdir = None
+
+    return {
+        "part": part,
+        "found": len(al.clips),
+        "expected": len(labels),
+        "saved": len(written),
+        "outdir": str(outdir) if outdir else None,
+        "issues": [{"label": i.label, "severity": i.severity,
+                    "message": i.message} for i in issues],
+        "report": R.format_report(part, al, issues, src, outdir),
+    }
+
+
 def m_ping(_params):
     return {"pong": True}
 
@@ -189,6 +246,7 @@ METHODS = {
     "encode": m_encode,
     "render.chrome": m_render_chrome,
     "cloning.install": m_install_cloning,
+    "recordings.import": m_recordings_import,
 }
 
 
