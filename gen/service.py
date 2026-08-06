@@ -101,7 +101,7 @@ def m_plan(params):
     # sentence, so filling 30 minutes by playing a 7 minute arc four times is
     # the wrong shape. Stretch the arc instead, by repeating each item more.
     # ~3.1 min per repetition, measured across all four chapters; approximate,
-    # because her recordings will not be the same length as the built-in voice.
+    # because real recordings will not be the same length as the built-in voice.
     if level == 6 and minutes > 0:
         opts = dict(opts, reps=max(2, min(14, round(minutes / 3.1))))
 

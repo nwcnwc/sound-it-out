@@ -55,7 +55,7 @@ datas += [(espeakng_loader.get_data_path(), "espeakng_loader/espeak-ng-data")]
 
 # ~19MB of dictionaries for ~100 languages when we use exactly one (en-gb).
 # Left whole on purpose: pruning to en_dict alone saves ~18MB on a ~500MB
-# installer while risking a hard crash the day anything asks for another voice.
+# installer while risking a hard crash the day anything asks for anotthe recorded voice.
 # Not a trade worth making. If installer size ever does become the binding
 # constraint, prune here, not by dropping the directory.
 

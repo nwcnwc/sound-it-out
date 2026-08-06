@@ -1,7 +1,7 @@
 """Tests for the recording importer.
 
 Everything here is synthetic. There is no real recording of a parent to test
-against - there won't be until she sits down and makes one - so the audio is
+against - there won't be until they sits down and makes one - so the audio is
 built from numpy: hiss where a fricative goes, a low buzz where a vowel goes, a
 click where a stop goes, and near-silent room tone in between. Those stand-ins
 are chosen to match the *measurements* the code keys off (README: a fricative
@@ -155,7 +155,7 @@ def _dominant_hz(a):
 
 
 def test_retake_keeps_the_last_take():
-    # She fluffs the second item, pauses briefly, says it again.
+    # They fluffs the second item, pauses briefly, says it again.
     audio, _ = session([tone(300, 1.2), tone(500, 1.2), tone(900, 1.2),
                         tone(1500, 1.2)],
                        gap=[2.0, 0.8, 2.0, 2.0])
@@ -454,7 +454,7 @@ def test_every_sound_is_classified_the_way_soundout_would():
     assert {k for k, v in kinds.items() if v == "vowel"} == {
         k for k, p in R.PHONEMES.items() if p.example in
         ("cat", "bed", "sit", "dog", "cup", "put", "car", "now", "hair",
-         "see", "moon", "door", "her", "day", "my", "boy", "go", "near")
+         "see", "moon", "door", "their", "day", "my", "boy", "go", "near")
     } - {"k", "d"}  # 'cat' and 'dog' are also consonant examples
 
 
@@ -535,7 +535,7 @@ def test_a_truncated_passage_is_caught(tmp_path, capsys):
 
 
 def test_clean_phoneme_strips_the_tail_if_ffmpeg_can_stretch():
-    """The fallback for a schwa she is not going to re-record."""
+    """The fallback for a schwa they are not going to re-record."""
     if subprocess.run(["ffmpeg", "-hide_banner", "-filters"],
                       capture_output=True).stdout.find(b"rubberband") < 0:
         pytest.skip("ffmpeg built without rubberband")

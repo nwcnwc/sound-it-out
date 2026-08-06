@@ -8,11 +8,11 @@ back empty, and nothing raises until generation produces nothing.
 There are two kinds of path and they must not be confused:
 
     RESOURCES  read-only, ships with the app (models, default word lists)
-    DATA       writable, per-user (her edited word lists, recordings, jobs)
+    DATA       writable, per-user (their edited word lists, recordings, jobs)
 
 They are the same directory in development and different once installed. On
 macOS especially, the app bundle is read-only - anything writable must go to
-Application Support or the first save fails on her machine and not on ours.
+Application Support or the first save fails on their machine and not on ours.
 """
 
 from __future__ import annotations
@@ -57,8 +57,8 @@ WORDLISTS = DATA / "wordlists"
 def ensure_user_files():
     """Seed the writable area from shipped defaults on first run.
 
-    Copy rather than symlink: she edits these, and an upgrade must not silently
-    revert her family's names back to the placeholders.
+    Copy rather than symlink: they edit these, and an upgrade must not silently
+    revert the user's own names back to the placeholders.
     """
     for d in (BUILD, JOBS, AUDIO_CACHE, VOICE_DIR, WORDLISTS):
         d.mkdir(parents=True, exist_ok=True)

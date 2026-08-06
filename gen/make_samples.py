@@ -23,7 +23,7 @@ from gen.soundout import (  # noqa: E402
 #
 # Colours echo each pup's kit. No copyrighted art, just the association.
 # Level 1 words come from wordlists/sight-words.txt, which the parent edits
-# directly. The same file drives her recording checklist, so a word is only
+# directly. The same file drives the recording checklist, so a word is only
 # ever written down once. Falls back to the first group if renamed.
 _GROUPS = wordlists.load()
 _PAW = next((g for g in _GROUPS if "paw" in g.name.lower()), _GROUPS[0])

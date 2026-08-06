@@ -2,12 +2,12 @@
 
 ## The short version
 
-Her work is never at risk. Everything she creates lives outside the app:
+The user's work is never at risk. Everything they create lives outside the app:
 
 | What | Where (macOS) |
 |---|---|
 | Word lists | `~/Library/Application Support/Sound It Out/wordlists/` |
-| Her recordings | `~/Library/Application Support/Sound It Out/assets/voice/` |
+| The recordings | `~/Library/Application Support/Sound It Out/assets/voice/` |
 | Settings | `~/Library/Application Support/Sound It Out/settings.json` |
 | Finished videos | `~/Sound It Out/` |
 
@@ -22,7 +22,7 @@ On launch, four seconds in, the app quietly asks GitHub for the latest release.
 If there is a newer one it tells the UI; it never blocks startup, never
 interrupts a job, and if the machine is offline it says nothing at all.
 
-When she accepts, the installer is downloaded with a progress bar and the byte
+When the user accepts, the installer is downloaded with a progress bar and the byte
 count is verified — a truncated installer that still launches is a far worse
 outcome than a failed download.
 
@@ -32,7 +32,7 @@ Then it differs by platform, and it is worth understanding why.
 |---|---|
 | Windows | The NSIS installer runs and replaces the app. Fully automatic. |
 | Linux | The AppImage is downloaded and revealed. |
-| **macOS** | The `.dmg` is downloaded and revealed. **She drags it into Applications.** |
+| **macOS** | The `.dmg` is downloaded and revealed. **They drag it into Applications.** |
 
 ## Why macOS is not fully automatic
 
@@ -43,9 +43,9 @@ macOS, and Squirrel **refuses to install an update onto an app without a valid
 Apple code signature**. This project is deliberately unsigned, to avoid $99/yr
 for a family tool.
 
-So on her Mac, `electron-updater` would download the whole update and then fail
+So on macOS, `electron-updater` would download the whole update and then fail
 at the final step — the worst possible place to fail. Rather than pretend, the
-app downloads the `.dmg`, opens the folder, and tells her plainly: drag it
+app downloads the `.dmg`, opens the folder, and tells them plainly: drag it
 across, replacing the old one, and everything you have made is kept.
 
 That is one drag, a few times a year.
@@ -88,7 +88,7 @@ Override for testing with `SIO_RELEASES_REPO=owner/repo`.
      --title "v0.2.0" --notes "What changed" ./dist/installers/*
    ```
 
-The release notes are shown to her verbatim, so write them for her — "the sounds
+The release notes are shown to the user verbatim, so write them for the reader — "the sounds
 are clearer now", not "fix schwa detection threshold".
 
 Asset names must keep their platform extensions (`.dmg`, `.exe`, `.AppImage`),
@@ -97,7 +97,7 @@ since that is how the app picks the right one. Both macOS builds are published;
 
 ## What is deliberately not done
 
-- **No silent background updates.** She is told, and chooses. A reading routine
+- **No silent background updates.** The user is told, and chooses. A reading routine
   that changes under a child without warning is worse than one that is a version
   behind.
 - **No forced updates.** The app works indefinitely without ever updating.

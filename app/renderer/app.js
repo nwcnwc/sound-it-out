@@ -4,7 +4,7 @@
  * mock.js when this page is opened outside Electron.
  *
  * Guiding rule for everything below: the person using this is the child's parent,
- * probably with a child pulling at her arm. Few controls, big targets, plain
+ * probably with a child pulling at their arm. Few controls, big targets, plain
  * words, and any message about a failure has to say what to do next.
  */
 'use strict'
@@ -561,7 +561,7 @@ function closeProgress () {
 async function startJob (mode) {
   currentMode = mode
 
-  // Saving her words first is what she'd expect; asking would just be a
+  // Saving the words first is what the user would expect; asking would just be a
   // dialog in the way.
   if ($('wordlist').value !== savedText) {
     const ok = await saveWords()

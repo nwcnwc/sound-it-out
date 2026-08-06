@@ -3,7 +3,7 @@
 Resolution order, per item:
 
     1. Mum's recording, if it exists          -> used verbatim, untouched
-    2. Her cloned voice, if installed         -> generated
+    2. Their cloned voice, if installed         -> generated
     3. The built-in Kokoro voice              -> generated
 
 This is the whole point of the design: (1) covers levels 1-5, which is where
@@ -121,7 +121,7 @@ class VoiceSource:
         and a word.
 
         Always generated: these are nonsense fragments, so there is nothing for
-        her to have recorded. Synthesised from IPA rather than spelling, since
+        their to have recorded. Synthesised from IPA rather than spelling, since
         "sa" read as text is anyone's guess but /sæ/ is exact.
         """
         key = "".join(ipas)
@@ -148,4 +148,4 @@ class VoiceSource:
         total = sum(u.values()) or 1
         return (f"{u['recorded']} from recordings, {u['cloned']} cloned, "
                 f"{u['generated']} built-in voice "
-                f"({u['recorded'] * 100 // total}% genuinely her)")
+                f"({u['recorded'] * 100 // total}% genuinely their)")

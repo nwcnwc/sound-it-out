@@ -5,7 +5,7 @@
  * Deliberately NOT electron-updater. Its macOS path goes through Squirrel.Mac,
  * which refuses to install an update onto an app without a valid Apple code
  * signature - and unsigned is a deliberate choice here, to avoid $99/yr for a
- * family project. On the machine that matters most (her Mac) electron-updater
+ * family project. On macOS electron-updater
  * would fail at the last step, after downloading, which is the worst place to
  * fail. So: check and download ourselves, then hand over.
  *
@@ -13,9 +13,9 @@
  *
  *   Windows   the downloaded NSIS installer is launched; it replaces the app
  *   Linux     the AppImage is downloaded and revealed
- *   macOS     the .dmg is downloaded and revealed, and she drags it across
+ *   macOS     the .dmg is downloaded and revealed, and the user drags it across
  *
- * Her work is never at risk either way. Everything she creates - word lists,
+ * The user's work is never at risk either way. Everything they create - word lists,
  * recordings, settings, finished videos - lives in the OS user-data directory
  * (gen/paths.py DATA), which is outside the app bundle. Replacing the
  * application cannot touch it. That is by design, not luck.

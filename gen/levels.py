@@ -6,12 +6,12 @@ confident words. See the README for the citations.
 
 Voice sourcing per level is the other half of the design:
 
-    levels 1-6   her recordings, used verbatim
-    levels 7-9   generated - her cloned voice if installed, else the fallback
+    levels 1-6   the parent's recordings, used verbatim
+    levels 7-9   generated - the cloned voice if installed, else the fallback
 
 That split is deliberate. Levels 1-6 are where a new reader stays for a year or more,
-and every sound there is genuinely his mum. Generation only covers the long
-tail he will not reach for months, so if the clone disappoints it degrades
+and every sound there is genuinely the parent's. Generation only covers the
+long tail the child will not reach for months, so if the clone disappoints it degrades
 content that is not yet in use.
 """
 
@@ -75,8 +75,8 @@ class Level:
 
 
 LEVELS = [
-    Level(1, "Paw Patrol", "The pups' names as whole words. Where Alex starts.", "recorded"),
-    Level(2, "Family and home", "His own name, the people he loves, everyday things.", "recorded"),
+    Level(1, "Paw Patrol", "The pups' names as whole words. Where a new reader starts.", "recorded"),
+    Level(2, "Family and home", "Their own name, the people they love, everyday things.", "recorded"),
     Level(3, "Letter sounds", "One letter at a time, with its sound. s a t p i n first.", "recorded"),
     Level(4, "Two sounds together", "Joining two sounds: sa, at, ip, um.", "recorded"),
     Level(5, "Three-letter words", "sat, pin, man - and some nonsense words too.", "recorded"),
@@ -122,7 +122,7 @@ LADDER = [
 def _check_ladder():
     """Fail loudly at import if a chapter uses an untaught letter.
 
-    Silently showing a child a word he has no way to decode is exactly the
+    Silently showing a child a word they have no way to decode is exactly the
     failure this level exists to avoid, and it is far too easy to introduce by
     editing a word list without checking the letters.
     """
@@ -165,7 +165,7 @@ def level_status(capabilities: dict) -> list:
             ok = capabilities.get("cloning") or capabilities.get("fallback_voice")
             reason = "" if ok else "Needs the built-in voice or voice cloning installed."
             if ok and not capabilities.get("cloning"):
-                reason = "Will use the built-in voice - install voice cloning for Mum's voice."
+                reason = "Will use the built-in voice - install voice cloning for the recorded voice."
         out.append({"id": lv.id, "name": lv.name, "description": lv.description,
                     "available": bool(ok), "reason": reason})
     return out
@@ -232,21 +232,30 @@ def _build_up(voice, reps, pause):
                                   pad=pause if i < reps - 1 else pause + 0.5))
 
         # 2. Grow each word, one letter at a time.
+        #
+        # Pacing note: these gaps are LONGER than the configured pause, not
+        # shorter. The first version scaled them down (0.5x, 0.7x) on the
+        # assumption that steps within one word should run together - which was
+        # exactly wrong. The instant a new letter appears is the most important
+        # beat in the level: it is when the word visibly changes, and the child
+        # needs time to notice that before the next sound arrives. Rushing it
+        # reads as skipping, because a step that should land has been swallowed.
         for word in chapter["words"]:
             parts = spell(word)
             for _ in range(inner):
                 for i in range(len(parts)):
                     sofar = parts[: i + 1]
                     shown = [(g, j == i) for j, (g, _) in enumerate(sofar)]
-                    # the new letter's own sound...
+                    # the new letter's own sound, then time to see it
                     segs.append(Segment(shown, voice.phoneme(sofar[i][1]),
-                                        pad=pause * 0.5))
+                                        pad=pause * 1.15))
                     if i > 0:
-                        # ...then everything so far, blended together
+                        # ...then everything so far, blended together. This is
+                        # the payoff of the step, so it gets the longest beat.
                         flat = [(g, False) for g, _ in sofar]
                         segs.append(Segment(flat, voice.blend([p for _, p in sofar]),
-                                            pad=pause * 0.7))
-                segs.append(whole(word, voice.word(word), pad=pause + 1.0))
+                                            pad=pause * 1.35))
+                segs.append(whole(word, voice.word(word), pad=pause + 1.4))
 
         # 3. Grow the chapter's sentence, one word at a time.
         words = chapter["sentence"].split()
@@ -258,7 +267,7 @@ def _build_up(voice, reps, pause):
                         parts.append((" ", False))
                     parts.append((other, j == i))
                 segs.append(Segment(parts, voice.word(w.strip(".,!?")),
-                                    pad=pause * 0.8, scale=0.9))
+                                    pad=pause * 1.1, scale=0.9))
             segs.append(whole(chapter["sentence"],
                               voice.sentence(chapter["sentence"]),
                               pad=pause + 1.6, scale=0.9))

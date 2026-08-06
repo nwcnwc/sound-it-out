@@ -319,7 +319,7 @@ Generation is three phases, split along what each runtime is actually good at:
 
 Phase 2 lives in Electron deliberately. It means the packaged app has **no external
 Chrome dependency**, and every install rasterises with the same bundled Chromium — so a
-frame is pixel-identical on her Mac and your Linux box. For an app whose entire job is
+frame is pixel-identical on every machine. For an app whose entire job is
 precisely-rendered letterforms, that is the point, and it is why Electron was chosen
 over Tauri (which uses each OS's own webview, and would render differently per machine).
 
@@ -331,12 +331,12 @@ else in the app knows the difference.
 app/main.js        orchestration, IPC, fullscreen player
 app/frames.js      HTML -> PNG via capturePage
 app/sidecar.js     spawns and talks to Python
-app/renderer/      the UI she uses
+app/renderer/      the UI
 gen/service.py     JSON-lines sidecar - Electron's only way in
 gen/paths.py       read-only RESOURCES vs writable per-user DATA
 gen/levels.py      the curriculum
 gen/voice.py       recordings -> clone -> built-in voice
-gen/recordings.py  splits her recordings into clips, with QC
+gen/recordings.py  splits the recordings into clips, with QC
 gen/clone.py       optional Chatterbox cloning
 ```
 

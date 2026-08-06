@@ -220,7 +220,7 @@ def tidy_word(a: np.ndarray, gap_ms=45, drop_gap_ms=130) -> np.ndarray:
          as "puppy"; a real word does not have a quiet island after a long
          silence.
 
-    Only ever applied to GENERATED audio. Her recordings are used verbatim -
+    Only ever applied to GENERATED audio. The recordings are used verbatim -
     see gen/voice.py - so none of this touches the voice the child actually hears
     at levels 1-5.
     """

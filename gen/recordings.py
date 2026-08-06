@@ -1,7 +1,7 @@
 """Turn the parent's phone recordings into the clip library.
 
-RECORDING.md asks her for three long files rather than 110 short ones, because
-110 files is a 40 minute admin job for her and a 5 second job for a computer.
+RECORDING.md asks them for three long files rather than 110 short ones, because
+110 files is a 40 minute admin job for them and a 5 second job for a computer.
 So this module does the 5 second job: find the gaps, cut on them, put a name to
 each piece, and - the part that actually matters - check the result before it
 goes anywhere near the TV.
@@ -15,7 +15,7 @@ issue: schwa on isolated consonants" is about Kokoro, but a human makes exactly
 the same mistake - saying "tuh" for /t/ is the natural thing to do, and it is
 the most common reason home phonics stalls. A schwa-polluted /t/ is not a
 slightly worse clip, it is a clip that teaches the wrong thing, and it will be
-played hundreds of times. Catching it here costs her one retake; missing it
+played hundreds of times. Catching it here costs their one retake; missing it
 costs a year of "cuh-a-tuh".
 
 Everything is reported in plain English, because the person reading the output
@@ -55,7 +55,7 @@ PARTS = ("phonemes", "words", "passage")
 
 # Part 1 of RECORDING.md, in the order the tables are laid out. Order is the
 # whole basis of the alignment - there is nothing in the audio that says which
-# sound is which - so if she reads the tables in a different order, every clip
+# sound is which - so if they reads the tables in a different order, every clip
 # gets the wrong name. Two mitigations: `--order columns` for the other obvious
 # reading of a two-column table, and the report prints the order it assumed so
 # a wrong guess is visible immediately rather than shipping silently.
@@ -68,18 +68,18 @@ PARTS = ("phonemes", "words", "passage")
 
 class Phoneme(NamedTuple):
     key: str
-    display: str  # what she sees in RECORDING.md
+    display: str  # what they sees in RECORDING.md
     example: str
     ipa: str
     length: str   # "hold" | "crisp" | "free"
 
 
-# RECORDING.md gives her two lists and, deliberately, leaves three sounds off
+# RECORDING.md gives their two lists and, deliberately, leaves three sounds off
 # both of them: `w`, `y` and `h` are told neither to be held nor to be crisp.
 # That is not an oversight to be tidied up - /w/ and /j/ are glides and /h/ is
 # a puff of breath, and none of the three has a length anyone can be told to
-# hit. So they are "free" and get no duration check at all; flagging her for
-# the length of a sound she was never given a target for would be noise.
+# hit. So they are "free" and get no duration check at all; flagging their for
+# the length of a sound they was never given a target for would be noise.
 HOLD, CRISP, FREE = "hold", "crisp", "free"
 
 # Rows exactly as printed: left column, right column.
@@ -99,7 +99,7 @@ _ROWS = [
     (("a", "a", "cat", "a", HOLD), ("ee", "ee", "see", "iː", HOLD)),
     (("e", "e", "bed", "ɛ", HOLD), ("oo", "oo", "moon", "uː", HOLD)),
     (("i", "i", "sit", "ɪ", HOLD), ("or", "or", "door", "ɔː", HOLD)),
-    (("o", "o", "dog", "ɒ", HOLD), ("ur", "ur", "her", "ɜː", HOLD)),
+    (("o", "o", "dog", "ɒ", HOLD), ("ur", "ur", "their", "ɜː", HOLD)),
     (("u", "u", "cup", "ʌ", HOLD), ("ay", "ay", "day", "eɪ", HOLD)),
     (("oo-put", "oo", "put", "ʊ", HOLD), ("igh", "igh", "my", "aɪ", HOLD)),
     (("ar", "ar", "car", "ɑː", HOLD), ("oy", "oy", "boy", "ɔɪ", HOLD)),
@@ -142,19 +142,19 @@ def phoneme_labels(order="rows") -> list:
 
 
 def word_labels(path=None) -> list:
-    """The expected label order for Part 2 - her own checklist, in her order."""
+    """The expected label order for Part 2 - their own checklist, in their order."""
     return wordlists.all_words(wordlists.load(path) if path else None)
 
 
 # --------------------------------------------------------------- tuning
 
-# All of these are shaped by what RECORDING.md actually asks her to do, which
+# All of these are shaped by what RECORDING.md actually asks them to do, which
 # is the only thing we know for certain about the audio. None of it has been
 # measured against a real session yet - there isn't one - so every constant is
 # a named default that can be moved from the command line when there is.
 
 FRAME = 0.020        # analysis hop for the silence gate
-MIN_SILENCE = 0.6    # she is asked for 2s gaps; 0.6 survives her rushing them
+MIN_SILENCE = 0.6    # they are asked for 2s gaps; 0.6 survives their rushing them
 MIN_ITEM = 0.05      # a duration filter cannot be the thing that rejects
                      # breaths: an isolated /t/ is a burst and a bit of
                      # aspiration and can be well under 100ms, so anything
@@ -168,7 +168,7 @@ BREATH_BELOW = 22.0  # dB under the median item peak. Breaths run ~30dB down,
                      # but /f/ and /th/ are genuinely quiet sounds (~15dB down
                      # from a vowel), so there is less room here than it looks.
 RETAKE_GAP = 1.2     # a pair closer together than this is a fluff and a retake
-                     # rather than two different items (she is asked for 2s)
+                     # rather than two different items (they are asked for 2s)
 MERGED_RATIO = 1.9   # two items said without a gap come to ~2x the median
 
 # Levels, in dBFS / linear peak. A phone at a hand's width lands around -12 dBFS.
@@ -232,7 +232,7 @@ class Clip(NamedTuple):
 
 @dataclass
 class Issue:
-    """One thing wrong with one clip. `message` is what she reads."""
+    """One thing wrong with one clip. `message` is what they reads."""
 
     label: str
     code: str            # machine-readable, for the manifest
@@ -277,7 +277,7 @@ def _read_via_ffmpeg(path) -> tuple:
 
 
 def read_audio(path) -> tuple:
-    """(mono float32, sample rate). Whatever her phone produced."""
+    """(mono float32, sample rate). Whatever their phone produced."""
     try:
         a, sr = sf.read(str(path), dtype="float32", always_2d=True)
     except Exception:
@@ -430,7 +430,7 @@ def align(segments, expected_labels, retake_gap=RETAKE_GAP) -> Alignment:
     where 'p' is actually 'b'.
 
     Too many segments is the expected case, not an error - RECORDING.md tells
-    her "if you fluff one, just pause and say it again". The retake is the pair
+    their "if you fluff one, just pause and say it again". The retake is the pair
     that is closest together, and the good one is the second, so drop the
     earlier half of the tightest pair until the counts agree.
     """
@@ -530,8 +530,8 @@ def _schwa_tail(a, ipa):
 
     This is shape_phoneme()'s own measurement pointed the other way. There it
     finds the point where Kokoro's centroid falls back into vowel territory so
-    it can cut it off; here the same collapse in a human take means she said
-    "tuh", and the fix is a retake rather than a trim - her clips are used
+    it can cut it off; here the same collapse in a human take means they said
+    "tuh", and the fix is a retake rather than a trim - their clips are used
     verbatim (README: levels 3-5 are "recorded, used verbatim").
 
     Two conditions, because either alone gives false positives: the centroid
@@ -605,9 +605,9 @@ def _sonorant_tail(a):
 def clean_phoneme(clip: Clip) -> np.ndarray:
     """A schwa-stripped, sustained version of a recorded phoneme.
 
-    Not part of the import - her clips ship verbatim, and the honest fix for a
+    Not part of the import - their clips ship verbatim, and the honest fix for a
     schwa is a retake. This is here for the case where a retake is not going to
-    happen (she has done her 40 minutes and moved on) and a usable /t/ is worth
+    happen (they has done their 40 minutes and moved on) and a usable /t/ is worth
     more than a pure one. Same treatment Kokoro's output gets.
     """
     p = PHONEMES.get(clip.label)
@@ -661,7 +661,7 @@ def quality_report(clips, part=None) -> list:
         # The one that matters most, and it comes first because on a stop it
         # explains the duration as well - "your t is half a second long" and
         # "your t has an uh on it" are the same finding, and saying both just
-        # buries the one that tells her what to do about it.
+        # buries the one that tells them what to do about it.
         schwa = False
         kind = phoneme_class(p.ipa)
         if kind == "vowel":
@@ -750,7 +750,7 @@ def save_clips(clips, outdir, source=None, issues=(), review=(), part=None,
     rest of the pipeline works in, so nothing has to convert at playback time.
     Flagged clips are written too: the manifest carries the flags, and it is
     for the app (or a human) to decide what to do with a clip that needs a
-    retake, not for the importer to silently drop her recording.
+    retake, not for the importer to silently drop their recording.
     """
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -796,7 +796,7 @@ def save_clips(clips, outdir, source=None, issues=(), review=(), part=None,
 
 
 def mmss(t: float) -> str:
-    """Position in the recording, so she can find it in her voice memo app."""
+    """Position in the recording, so they can find it in the recorded voice memo app."""
     return f"{int(t) // 60}:{int(t) % 60:02d}"
 
 
@@ -883,7 +883,7 @@ def check_passage(path, outdir=None, dry_run=False) -> tuple:
     """Part 3 is never split - it is the voice-cloning reference, used whole.
 
     Nothing here can be checked against a list, so the checks are about whether
-    the recording is usable at all: is it the right length (i.e. did she read
+    the recording is usable at all: is it the right length (i.e. did they read
     all of it), is it clean, is the room quiet enough. A cloner learns rhythm
     and melody from this, so a truncated or noisy take is worth catching now
     rather than after the model has been trained on it.
@@ -930,7 +930,7 @@ def main(argv=None) -> int:
         prog="python -m gen.recordings",
         description="Split a recording session into clips and check them.",
     )
-    ap.add_argument("audio", help="the long recording from her phone")
+    ap.add_argument("audio", help="the long recording from their phone")
     ap.add_argument("--part", required=True, choices=PARTS)
     ap.add_argument("--out", help="where to write the clips")
     ap.add_argument("--min-silence", type=float, default=MIN_SILENCE,

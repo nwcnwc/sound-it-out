@@ -1,6 +1,6 @@
 """Sound It Out - optional voice cloning for levels 6-8.
 
-Levels 1-5 are her own recordings played back verbatim, and that is where the child
+Levels 1-5 are their own recordings played back verbatim, and that is where the child
 will be for a year or more. Cloning only fills the long tail - the 10k
 dictionary and arbitrary sentences - which could never be recorded by hand. So
 this module is optional *by construction*, not by convention:
@@ -45,7 +45,7 @@ from gen.soundout import SR, slower  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WEIGHTS = ROOT / "models" / "chatterbox"   # downloaded on demand, never shipped
-PROFILES = ROOT / "models" / "voices"      # her speaker profiles - hers, not ours
+PROFILES = ROOT / "models" / "voices"      # their speaker profiles - hers, not ours
 CACHE = ROOT / "build" / "audio-clone"
 VENV = ROOT / ".venv-clone"
 
@@ -341,8 +341,8 @@ def install(progress_cb=None, variant: str = DEFAULT_VARIANT) -> dict:
 def uninstall(keep_profiles: bool = True) -> dict:
     """Remove the model and its environment.
 
-    Her cloned profiles are kept by default and deleted only if asked. They are
-    derived from her voice; silently binning them alongside a cache is not ours
+    Their cloned profiles are kept by default and deleted only if asked. They are
+    derived from the recorded voice; silently binning them alongside a cache is not ours
     to do.
     """
     freed = 0
@@ -465,12 +465,12 @@ def _worker() -> _Worker:
 
 
 def clone_voice(reference_wav, out_dir) -> Path:
-    """Build a speaker profile from her passage recording.
+    """Build a speaker profile from their passage recording.
 
     Writes `profile.pt` (the model's conditioning tensors), the 20s excerpt it
     was built from, and a plain-text `profile.json`. The excerpt is kept so the
     profile can be rebuilt if the model is ever upgraded - and so there is one
-    obvious file to delete if she wants it gone.
+    obvious file to delete if they wants it gone.
     """
     w = _worker()  # fail before writing anything if the model is not installed
     reference_wav, out_dir = Path(reference_wav), Path(out_dir)
@@ -487,7 +487,7 @@ def clone_voice(reference_wav, out_dir) -> Path:
         "variant": _manifest().get("variant"),
         "package_version": info.get("version"),
         "sample_rate": SR,
-        "consent": "Her recording, her voice, her machine. Do not ship or share.",
+        "consent": "Their recording, the recorded voice, their machine. Do not ship or share.",
     }, indent=2))
     return out_dir
 
@@ -526,7 +526,7 @@ class ClonedVoice:
     def say(self, text, speed=None, phonemes=False) -> np.ndarray:
         if phonemes:
             # Chatterbox is grapheme-driven; there is no IPA back door. Levels
-            # 3-5 use her recorded phonemes anyway, so this should never fire.
+            # 3-5 use their recorded phonemes anyway, so this should never fire.
             raise CloneError("The cloned voice cannot speak IPA - use the recorded phonemes.")
         speed = self.speed if speed is None else speed
         key = hashlib.sha1(f"{text}|{self.dir.name}|{speed}".encode()).hexdigest()[:16]

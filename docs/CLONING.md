@@ -16,14 +16,14 @@ or use the app.
 This models a real person's voice. Read this bit even if you skip the rest.
 
 - The recordings are **hers**. The passage recording, the 20-second excerpt cut from it,
-  and the speaker profile derived from it are her property, not the project's.
-- Everything happens **on her machine**. No audio is uploaded; the only network access is
+  and the speaker profile derived from it are the speaker's property, not the project's.
+- Everything happens **on their machine**. No audio is uploaded; the only network access is
   the one-off model download from Hugging Face, and after that the module works offline.
 - **Nothing is shipped or shared without their explicit say-so.** Not the recordings, not
   `profile.pt`, not generated audio, not "just for the demo". A speaker profile is a
   usable copy of their voice; treat it like a house key.
 - `uninstall(keep_profiles=False)` deletes it all. Profiles are kept by default precisely
-  so that deleting them is a decision she makes, not a side effect of clearing a cache.
+  so that deleting them is a decision the speaker makes, not a side effect of clearing a cache.
 - Every clip Chatterbox generates carries Resemble's imperceptible **Perth watermark**.
   That is a feature here: audio made from their voice is identifiable as synthetic.
 
@@ -33,21 +33,21 @@ This models a real person's voice. Read this bit even if you skip the rest.
 
 Honest expectations, so the first listen is not a disappointment.
 
-**It will get:** her timbre — the basic colour of the voice; her accent; her general
-speaking rate; the broad shape of her intonation on ordinary declarative sentences. On a
-plain sentence like *"Chase is on the case."* a listener who knows her should recognise
-her.
+**It will get:** their timbre — the basic colour of the voice; their accent; their general
+speaking rate; the broad shape of their intonation on ordinary declarative sentences. On a
+plain sentence like *"Chase is on the case."* a listener who knows their should recognise
+their.
 
-**It will not get:** her. Specifically —
+**It will not get:** their. Specifically —
 
-- **Her warmth on the sentences that matter.** The way she reads to *him* — slower, more
-  sing-song, the small emphases she puts on his name — is a performance for one person.
+- **Warmth on the sentences that matter.** The way a parent reads to their own child — slower, more
+  sing-song, the small emphases on a familiar name — is a performance for one person.
   The clone reads like a competent narrator, not like his mother.
 - **Rare words and names.** Anything outside ordinary English — invented Paw Patrol
   spellings, unusual family names — will be pronounced by rule and sometimes wrongly.
 - **Isolated words and single sounds.** A clone conditioned on connected speech and then
   asked for one word out of context tends to sound clipped or oddly stressed. This is a
-  large part of why the design keeps levels 1–5 on her real recordings — the levels made
+  large part of why the design keeps levels 1–5 on their real recordings — the levels made
   of single words are exactly the levels a cloner is worst at.
 - **Consistency.** Chatterbox samples: the same sentence generated twice differs. Generated
   clips are cached on disk, so each sentence is fixed the first time it is made and stays
@@ -63,9 +63,9 @@ The passage in [`PASSAGE.md`](../PASSAGE.md) is 716 words of ordinary prose, ver
 
 A list of isolated words would cover the same phonemes and still be near-useless, because
 the model is not learning a sound inventory. It is learning **prosody** — rhythm, the
-melody of a rising question, how long she holds a stressed vowel, where she breathes.
+melody of a rising question, how long a stressed vowel is held, where the breaths fall.
 None of that exists inside a single word said on its own; the information is in the
-*joins*. Feed it isolated words and you get a voice with her timbre and nobody's rhythm:
+*joins*. Feed it isolated words and you get a voice with their timbre and nobody's rhythm:
 a robot wearing their voice.
 
 ### Why the passage is six minutes when the model reads fifteen seconds
@@ -98,7 +98,7 @@ from gen import clone
 clone.capabilities()            # what the UI asks; never raises
 clone.is_available()            # engine ready?
 clone.install(print_progress)   # ~3.2 GB, resumable, safe to re-run
-clone.uninstall()               # keeps her profiles unless told otherwise
+clone.uninstall()               # keeps their profiles unless told otherwise
 ```
 
 `install(progress_cb)` calls `progress_cb(fraction, message)` with a 0.0–1.0 fraction and
@@ -191,7 +191,7 @@ the same thing without the caching layer.
 Two differences, both intentional:
 
 - **`phonemes=True` raises.** Chatterbox is grapheme-driven and has no IPA back door.
-  Levels 3–5 use her recorded phonemes, so this should never be reached; it raises rather
+  Levels 3–5 use their recorded phonemes, so this should never be reached; it raises rather
   than silently spelling out `æ`.
 - **`speed` is applied afterwards** with the same rubberband stretch `slower()` uses,
   because the model has no speed control of its own.
@@ -245,5 +245,5 @@ halves. Permissively-licensed alternatives worth looking at first: **Kokoro-82M*
   that is the first thing to look at.
 - **Quality is unheard.** Everything above about how the clone will sound is reasoning from
   the model's design, not a listen. Before levels 6–8 are enabled for real, generate a
-  dozen sentences and have *her* listen to them. She is the only person who can say whether
-  it is close enough, and she gets a veto.
+  dozen sentences and have *the speaker* listen to them. They are the only person who can say whether
+  it is close enough, and they gets a veto.
