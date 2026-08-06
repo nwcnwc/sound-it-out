@@ -8,6 +8,7 @@ build/
 .venv/
 models/
 assets/fonts/
+!assets/commons/
 *.onnx
 
 # Generated media (samples are kept, see exception below)

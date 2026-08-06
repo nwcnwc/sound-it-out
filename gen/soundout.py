@@ -202,10 +202,39 @@ def _stretch(a: np.ndarray, target: int) -> np.ndarray:
     return out
 
 
+def _longest_burst(a: np.ndarray, thresh=0.30) -> np.ndarray:
+    """Return the longest continuously-voiced stretch of a clip.
+
+    Asking Kokoro for `ssssss` does NOT give one held /s/ - measured, it gives
+    two discrete re-articulated bursts with a dip between them. Stretching
+    across that dip is exactly what produced the robotic stutter. So take the
+    single longest continuous articulation and throw the rest away.
+    """
+    b = list(_buckets(a, ms=20))
+    if not b:
+        return a
+    mx = max(x[2] for x in b) or 1.0
+    on = [x[2] / mx > thresh for x in b]
+    best = run = None
+    for i, v in enumerate(on + [False]):
+        if v and run is None:
+            run = i
+        elif not v and run is not None:
+            if best is None or i - run > best[1] - best[0]:
+                best = (run, i)
+            run = None
+    if best is None:
+        return a
+    n = int(SR * 0.020)
+    return a[best[0] * n : min(len(a), best[1] * n)]
+
+
 def shape_phoneme(a: np.ndarray, ipa: str) -> np.ndarray:
     """Strip the schwa, then stretch the sound out so it can be taught with."""
     if not a.size:
         return a
+    if ipa not in STOPS:
+        a = _longest_burst(a)
 
     # Kokoro leaves leading near-silence (measured up to 400ms on /g/), which
     # would throw off every offset below. Cut to the real onset first.
