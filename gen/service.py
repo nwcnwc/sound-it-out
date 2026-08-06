@@ -95,14 +95,24 @@ def m_plan(params):
     level = int(params.get("level", 1))
     opts = dict(params.get("options") or {})
 
+    minutes = float(opts.get("minutes") or 0)
+
+    # Level 6 is a journey, not a playlist: it travels from single letters to a
+    # sentence, so filling 30 minutes by playing a 7 minute arc four times is
+    # the wrong shape. Stretch the arc instead, by repeating each item more.
+    # ~2.4 min per repetition, measured across all four chapters; approximate,
+    # because her recordings will not be the same length as the built-in voice.
+    if level == 6 and minutes > 0:
+        opts = dict(opts, reps=max(2, min(14, round(minutes / 2.4))))
+
     _progress(job_id, "audio", 0, 1, "Working out the sounds...")
     voice = VoiceSource(clone_profile=params.get("cloneProfile"))
     segments = levels.build(level, voice, opts)
 
-    # Repeat the material to fill the requested running time. The video loops
-    # anyway, but a longer file means fewer restarts on a TV's own player.
-    minutes = float(opts.get("minutes") or 0)
-    if minutes > 0 and segments:
+    # Every other level is a playlist of independent items, so repeat the whole
+    # thing to fill the running time. The video loops anyway, but a longer file
+    # means fewer restarts on a TV's own player.
+    if minutes > 0 and segments and level != 6:
         one = sum(s.duration for s in segments)
         if one > 0:
             segments = segments * max(1, int((minutes * 60) // one))

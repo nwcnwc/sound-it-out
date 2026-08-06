@@ -116,6 +116,21 @@ class VoiceSource:
         self.used["generated"] += 1
         return self.kokoro.phoneme(ipa)
 
+    def blend(self, ipas) -> np.ndarray:
+        """A partial syllable like /sæ/ - the halfway step between a letter
+        and a word.
+
+        Always generated: these are nonsense fragments, so there is nothing for
+        her to have recorded. Synthesised from IPA rather than spelling, since
+        "sa" read as text is anyone's guess but /sæ/ is exact.
+        """
+        key = "".join(ipas)
+        a = self._recorded("blends", key)
+        if a is not None:
+            return a
+        self.used["generated"] += 1
+        return tidy_word(self.kokoro.say(key, phonemes=True))
+
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
         if self.clone_profile is not None:
             try:
