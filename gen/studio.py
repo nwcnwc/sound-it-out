@@ -64,10 +64,19 @@ class Item:
     length: str         # hold | crisp | free
     ipa: str = ""
 
+    def path(self):
+        sub = "phonemes" if self.kind == "phoneme" else "words"
+        key = self.ipa if self.kind == "phoneme" else self.key
+        safe = "".join(f"u{ord(c):04x}" if not c.isalnum() else c for c in key)
+        return VOICE_DIR / sub / f"{safe}.wav"
+
+    def done(self) -> bool:
+        return self.path().exists()
+
     def as_dict(self):
         return {"key": self.key, "kind": self.kind, "display": self.display,
                 "say": self.say, "length": self.length, "ipa": self.ipa,
-                "target": LENGTH_TARGET[self.length][2]}
+                "target": LENGTH_TARGET[self.length][2], "done": self.done()}
 
 
 def plan(part="phonemes", order="rows") -> list:
@@ -243,12 +252,13 @@ def choose(takes: list, item: Item) -> dict:
 
 
 def save(item: Item, audio: np.ndarray) -> str:
-    """Write the chosen take where gen/voice.py will find it."""
-    sub = "phonemes" if item.kind == "phoneme" else "words"
-    out = VOICE_DIR / sub
-    out.mkdir(parents=True, exist_ok=True)
-    key = item.ipa if item.kind == "phoneme" else item.key
-    safe = "".join(f"u{ord(c):04x}" if not c.isalnum() else c for c in key)
-    path = out / f"{safe}.wav"
+    """Write the chosen take where gen/voice.py will find it.
+
+    The saved files ARE the progress record - there is no separate state to
+    keep in step, and nothing to corrupt. Whatever exists on disk is what has
+    been recorded, which is also what the video generator will use.
+    """
+    path = item.path()
+    path.parent.mkdir(parents=True, exist_ok=True)
     sf.write(path, audio.astype("float32"), SR)
     return str(path)

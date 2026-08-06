@@ -858,16 +858,44 @@ boot()
 
 const PART_NAMES = { phonemes: 'sounds', words: 'words', passage: 'reading passage' }
 
-function voiceCounts (caps) {
+async function voiceCounts (caps) {
   const p = (caps && caps.recorded_phonemes) || 0
   const w = (caps && caps.recorded_words) || 0
-  setText('count-phonemes', p ? `\u2014 ${p} recorded` : '')
-  setText('count-words', w ? `\u2014 ${w} recorded` : '')
+
+  // Totals come from the plan so the denominator is always the real list -
+  // adding a word to the word list changes what "finished" means.
+  let totals = { phonemes: 42, words: w }
+  try {
+    const [ps, ws] = await Promise.all([
+      api.studioPlan({ part: 'phonemes' }), api.studioPlan({ part: 'words' })
+    ])
+    totals = { phonemes: ps.total, words: ws.total }
+  } catch { /* fall back to what we know */ }
+
+  showPartProgress('phonemes', p, totals.phonemes)
+  showPartProgress('words', w, totals.words)
+
   const foot = $('voice-foot')
-  if (foot) {
-    foot.textContent = (p || w)
-      ? `Your child now hears you for ${p + w} of the things in the early levels.`
-      : 'Nothing recorded yet \u2014 the computer voice is being used for now.'
+  if (!foot) return
+  const total = totals.phonemes + totals.words
+  const done = p + w
+  foot.textContent = done === 0
+    ? 'Nothing recorded yet \u2014 the computer voice is being used for now.'
+    : done >= total
+      ? 'All recorded. Everything in the early levels is your own voice.'
+      : `${done} of ${total} recorded. You can stop and carry on whenever \u2014 ` +
+        'it picks up where you left off.'
+}
+
+function showPartProgress (part, done, total) {
+  setText('count-' + part, total ? `\u2014 ${done} of ${total} recorded` : '')
+  const fill = $('bar-' + part)
+  const wrap = $('barwrap-' + part)
+  if (fill && total) {
+    fill.style.width = Math.round((done / total) * 100) + '%'
+    if (wrap) wrap.hidden = false
+  } else if (wrap) {
+    wrap.hidden = true
   }
 }
 
@@ -1016,7 +1044,17 @@ async function openStudio (part) {
     alert('There is nothing to record yet. Add some words on the Words tab first.')
     return
   }
-  studio.i = 0
+  // Start where she left off. Progress comes from the saved clips themselves,
+  // so it survives quitting, updating, or a week between sittings.
+  studio.i = Math.min(plan.resumeAt || 0, Math.max(0, studio.items.length - 1))
+  studio.doneCount = plan.done || 0
+  if ((plan.done || 0) >= studio.items.length) {
+    const again = confirm(
+      `All ${studio.items.length} are already recorded.\n\n` +
+      'Start again from the beginning?')
+    if (!again) return
+    studio.i = 0
+  }
   $('studio').hidden = false
   document.body.classList.add('studio-open')
   try {
@@ -1043,7 +1081,12 @@ function closeStudio () {
 function showItem () {
   const it = studio.items[studio.i]
   if (!it) return finishStudio()
-  sEl('studio-progress').textContent = `${studio.i + 1} of ${studio.items.length}`
+  const total = studio.items.length
+  const done = studio.items.filter((x) => x.done).length
+  sEl('studio-progress').textContent =
+    `${studio.i + 1} of ${total}  \u00b7  ${done} recorded`
+  const fill = $('studio-bar-fill')
+  if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
   sEl('studio-word').textContent = it.display
   sEl('studio-say').textContent = it.say
   sEl('studio-state').textContent = ''
@@ -1170,6 +1213,7 @@ function showTakeResult (r) {
   }
   box.className = 'studio-result is-good'
   box.textContent = 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
+  if (studio.items[studio.i]) studio.items[studio.i].done = true
   sEl('studio-redo').hidden = false
   // Move on by itself - stopping after every item would double the session.
   clearTimeout(studio.advanceTimer)
@@ -1186,6 +1230,7 @@ function showTakeResult (r) {
 function finishStudio () {
   sEl('studio-word').textContent = 'All done'
   sEl('studio-say').textContent = 'That is the whole list recorded.'
+  sEl('studio-pause').hidden = true
   sEl('studio-state').textContent = ''
   sEl('studio-go').hidden = true
   sEl('studio-redo').hidden = true

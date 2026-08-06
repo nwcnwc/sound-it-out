@@ -237,9 +237,15 @@ def m_studio_plan(params):
     from gen import studio
 
     items = studio.plan(params.get("part", "phonemes"), params.get("order", "rows"))
+    dicts = [i.as_dict() for i in items]
+    done = sum(1 for d in dicts if d["done"])
+    # Where to pick up: the first thing not yet recorded. A busy parent does
+    # this over several sittings, so resuming has to be the default rather
+    # than something to go looking for.
+    resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
     return {"part": params.get("part", "phonemes"),
             "takes": studio.TAKES_DEFAULT,
-            "items": [i.as_dict() for i in items]}
+            "items": dicts, "done": done, "total": len(dicts), "resumeAt": resume}
 
 
 def m_studio_submit(params):

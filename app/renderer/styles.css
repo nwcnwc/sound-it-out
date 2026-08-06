@@ -940,3 +940,6 @@ body.script-open { overflow: hidden; }
   .script-item { font-size: 1.5rem; }
   .script-hint { color: #444; }
 }
+
+.studio-track { border-radius: 0; height: .35rem; }
+.vpart-bar { margin: .2rem 0 .9rem; max-width: 26rem; }

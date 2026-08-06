@@ -261,6 +261,9 @@
           <h2>The sounds <span class="vpart-count" id="count-phonemes"></span></h2>
           <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. These are what
              sounding-out is built from, so they matter most.</p>
+          <div class="bar bar-slim vpart-bar" id="barwrap-phonemes" hidden>
+            <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
+          </div>
           <div class="rowbar">
             <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
               Show what to say
@@ -280,6 +283,9 @@
           <h2>The words <span class="vpart-count" id="count-words"></span></h2>
           <p>Your word list, read normally. Print your list from the
              <b>Words</b> tab first so you know what to say.</p>
+          <div class="bar bar-slim vpart-bar" id="barwrap-words" hidden>
+            <div class="bar-fill" id="bar-words" style="width:0%"></div>
+          </div>
           <div class="rowbar">
             <button class="btn btn-second vpart-script" type="button" data-part="words">
               Show what to say
@@ -337,6 +343,7 @@
       <span class="studio-progress" id="studio-progress"></span>
       <button class="btn btn-quiet" id="studio-close" type="button">Finish for now</button>
     </div>
+    <div class="bar bar-slim studio-track"><div class="bar-fill" id="studio-bar-fill" style="width:0%"></div></div>
 
     <div class="studio-stage">
       <p class="studio-say" id="studio-say"></p>
