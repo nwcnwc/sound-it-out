@@ -10,6 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from gen import wordlists  # noqa: E402
 from gen.soundout import (  # noqa: E402
     SAMPLES, THEMES, Segment, Theme, Voice, build_video, slower, whole,
 )
@@ -21,13 +22,12 @@ from gen.soundout import (  # noqa: E402
 # meaningful words are explicitly recommended - hence Paw Patrol.
 #
 # Colours echo each pup's kit. No copyrighted art, just the association.
-PAW_PATROL = [
-    ("Chase", "#4da6ff"),      # police - blue
-    ("Marshall", "#ff5a4d"),   # fire - red
-    ("Skye", "#ff8fc7"),       # aviator - pink
-    ("Rubble", "#ffd23f"),     # construction - yellow
-    ("Rocky", "#6fcf6f"),      # recycling - green
-]
+# Level 1 words come from wordlists/sight-words.txt, which the parent edits
+# directly. The same file drives her recording checklist, so a word is only
+# ever written down once. Falls back to the first group if renamed.
+_GROUPS = wordlists.load()
+_PAW = next((g for g in _GROUPS if "paw" in g.name.lower()), _GROUPS[0])
+PAW_PATROL = [(w, c) for w, c in _PAW.words if c][:5]
 
 # Preview of a later level: sounding out with letter highlighting.
 # (grapheme, IPA phoneme) - IPA is fed to Kokoro directly so the sound is

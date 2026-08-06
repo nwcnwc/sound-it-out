@@ -95,22 +95,39 @@ word, on its own.** The word is only there to remind you which sound we mean.
 Say each word **normally**, the way you'd say it in a sentence. Don't sound it out,
 don't over-enunciate. Just the word, warmly.
 
-**Paw Patrol** (Level 1 — this is where Alex starts)
+### The words are yours to choose
 
-> Chase · Marshall · Skye · Rubble · Rocky · Zuma · Everest · Ryder · Tracker ·
-> Liberty · pup · pups · truck · fire · police · rescue · badge · Adventure Bay
+Open **[`wordlists/sight-words.txt`](wordlists/sight-words.txt)** in any text editor
+(Notepad, TextEdit, anything) and make it your list. Add words, delete words, change
+them. One word per line. Lines starting with `#` are just notes.
 
-**People and home** — replace these with your actual family. Personally meaningful
-words are the strongest possible starting vocabulary.
+**The same file does two jobs**, so you only write your list once:
 
-> Alex · Mum · Dad · Nana · Grandad · *(brothers/sisters)* · *(pets)* · *(street or
-> town name)* · home · bed · car · dog · cat · ball · book · cup · shoes · bath ·
-> teddy · park
+1. it becomes your recording checklist, and
+2. it becomes what Alex actually sees on the TV.
 
-**First useful words**
+Add "Bluey" and you'll be asked to record "Bluey", and then "Bluey" starts appearing in
+his videos. There's no second step.
 
-> I · me · my · you · go · stop · yes · no · more · look · like · love · big ·
-> little · up · down · in · on · hot · cold
+The **[People]** group is the one to change first. It ships with example names — Alex,
+Mum, Dad, Nana, Grandad — and those should be your real ones: his brothers and sisters,
+your pets, anyone he sees often. This group matters more than the rest put together.
+The research on reading and Down syndrome is specific about it: start with words that
+mean something to him personally, because those are the ones he'll learn fastest.
+
+Start small. Ten words he loves beats fifty he doesn't.
+
+### Print your checklist
+
+Once you've edited the file, this prints your list back with numbers, ready to record
+from:
+
+```
+python -m gen.wordlists
+```
+
+*(Later on, the app will have a proper screen for this — no text files. For now this is
+the quickest way to get your own words in.)*
 
 ---
 
