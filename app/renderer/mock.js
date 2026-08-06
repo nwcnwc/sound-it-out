@@ -83,14 +83,14 @@ down
 
   const state = {
     levels: [
-      { id: '1', name: 'Level 1 — Favourite names', description: 'Whole words he already loves, learned by sight. Chase, Marshall, Skye.', available: true },
-      { id: '2', name: 'Level 2 — Everyday words', description: 'Family, home and first little phrases. Around fifty words.', available: true },
-      { id: '3', name: 'Level 3 — Single sounds', description: 'One letter at a time: s, a, t, p, i, n.', available: true },
-      { id: '4', name: 'Level 4 — Two sounds together', description: 'Joining two sounds: sa, at, ip, um.', available: true },
-      { id: '5', name: 'Level 5 — Three sounds', description: 'Short words he can sound out: sat, pin, tap.', available: true },
-      { id: '6', name: 'Level 6 — sh, ch, th, ck', description: 'Two letters making one sound: ship, chat, duck.', available: false, reason: 'Needs the extra voice download — see Settings' },
-      { id: '7', name: 'Level 7 — Trickier clusters', description: 'st, bl, nd, mp: stop, black, hand.', available: false, reason: 'Needs the extra voice download — see Settings' },
-      { id: '8', name: 'Level 8 — Whole sentences', description: 'Longer words, then sentences read together.', available: false, reason: 'Needs the extra voice download — see Settings' }
+      { id: 1, name: 'Level 1 — Favourite names', description: 'Whole words he already loves, learned by sight. Chase, Marshall, Skye.', available: true },
+      { id: 2, name: 'Level 2 — Everyday words', description: 'Family, home and first little phrases. Around fifty words.', available: true },
+      { id: 3, name: 'Level 3 — Single sounds', description: 'One letter at a time: s, a, t, p, i, n.', available: true },
+      { id: 4, name: 'Level 4 — Two sounds together', description: 'Joining two sounds: sa, at, ip, um.', available: true },
+      { id: 5, name: 'Level 5 — Three sounds', description: 'Short words he can sound out: sat, pin, tap.', available: true },
+      { id: 6, name: 'Level 6 — sh, ch, th, ck', description: 'Two letters making one sound: ship, chat, duck.', available: false, reason: 'Needs the extra voice download — see Settings' },
+      { id: 7, name: 'Level 7 — Trickier clusters', description: 'st, bl, nd, mp: stop, black, hand.', available: false, reason: 'Needs the extra voice download — see Settings' },
+      { id: 8, name: 'Level 8 — Whole sentences', description: 'Longer words, then sentences read together.', available: false, reason: 'Needs the extra voice download — see Settings' }
     ],
     themes: [
       { id: 'night', name: 'Night' },

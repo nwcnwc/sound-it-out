@@ -352,7 +352,7 @@ function renderLevels (selected) {
   host.textContent = ''
   const levels = state.levels || []
   const firstAvailable = levels.find((l) => l.available)
-  if (!levels.some((l) => l.available && l.id === selected)) {
+  if (!levels.some((l) => l.available && String(l.id) === String(selected))) {
     selected = firstAvailable ? firstAvailable.id : null
   }
 
@@ -365,7 +365,7 @@ function renderLevels (selected) {
     input.name = 'level'
     input.value = lvl.id
     input.disabled = !lvl.available
-    input.checked = lvl.available && lvl.id === selected
+    input.checked = lvl.available && String(lvl.id) === String(selected)
 
     const tick = document.createElement('span')
     tick.className = 'tick'
@@ -480,7 +480,7 @@ function updateSummary (knownTotal) {
   const el = $('make-summary')
   if (!el) return
   const o = currentOptions()
-  const level = (state.levels || []).find((l) => l.id === o.level)
+  const level = (state.levels || []).find((l) => String(l.id) === String(o.level))
   const total = typeof knownTotal === 'number'
     ? knownTotal
     : parseWordlist($('wordlist').value).reduce((n, g) => n + g.words.length, 0)
@@ -497,7 +497,7 @@ function updateSummary (knownTotal) {
   $('btn-play').disabled = false
   $('btn-export').disabled = false
 
-  const usesWords = o.level === '1' || o.level === '2'
+  const usesWords = String(o.level) === '1' || String(o.level) === '2'
   const words = usesWords ? ', drawn from the ' + total + ' words on your list' : ''
   el.textContent = o.minutes + ' minutes of ' + level.name + words +
     ', each one shown ' + o.reps + ' times, then it loops.'
