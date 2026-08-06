@@ -1,0 +1,27 @@
+# Build output
+dist/
+build/
+*.exe
+*.msi
+
+# Vendored binaries and models (too large for git)
+vendor/
+models/
+*.onnx
+*.mp4
+*.wav
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
