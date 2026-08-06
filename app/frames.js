@@ -87,7 +87,18 @@ async function renderFrames (frames, outDir, opts = {}) {
         true
       )
 
-      const image = await win.webContents.capturePage()
+      let image = await win.webContents.capturePage()
+
+      // capturePage() captures at the DISPLAY's scale factor, not the window's
+      // logical size. Measured: Crostini at 1.25x produced 2400x1350 frames and
+      // therefore a 2400x1350 video; a Retina Mac at 2x would silently produce
+      // 3840x2160 - slow to encode and not reliably playable on a TV. Output
+      // resolution must not depend on whose screen made it, so pin it here.
+      const size = image.getSize()
+      if (size.width !== WIDTH || size.height !== HEIGHT) {
+        image = image.resize({ width: WIDTH, height: HEIGHT, quality: 'best' })
+      }
+
       const file = path.join(outDir, `${id}.png`)
       await fs.writeFile(file, image.toPNG())
       written.push(file)

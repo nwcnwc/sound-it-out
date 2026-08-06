@@ -19,6 +19,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const os = require('os')
+const { pathToFileURL } = require('url')
 const { Sidecar } = require('./sidecar')
 const { renderFrames } = require('./frames')
 
@@ -179,19 +180,42 @@ function openPlayer (file) {
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false }
   })
-  // Loops forever with no controls and no chrome - it is meant to be left
-  // running on a TV, not operated.
+
+  // Two things that both produce a silent black screen, and did:
+  //
+  //  1. The page must be a real file, not a data: URL. Chromium refuses to
+  //     load file:// subresources from a data: document, so the <video> src
+  //     is blocked and you get black with no error. (Same trap as frames.js.)
+  //  2. The path must be a properly encoded file URL. The default output
+  //     folder is "~/Sound It Out", and a raw space in a src is not a URL.
+  //
+  // pathToFileURL handles the encoding on all three platforms, including
+  // Windows drive letters and backslashes.
+  const videoUrl = pathToFileURL(file).href
+
   const html = `<!doctype html><html><head><meta charset="utf-8"><style>
     html,body{margin:0;height:100%;background:#000;overflow:hidden}
     video{width:100%;height:100%;object-fit:contain;display:block}
+    #err{position:fixed;inset:0;display:none;place-content:center;color:#f8f4e9;
+         font:24px/1.5 system-ui,sans-serif;text-align:center;padding:8vw}
   </style></head><body>
-    <video src="file://${file.replace(/\\/g, '/')}" autoplay loop playsinline></video>
+    <video id="v" src="${videoUrl}" autoplay loop playsinline></video>
+    <div id="err">The video could not be played.<br><small>Press Escape to go back.</small></div>
     <script>
-      document.addEventListener('keydown', e => {
+      var v = document.getElementById('v')
+      // Never fail silently to a black screen again - say so on screen.
+      v.addEventListener('error', function () {
+        v.style.display = 'none'
+        document.getElementById('err').style.display = 'grid'
+      })
+      document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') window.close()
       })
     </script></body></html>`
-  player.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html))
+
+  const page = path.join(app.getPath('temp'), 'sound-it-out-player.html')
+  fs.writeFileSync(page, html, 'utf8')
+  player.loadFile(page)
   player.on('closed', () => { player = null })
 }
 

@@ -135,7 +135,12 @@ def m_encode(params):
     work = JOBS / job_id
     out = Path(params["output"]).expanduser()
     _progress(job_id, "encoding", 0, 1, "Making the video file...")
-    encode_job(work, out)
+    encode_job(
+        work, out,
+        progress=lambda d, t: _progress(
+            job_id, "encoding", round(d, 1), round(t, 1), "Making the video file..."
+        ),
+    )
     return {"output": str(out)}
 
 

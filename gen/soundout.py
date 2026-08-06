@@ -453,8 +453,24 @@ def render_job_chrome(work: Path, progress=None):
             progress(i + 1, len(frames))
 
 
-def encode_job(work: Path, out: Path) -> Path:
-    """Mux rendered frames and audio into a TV-playable mp4."""
+def encode_job(work: Path, out: Path, progress=None) -> Path:
+    """Mux rendered frames and audio into a TV-playable mp4.
+
+    Encoding is by far the longest phase, so it reports real progress: ffmpeg's
+    own `-progress` stream is parsed against the known total duration. Without
+    it the UI showed a bar that filled during frame rendering, reset to zero,
+    and then sat there for minutes looking hung.
+
+    Preset is `veryfast` with `-tune stillimage`, not the usual `medium`. The
+    content is a handful of static images held for seconds at a time - there is
+    essentially no motion to estimate, so a slower preset buys nothing but
+    minutes of CPU. Measured on a 4-core i3, `medium` took several minutes for
+    a 4 minute video.
+    """
+    # The concat demuxer resolves relative entries against the list file's own
+    # directory, so a relative `work` silently produces doubled paths. Absolute
+    # from here on.
+    work = work.resolve()
     plan = json.loads((work / "plan.json").read_text())
     frames = work / "frames"
     missing = [t["frame"] for t in plan["timeline"]
@@ -474,18 +490,41 @@ def encode_job(work: Path, out: Path) -> Path:
     lst.write_text("\n".join(lines) + "\n")
 
     out.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
-        [
-            "ffmpeg", "-y", "-loglevel", "error",
-            "-f", "concat", "-safe", "0", "-i", str(lst),
-            "-i", str(work / "audio.wav"),
-            "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p",
-            "-r", "30", "-preset", "medium", "-crf", "20",
-            "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
-            "-movflags", "+faststart", "-shortest", str(out),
-        ],
-        check=True,
-    )
+    total = float(plan.get("duration") or 0)
+    cmd = [
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-f", "concat", "-safe", "0", "-i", str(lst),
+        "-i", str(work / "audio.wav"),
+        "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p",
+        # 15fps, not 30. The picture is static text that changes a few times a
+        # minute, so half the frames are pure duplication - and encoding cost
+        # scales with frame count, which is the actual bottleneck here (a 4-core
+        # i3 managed only 1.1x realtime at 30fps). 15fps is a long-standing
+        # standard rate that TV built-in players handle without complaint.
+        # Raise it if any player ever objects; nothing else depends on it.
+        "-r", "15", "-preset", "veryfast", "-tune", "stillimage", "-crf", "21",
+        "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
+        "-movflags", "+faststart", "-shortest",
+        "-progress", "pipe:1", "-nostats", str(out),
+    ]
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            text=True, bufsize=1)
+    try:
+        for line in proc.stdout:
+            if progress and total > 0 and line.startswith("out_time_us="):
+                try:
+                    done = int(line.split("=", 1)[1]) / 1_000_000
+                except ValueError:
+                    continue  # ffmpeg emits "N/A" before the first frame lands
+                progress(min(done, total), total)
+    finally:
+        proc.stdout.close()
+        err = proc.stderr.read()
+        proc.stderr.close()
+    if proc.wait() != 0:
+        raise RuntimeError(f"ffmpeg failed: {err.strip()[-400:]}")
+    if progress and total > 0:
+        progress(total, total)
     return out
 
 
