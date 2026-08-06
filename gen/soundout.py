@@ -22,10 +22,10 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-ROOT = Path(__file__).resolve().parent.parent
-MODELS = ROOT / "models"
-BUILD = ROOT / "build"
-SAMPLES = ROOT / "samples"
+from gen.paths import AUDIO_CACHE, BUILD, MODELS, RESOURCES  # noqa: E402
+
+ROOT = RESOURCES
+SAMPLES = RESOURCES / "samples"
 SR = 24000
 
 # ---------------------------------------------------------------- themes
@@ -67,7 +67,7 @@ class Voice:
         self.k = Kokoro(str(MODELS / "kokoro-v1.0.onnx"), str(MODELS / "voices-v1.0.bin"))
         self.voice = voice
         self.speed = speed
-        self.cache = BUILD / "audio"
+        self.cache = AUDIO_CACHE
         self.cache.mkdir(parents=True, exist_ok=True)
 
     def say(self, text, speed=None, phonemes=False) -> np.ndarray:
@@ -136,7 +136,7 @@ def slower(a: np.ndarray, tempo: float) -> np.ndarray:
 # guidance is just "keep it crisp". They keep their fullest natural release.
 
 VOWELS = set("æɑɒɔəɜɛɪiʊuʌeaoyɐɘɵʏøœɞʉɨ")
-STOPS = set("ptkbdgʔ")
+STOPS = set("ptkbdgʔ") | {"\u0261"}  # espeak emits U+0261 script g, not ASCII g
 SONORANTS = set("mnŋlrɹjwɫ")  # voiced+low-frequency; centroid test won't work
 
 SUSTAIN_VOWEL = 0.80   # seconds
@@ -322,20 +322,34 @@ html,body { width:1920px; height:1080px; overflow:hidden; background:__BG__; }
 </style></head><body>
 <div id="stage"><div id="word">__SPANS__</div></div>
 <script>
-var s = document.getElementById('stage'), w = document.getElementById('word');
-var lo = 16, hi = __MAX__;
-while (hi - lo > 1) {
-  var m = (lo + hi) >> 1;
-  w.style.fontSize = m + 'px';
-  if (w.scrollWidth <= s.clientWidth && w.scrollHeight <= s.clientHeight) lo = m;
-  else hi = m;
-}
-w.style.fontSize = Math.floor(lo * __SCALE__) + 'px';
-document.title = 'fit' + lo;
+// Exposed so it can be re-run once webfonts have loaded. Fonts arrive
+// asynchronously; measuring before they land sizes against a fallback font
+// and every frame comes out wrong.
+window.__refit = function () {
+  var s = document.getElementById('stage'), w = document.getElementById('word');
+  var lo = 16, hi = __MAX__;
+  while (hi - lo > 1) {
+    var m = (lo + hi) >> 1;
+    w.style.fontSize = m + 'px';
+    if (w.scrollWidth <= s.clientWidth && w.scrollHeight <= s.clientHeight) lo = m;
+    else hi = m;
+  }
+  w.style.fontSize = Math.floor(lo * __SCALE__) + 'px';
+  document.title = 'fit' + lo;
+  return lo;
+};
+window.__refit();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(window.__refit);
 </script></body></html>"""
 
 
-def render_frame(seg: Segment, theme: Theme, out: Path):
+def frame_html(seg: Segment, theme: Theme) -> str:
+    """The complete HTML for one visual state.
+
+    Kept separate from any browser invocation so the same markup can be
+    rendered by external Chrome (CLI) or by Electron's own Chromium (app).
+    Identical HTML in identical Chromium means identical pixels.
+    """
     text = "".join(p for p, _ in seg.parts)
     spans = "".join(
         f'<span class="{"hl" if on else ("dim" if any(o for _, o in seg.parts) else "")}">'
@@ -344,7 +358,7 @@ def render_frame(seg: Segment, theme: Theme, out: Path):
     )
     # Multi-word text may wrap between words; a single word never may.
     wrap = "normal" if " " in text.strip() else "nowrap"
-    page = (
+    return (
         HTML.replace("__BG__", theme.bg)
         .replace("__FG__", seg.color or theme.word_colors.get(text.strip(), theme.fg))
         .replace("__HL__", theme.highlight)
@@ -355,8 +369,16 @@ def render_frame(seg: Segment, theme: Theme, out: Path):
         .replace("__SCALE__", str(seg.scale))
         .replace("__SPANS__", spans)
     )
+
+
+def render_frame(seg: Segment, theme: Theme, out: Path):
+    """Render one visual state to PNG using external Chrome (CLI path only).
+
+    The packaged app does not use this - Electron renders the same HTML with
+    its own bundled Chromium, so there is no external Chrome dependency.
+    """
     tmp = out.with_suffix(".html")
-    tmp.write_text(page)
+    tmp.write_text(frame_html(seg, theme))
     subprocess.run(
         [
             "google-chrome", "--headless=new", "--disable-gpu", "--no-sandbox",
@@ -371,35 +393,84 @@ def render_frame(seg: Segment, theme: Theme, out: Path):
     tmp.unlink()
 
 
-def build_video(segments: list, theme: Theme, out: Path, loop_pad=1.0):
-    """Render segments to an mp4 with frame-accurate audio sync."""
-    work = BUILD / f"frames-{out.stem}"
+# Video building is split into three phases so that the middle one - turning
+# HTML into PNGs - can be done either by external Chrome (CLI/dev) or by
+# Electron's own Chromium (packaged app), without the other two caring.
+#
+#   plan_job()   storyboard: unique frames, timing, audio.  No browser.
+#   <render>     frames.json -> frames/<id>.png             Either renderer.
+#   encode_job() frames + audio -> mp4                      No browser.
+
+
+def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
+    """Compute the storyboard and write audio. Renders nothing."""
     if work.exists():
         shutil.rmtree(work)
     work.mkdir(parents=True)
 
-    # One PNG per unique visual state - dedupe so repeats cost nothing.
-    seen, concat, audio = {}, [], []
-    for i, seg in enumerate(segments):
+    # One frame per unique visual state - dedupe so repeats cost nothing.
+    # A 20 minute video is a few hundred PNGs, not 36,000.
+    seen, timeline, audio = {}, [], []
+    for seg in segments:
         sig = json.dumps([seg.parts, seg.scale, seg.color])
         if sig not in seen:
-            png = work / f"f{len(seen):04d}.png"
-            render_frame(seg, theme, png)
-            seen[sig] = png
-        concat.append((seen[sig], seg.duration))
+            seen[sig] = (f"f{len(seen):04d}", frame_html(seg, theme))
+        timeline.append({"frame": seen[sig][0], "duration": round(seg.duration, 4)})
         audio.append(seg.audio)
         if seg.pad:
             audio.append(silence(seg.pad))
 
     audio.append(silence(loop_pad))
-    concat.append((concat[-1][0], loop_pad))
+    timeline.append({"frame": timeline[-1]["frame"], "duration": loop_pad})
 
-    wav = work / "audio.wav"
-    sf.write(wav, np.concatenate(audio), SR)
+    frames = [{"id": fid, "html": h} for fid, h in seen.values()]
+    (work / "frames.json").write_text(json.dumps(frames))
+    sf.write(work / "audio.wav", np.concatenate(audio), SR)
+    plan = {"timeline": timeline, "frame_count": len(frames),
+            "duration": round(sum(t["duration"] for t in timeline), 3)}
+    (work / "plan.json").write_text(json.dumps(plan))
+    return plan
 
+
+def render_job_chrome(work: Path, progress=None):
+    """Render frames.json with external Chrome. Development path only."""
+    frames = json.loads((work / "frames.json").read_text())
+    out = work / "frames"
+    out.mkdir(exist_ok=True)
+    for i, f in enumerate(frames):
+        page = out / f"{f['id']}.html"
+        page.write_text(f["html"])
+        subprocess.run(
+            ["google-chrome", "--headless=new", "--disable-gpu", "--no-sandbox",
+             "--hide-scrollbars", "--force-device-scale-factor=1",
+             "--virtual-time-budget=4000",
+             f"--screenshot={out / (f['id'] + '.png')}",
+             "--window-size=1920,1080", f"file://{page}"],
+            check=True, capture_output=True,
+        )
+        page.unlink()
+        if progress:
+            progress(i + 1, len(frames))
+
+
+def encode_job(work: Path, out: Path) -> Path:
+    """Mux rendered frames and audio into a TV-playable mp4."""
+    plan = json.loads((work / "plan.json").read_text())
+    frames = work / "frames"
+    missing = [t["frame"] for t in plan["timeline"]
+               if not (frames / f"{t['frame']}.png").exists()]
+    if missing:
+        raise FileNotFoundError(
+            f"{len(set(missing))} frames were never rendered, e.g. {missing[0]}"
+        )
+
+    lines = []
+    for t in plan["timeline"]:
+        lines.append(f"file '{frames / (t['frame'] + '.png')}'")
+        lines.append(f"duration {t['duration']:.4f}")
+    # The concat demuxer drops the final entry's duration unless it is repeated.
+    lines.append(f"file '{frames / (plan['timeline'][-1]['frame'] + '.png')}'")
     lst = work / "list.txt"
-    lines = [f"file '{p.name}'\nduration {d:.4f}" for p, d in concat]
-    lines.append(f"file '{concat[-1][0].name}'")  # concat demuxer needs the last repeated
     lst.write_text("\n".join(lines) + "\n")
 
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -407,7 +478,7 @@ def build_video(segments: list, theme: Theme, out: Path, loop_pad=1.0):
         [
             "ffmpeg", "-y", "-loglevel", "error",
             "-f", "concat", "-safe", "0", "-i", str(lst),
-            "-i", str(wav),
+            "-i", str(work / "audio.wav"),
             "-c:v", "libx264", "-profile:v", "high", "-pix_fmt", "yuv420p",
             "-r", "30", "-preset", "medium", "-crf", "20",
             "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
@@ -416,3 +487,11 @@ def build_video(segments: list, theme: Theme, out: Path, loop_pad=1.0):
         check=True,
     )
     return out
+
+
+def build_video(segments: list, theme: Theme, out: Path, loop_pad=1.0):
+    """Plan, render (external Chrome) and encode in one go. CLI convenience."""
+    work = BUILD / f"frames-{out.stem}"
+    plan_job(segments, theme, work, loop_pad)
+    render_job_chrome(work)
+    return encode_job(work, out)

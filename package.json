@@ -1,0 +1,20 @@
+{
+  "name": "sound-it-out",
+  "version": "0.1.0",
+  "description": "Offline phonics reading videos for the TV",
+  "main": "app/main.js",
+  "scripts": {
+    "start": "electron .",
+    "sidecar": "python -m PyInstaller --noconfirm --clean --distpath dist/sidecar --workpath build/pyi build/sidecar.spec",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:win": "electron-builder --win nsis --x64",
+    "dist:linux": "electron-builder --linux AppImage --x64"
+  },
+  "author": "nwcnwc",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

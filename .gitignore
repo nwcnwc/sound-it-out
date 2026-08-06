@@ -1,6 +1,7 @@
 # Build output
 dist/
 build/
+!build/sidecar.spec
 *.exe
 *.msi
 
@@ -29,3 +30,10 @@ node_modules/
 .idea/
 Thumbs.db
 .DS_Store
+.venv-clone/
+assets/voice/
+
+# Pending: pushing workflow files needs the `workflow` OAuth scope,
+# which this token lacks. Run `gh auth refresh -s workflow`, then
+# remove these two lines and commit .github/workflows/build.yml.
+.github/workflows/

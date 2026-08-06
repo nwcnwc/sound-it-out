@@ -13,8 +13,9 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-WORDLISTS = ROOT / "wordlists"
+from gen.paths import RESOURCES, WORDLISTS  # noqa: E402
+
+ROOT = RESOURCES
 
 # "Chase  #4da6ff"  ->  ("Chase", "#4da6ff")
 LINE = re.compile(r"^(?P<word>[^#\[\]]+?)(?:\s+(?P<color>#[0-9a-fA-F]{3,8}))?\s*$")

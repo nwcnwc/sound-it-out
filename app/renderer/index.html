@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound It Out</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to the main part of the page</a>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9a3 3 0 0 1 3 3v11a2.5 2.5 0 0 0-2.5-2.5H3z"/>
+        <path d="M21 6.5A1.5 1.5 0 0 0 19.5 5H15a3 3 0 0 0-3 3v11a2.5 2.5 0 0 1 2.5-2.5H21z"/>
+      </svg>
+    </span>
+    <span class="brand-text">Sound It Out</span>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-words" aria-controls="screen-words"
+            aria-selected="true" data-screen="words">Words</button>
+    <button class="tab" role="tab" id="tab-make" aria-controls="screen-make"
+            aria-selected="false" tabindex="-1" data-screen="make">Make a video</button>
+    <button class="tab" role="tab" id="tab-settings" aria-controls="screen-settings"
+            aria-selected="false" tabindex="-1" data-screen="settings">Settings</button>
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- ============================================================ WORDS -->
+  <section class="screen" id="screen-words" role="tabpanel" aria-labelledby="tab-words" tabindex="-1">
+
+    <div class="page-head">
+      <h1>His words</h1>
+      <p class="lede">
+        This one list does two jobs: it's the list of words you'll be asked to record,
+        and it's what Alex sees on the TV. Change it whenever you like.
+      </p>
+    </div>
+
+    <div class="notice notice-warm" id="people-nudge" hidden>
+      <div class="notice-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9.5" cy="7" r="4"/><path d="M22 20v-2a4 4 0 0 0-3-3.9"/>
+        </svg>
+      </div>
+      <div class="notice-body">
+        <h2>Start with your real names</h2>
+        <p id="people-nudge-text">
+          The <b>People</b> group still has the example names in it.
+        </p>
+        <p>
+          Some of those may already be right. Add the rest &mdash; his brothers and sisters, your
+          pets, anyone he sees every day. This group matters more than all the others put together:
+          the words a child already cares about are the ones he'll learn first, and by a long way.
+        </p>
+        <p class="notice-actions">
+          <button class="btn btn-second" id="jump-people" type="button">Take me to that bit</button>
+        </p>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="col-main">
+        <div class="field">
+          <div class="field-head">
+            <label for="wordlist">Your word list</label>
+            <span class="dirty-dot" id="dirty-dot" hidden>Not saved yet</span>
+          </div>
+          <textarea id="wordlist" spellcheck="false" autocapitalize="off" autocomplete="off"
+                    aria-describedby="wordlist-help"></textarea>
+          <p class="hint" id="wordlist-help">
+            One word per line. Everything else is optional &mdash; see &ldquo;How to write the
+            list&rdquo; below if you want groups or colours.
+          </p>
+        </div>
+
+        <div class="rowbar">
+          <button class="btn btn-primary" id="save-words" type="button">Save my words</button>
+          <button class="btn btn-quiet" id="revert-words" type="button">Undo my changes</button>
+          <span class="save-state" id="save-state" role="status" aria-live="polite"></span>
+        </div>
+
+        <p class="error-line" id="words-error" role="alert" hidden></p>
+
+        <details class="explain">
+          <summary>How to write the list</summary>
+          <div class="explain-body">
+            <dl class="format">
+              <dt><code>ball</code></dt>
+              <dd>A word on its own line. That's all you need.</dd>
+
+              <dt><code># anything after a hash</code></dt>
+              <dd>A note to yourself. It's ignored.</dd>
+
+              <dt><code>[Bedtime]</code></dt>
+              <dd>Starts a new group. Groups just keep the list tidy.</dd>
+
+              <dt><code>Skye&nbsp;&nbsp;#ff8fc7</code></dt>
+              <dd>
+                Shows that one word in that colour on screen. Optional. If you don't know a
+                colour code, leave it off &mdash; the word uses the theme's normal colour.
+              </dd>
+            </dl>
+            <p class="hint">
+              Start small. Ten words he loves beats fifty he doesn't. Around fifty confident
+              words is the point where sounding out begins to make sense.
+            </p>
+          </div>
+        </details>
+      </div>
+
+      <aside class="col-side" aria-label="Preview of your list">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>What he'll see</h2>
+            <p class="count" id="word-count">&nbsp;</p>
+          </div>
+          <div id="groups" class="groups"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============================================================= MAKE -->
+  <section class="screen" id="screen-make" role="tabpanel" aria-labelledby="tab-make" tabindex="-1" hidden>
+
+    <div class="page-head">
+      <h1>Make a video</h1>
+      <p class="lede">
+        Play it straight onto the TV, or save it as a file you can put on a USB stick.
+      </p>
+    </div>
+
+    <fieldset class="block">
+      <legend><span class="step">1</span> Where he's up to</legend>
+      <p class="hint block-hint">
+        Each level builds on the one before. Stay on a level until it's easy &mdash; there's no
+        rush, and repeating is the point.
+      </p>
+      <div class="choice-list" id="levels"></div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend><span class="step">2</span> How it looks</legend>
+      <p class="hint block-hint">
+        All three are easy to read from the sofa. Pick whichever he responds to.
+      </p>
+      <div class="theme-list" id="themes"></div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend><span class="step">3</span> How it plays</legend>
+
+      <div class="settings-grid">
+        <div class="setting">
+          <span class="setting-label" id="lbl-minutes">How long</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="lbl-minutes" id="minutes"></div>
+          <p class="hint">Then it starts again from the beginning.</p>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label" id="lbl-reps">Each word shown</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="lbl-reps" id="reps"></div>
+          <p class="hint">Repetition is how it sticks. Three is a good place to start.</p>
+        </div>
+
+        <div class="setting">
+          <span class="setting-label" id="lbl-pause">Gap between words</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="lbl-pause" id="pause"></div>
+          <p class="hint">Long enough for him to have a go himself before the next one.</p>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="makebar">
+      <p class="summary" id="make-summary" role="status" aria-live="polite">&nbsp;</p>
+      <p class="hint honesty">
+        Either way it has to be made first, and that takes a few minutes. You can leave it
+        running and come back to it.
+      </p>
+      <div class="makebar-buttons">
+        <button class="btn btn-primary btn-big" id="btn-play" type="button">
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+          </span>
+          Play on this screen
+        </button>
+        <button class="btn btn-second btn-big" id="btn-export" type="button">
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+            </svg>
+          </span>
+          Save as a video file
+        </button>
+      </div>
+      <p class="hint" id="export-dest"></p>
+    </div>
+  </section>
+
+  <!-- ========================================================= SETTINGS -->
+  <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
+
+    <div class="page-head">
+      <h1>Settings</h1>
+      <p class="lede">There isn't much here on purpose.</p>
+    </div>
+
+    <fieldset class="block">
+      <legend>Where saved videos go</legend>
+      <p class="path-box" id="outdir-display">&nbsp;</p>
+      <div class="rowbar">
+        <button class="btn btn-second" id="open-outdir" type="button">Open this folder</button>
+        <button class="btn btn-quiet" id="change-outdir" type="button" aria-expanded="false"
+                aria-controls="outdir-editor">Use a different folder</button>
+      </div>
+      <div class="outdir-editor" id="outdir-editor" hidden>
+        <label for="outdir-input">Full path to the folder you'd like videos saved in</label>
+        <input type="text" id="outdir-input" spellcheck="false" autocomplete="off">
+        <p class="hint">
+          Tip: find the folder in Finder, then drag it onto this box to fill in the path.
+        </p>
+        <div class="rowbar">
+          <button class="btn btn-primary" id="save-outdir" type="button">Save this folder</button>
+          <button class="btn btn-quiet" id="cancel-outdir" type="button">Never mind</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>The later levels</legend>
+      <div class="clone">
+        <div class="clone-body">
+          <p>
+            Levels 1 to 5 use <b>your own recordings, exactly as you said them</b> &mdash; nothing
+            is made up by the computer. That's a year or more of material, and it needs nothing
+            extra installing.
+          </p>
+          <p>
+            The later levels use a whole dictionary and full sentences, which is far more than
+            anyone could record by hand. For those, the computer can learn the shape of your
+            voice from your recordings and read the rest in it.
+          </p>
+          <p class="clone-cost">
+            <b>It's a 2&ndash;4 GB download</b>, it happens once, and it's all on this computer
+            &mdash; nothing is uploaded and nothing leaves the house. <b>You don't need it to
+            start</b>, and you won't need it for a long while.
+          </p>
+        </div>
+
+        <div class="clone-state" id="clone-state">
+          <button class="btn btn-second" id="install-clone" type="button">
+            Download the extra voice (2&ndash;4 GB)
+          </button>
+          <p class="install-status" id="install-status" role="status" aria-live="polite" hidden></p>
+          <div class="bar bar-slim" id="install-bar" hidden>
+            <div class="bar-fill" id="install-bar-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>What's ready</legend>
+      <ul class="ready-list" id="capabilities"></ul>
+    </fieldset>
+  </section>
+
+  <!-- ========================================================= PROGRESS -->
+  <section class="screen screen-takeover" id="screen-progress" aria-labelledby="progress-title" hidden>
+    <div class="progress-card">
+
+      <div class="prog-view" id="prog-working">
+        <h1 id="progress-title">Making your video</h1>
+        <p class="prog-stage" id="prog-stage" role="status" aria-live="polite">Getting started</p>
+
+        <div class="bar" role="progressbar" id="prog-bar" aria-labelledby="progress-title">
+          <div class="bar-fill" id="prog-fill" style="width:0%"></div>
+        </div>
+
+        <p class="prog-message" id="prog-message"></p>
+        <p class="hint">
+          This takes a few minutes. You can leave it running &mdash; it carries on if you go and
+          do something else.
+        </p>
+        <button class="btn btn-second" id="btn-cancel" type="button">Stop making it</button>
+      </div>
+
+      <div class="prog-view" id="prog-done" hidden>
+        <div class="big-icon ok" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m5 13 4.5 4.5L19 7"/>
+          </svg>
+        </div>
+        <h1 id="done-title">It's ready</h1>
+        <p class="prog-message" id="done-message"></p>
+        <p class="path-box" id="done-path" hidden></p>
+        <div class="rowbar rowbar-centre">
+          <button class="btn btn-primary" id="btn-open-file" type="button" hidden>Play it now</button>
+          <button class="btn btn-second" id="btn-open-folder" type="button" hidden>Show me the folder</button>
+          <button class="btn btn-quiet" id="btn-done-back" type="button">Back</button>
+        </div>
+      </div>
+
+      <div class="prog-view" id="prog-error" hidden>
+        <div class="big-icon bad" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 7v7"/><path d="M12 17.5v.5"/>
+          </svg>
+        </div>
+        <h1>That didn't work</h1>
+        <p class="prog-message" id="error-message"></p>
+        <p class="prog-hint" id="error-hint"></p>
+        <div class="rowbar rowbar-centre">
+          <button class="btn btn-primary" id="btn-retry" type="button">Try again</button>
+          <button class="btn btn-quiet" id="btn-error-back" type="button">Back</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script src="mock.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
