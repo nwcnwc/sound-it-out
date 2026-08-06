@@ -13,21 +13,44 @@ at home. No internet, no accounts, no subscriptions, no ads.
 
 ### 1. Learn mode (primary)
 
-A scaffolded progression that builds from single sounds up to sentences. Each level is
-mastered before the next is introduced, and intermediate items **do not need to be real
-words** — nonsense items are used deliberately (see [Why nonsense words](#why-nonsense-words)).
+A scaffolded progression of **8 levels**. Each is mastered before the next is introduced.
+
+> **Important: sight words come first, not phonics.** This reverses the obvious ordering,
+> and the reason is specific to Down syndrome. Children with DS are typically strong visual
+> learners with a specific weakness in phonological awareness, so starting with phonics
+> starts on their hardest ground. [Down Syndrome Education International](https://www.down-syndrome.org/en-us/library/research-practice/01/1/teaching-down-syndrome-read/)
+> recommends a sight vocabulary of **~50 confident words** before phonics is introduced at
+> all — and recommends those first words be **personally meaningful**. Reading then builds
+> the phonological awareness that phonics needs, rather than requiring it up front.
+>
+> This is why Level 1 is Paw Patrol: not decoration, but exactly the recommended starting
+> point for this particular child.
 
 | Level | Content | Examples |
 |---|---|---|
-| 1 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
-| 2 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
-| 3 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
-| 4 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
-| 5 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
-| 6 | Whole words | the 10k-word dictionary |
-| 7 | Sentences | word-by-word highlight, then read whole |
+| 1 | Personally meaningful sight words | `Chase`, `Marshall`, `Skye`, `Rubble`, `Rocky` |
+| 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mum`, `dog`, `I like…` |
+| 3 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
+| 4 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
+| 5 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
+| 6 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
+| 7 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
+| 8 | Whole words → sentences | the 10k dictionary, then connected text |
 
-**Letters are introduced in phonics order, not alphabetical order:**
+Levels 3–8 are synthetic phonics, where items **do not need to be real words** — nonsense
+items are used deliberately (see [Why nonsense words](#why-nonsense-words)).
+
+Eight levels is not arbitrary: it maps onto [See and Learn Language and Reading](https://www.seeandlearn.org/en-gb/language-and-reading/)
+(7 steps, DS-specific) for the sight-word stages and *Letters and Sounds* (6 phases) for the
+phonics stages, with the overlap merged.
+
+**Themes are a skin, not a level.** Paw Patrol styling can decorate any level; the *words* at
+each level are set by decoding difficulty. This matters because character names are mostly
+undecodable early — `Chase` needs a `ch` digraph and a split digraph, which is Level 6 work.
+As a *sight* word at Level 1 it is perfect; as a *phonics* word it is far too hard. Coupling
+theme to level would force one of those two things to break.
+
+**From Level 3, letters are introduced in phonics order, not alphabetical order:**
 `s a t p i n` → `m d g o c k` → `ck e u r` → `h b f l` → the rest.
 This is the standard synthetic-phonics sequence, and the reason for it is motivational:
 after just the first six letters he can already decode *sat, pin, tap, nap, pit, tin, sit,
@@ -170,9 +193,45 @@ Kept deliberately few, all on one screen:
 | Colour theme | High contrast |
 | Voice | Kokoro (female, warm) |
 
+## Samples
+
+`./setup.sh` then `.venv/bin/python -m gen.make_samples` regenerates everything in
+`samples/`. These are produced by the real pipeline, not mocked up.
+
+| File | What it shows |
+|---|---|
+| `01-pawpatrol-night.mp4` | Level 1 sight words — navy/cream theme |
+| `02-pawpatrol-paper.mp4` | same content — book-page theme |
+| `03-pawpatrol-contrast.mp4` | same content — maximum-contrast theme |
+| `04-sounding-out.mp4` | Level 5 preview — per-letter highlight and blend |
+| `05-sentence.mp4` | Level 8 preview — word-by-word, then whole sentence |
+| `phoneme-check/all-sounds.wav` | **needs an ear check** — see below |
+
+Font is **Andika** (SIL, OFL) — designed for literacy learners, with the single-story `a`
+and `g` that beginning readers are taught, rather than the two-story forms in most fonts.
+
+## Known issue: schwa on isolated consonants
+
+Kokoro appends a schwa to isolated consonants — asked for /s/ it produces "sss-uh", asked
+for /t/, "tuh". Measured on `af_heart`, the tail is unambiguous: spectral centroid collapses
+from ~7000 Hz to ~1400 Hz while RMS *rises*. That is a vowel.
+
+This is not cosmetic. "cuh-a-tuh" does not blend into "cat", and schwa-polluted consonants
+are the most common reason home phonics stalls.
+
+`trim_schwa()` in `gen/soundout.py` strips it: cut leading silence, find the burst/frication
+by spectral centroid, cut where the centroid falls back into vowel territory, with a hard
+duration cap as backstop (the centroid test alone missed /k/, /f/ and /g/). Results now sit
+at 75–150 ms for stops, ~180 ms for fricatives, vowels untouched — physiologically plausible.
+
+**Still unverified by ear.** Duration and spectrum are proxies; whether a clip *sounds* like
+"t" or "tuh" is a perceptual judgement. Every Level 3 clip needs a human listen before it
+ships. `samples/phoneme-check/all-sounds.wav` is that check.
+
 ## Status
 
-Design stage. Nothing built yet.
+Pipeline working end to end: Kokoro → storyboard → headless Chrome → ffmpeg.
+Sample videos generated. App shell not started.
 
 ## License
 

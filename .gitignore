@@ -4,18 +4,21 @@ build/
 *.exe
 *.msi
 
-# Vendored binaries and models (too large for git)
-vendor/
+# Fetched by setup.sh - too large to commit
+.venv/
 models/
+assets/fonts/
 *.onnx
+
+# Generated media (samples are kept, see exception below)
 *.mp4
 *.wav
+!samples/**/*.mp4
+!samples/**/*.wav
 
 # Python
 __pycache__/
 *.py[cod]
-.venv/
-venv/
 
 # Node
 node_modules/
