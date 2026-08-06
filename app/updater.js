@@ -27,11 +27,13 @@ const fsp = require('fs/promises')
 const https = require('https')
 const path = require('path')
 
-// Releases are read from here. A PRIVATE repo's release assets need
-// authentication to download, and shipping a token inside the app would be
-// both insecure and pointless - so publish binaries to a PUBLIC releases repo
-// and keep the source private. See docs/UPDATING.md.
-const RELEASES_REPO = process.env.SIO_RELEASES_REPO || 'nwcnwc/sound-it-out-releases'
+// This repo is public, so its release assets download without any
+// authentication - which is the whole point: a non-technical user clicks a
+// link in a browser and gets an installer. No account, no CLI, no token.
+//
+// (If the source were ever made private again, release assets would need auth
+// and this would have to point at a separate public releases repo instead.)
+const RELEASES_REPO = process.env.SIO_RELEASES_REPO || 'nwcnwc/sound-it-out'
 const API = `https://api.github.com/repos/${RELEASES_REPO}/releases/latest`
 const UA = 'SoundItOut-Updater'
 

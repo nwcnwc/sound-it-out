@@ -6,6 +6,8 @@ across the letters, then spoken in a warm human voice.
 
 Built for early readers with Down syndrome, to play continuously on a large-screen TV. No internet, no accounts, no subscriptions, no ads.
 
+**[Installing it](INSTALL.md)** — no GitHub account needed, just a browser.
+
 ---
 
 ## Two modes

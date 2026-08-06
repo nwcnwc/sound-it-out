@@ -54,24 +54,23 @@ That is one drag, a few times a year.
 Developer account ($99/yr) plus notarisation in CI. At that point switching to
 `electron-updater` becomes worthwhile. Not before.
 
-## Releases must be public
+## Releases, and why not workflow artifacts
 
-`app/updater.js` reads from **`nwcnwc/sound-it-out-releases`**, not the source
-repo.
+Installers are published as **GitHub Releases** on this repo.
 
-The source repo is private, and a private repo's release assets require
-authentication to download. Shipping a GitHub token inside the app would be
-insecure and, since anyone with the app has the token, pointless.
+That distinction matters. GitHub **requires a login to download workflow
+artifacts**, even from a public repo - so an artifact link is useless to anyone
+who is not a developer with an account. **Release assets on a public repo need
+no login at all**: one click in a browser.
 
-So: keep the source private, publish the built installers to a small public
-repo. Create it once:
+So the person installing the app never needs a GitHub account, the `gh` CLI, or
+anything but a web browser. Send them:
 
-```bash
-gh repo create nwcnwc/sound-it-out-releases --public \
-  --description "Installers for Sound It Out"
+```
+https://github.com/nwcnwc/sound-it-out/releases/latest
 ```
 
-Override for testing with `SIO_RELEASES_REPO=owner/repo`.
+Override the source for testing with `SIO_RELEASES_REPO=owner/repo`.
 
 ## Cutting a release
 
@@ -82,10 +81,10 @@ Override for testing with `SIO_RELEASES_REPO=owner/repo`.
    git tag v0.2.0 && git push origin v0.2.0
    ```
 3. Download the four installers from the workflow run's artifacts.
-4. Publish them to the public releases repo:
+4. Publish them as a release:
    ```bash
-   gh release create v0.2.0 --repo nwcnwc/sound-it-out-releases \
-     --title "v0.2.0" --notes "What changed" ./dist/installers/*
+   gh release create v0.2.0 --repo nwcnwc/sound-it-out \
+     --title "v0.2.0" --notes "What changed" ./installers/*
    ```
 
 The release notes are shown to the user verbatim, so write them for the reader — "the sounds
