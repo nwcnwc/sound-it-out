@@ -1,0 +1,268 @@
+# Build the three installers.
+#
+# Two things drive the shape of this file:
+#
+#  1. PyInstaller cannot cross-compile. The Python sidecar has to be frozen on
+#     the same OS *and* CPU architecture it will run on, which is why there is
+#     a runner per target rather than one runner producing three installers.
+#     macOS gets two entries: macos-latest is Apple Silicon and macos-13 is the
+#     last Intel image, and shipping an arm64 sidecar inside the x64 dmg would
+#     produce an app that installs perfectly and then dies the first time it
+#     tries to speak.
+#
+#  2. The Kokoro weights are 338MB and are not in git. Every job fetches them
+#     from the same release URLs setup.sh uses, and caches them.
+#
+# The repo is private on a paid plan, so runner minutes are not a constraint -
+# correctness is preferred to cleverness throughout.
+
+name: Build installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+# Kokoro model files - keep in step with setup.sh.
+env:
+  KOKORO_BASE: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
+  NODE_VERSION: "22"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    strategy:
+      # One platform failing should not deny us the other two artifacts.
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: macOS (arm64)
+            arch: arm64
+            builder_args: --mac dmg --arm64
+          - os: macos-13
+            label: macOS (x64)
+            arch: x64
+            builder_args: --mac dmg --x64
+          - os: windows-latest
+            label: Windows (x64)
+            arch: x64
+            builder_args: --win nsis --x64
+          - os: ubuntu-latest
+            label: Linux (x64)
+            arch: x64
+            builder_args: --linux AppImage --x64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # ------------------------------------------------------------ Linux deps
+      #
+      # Electron is run headlessly during the build to smoke-test frame
+      # rendering. frames.js creates a real BrowserWindow with offscreen:false,
+      # so even "headless" Chromium needs an X server - hence xvfb. The
+      # lib*/nss/gtk packages are Chromium's shared-library dependencies, which
+      # the ubuntu runner image does not all carry by default.
+      #
+      # /dev/shm on a hosted runner is only 64MB and Chromium aborts on
+      # startup when it runs out; app/render-cli.js already appends
+      # --disable-dev-shm-usage and --no-sandbox for exactly this reason, so
+      # nothing extra is needed here beyond the display.
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xvfb \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libgbm1 libgtk-3-0 \
+            libsndfile1
+          # ALSA and FUSE package names moved between Ubuntu releases
+          # (libasound2 -> libasound2t64, libfuse2 -> libfuse2t64), so ask for
+          # either rather than pinning this workflow to one runner image.
+          sudo apt-get install -y libasound2t64 || sudo apt-get install -y libasound2
+          # AppImage packaging itself needs FUSE present.
+          sudo apt-get install -y libfuse2t64 || sudo apt-get install -y libfuse2
+
+      # -------------------------------------------------- Python pipeline deps
+      #
+      # Mirrors setup.sh, plus PyInstaller. Pinning is intentionally left to the
+      # wheels for now; if a build ever breaks on a transitive bump, freeze this
+      # into a requirements file rather than pinning inline here.
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install kokoro-onnx soundfile numpy pyinstaller
+
+      # ------------------------------------------------------------- the models
+      #
+      # Cached by URL path, not by a lockfile hash, because these are immutable
+      # release assets - the key only changes if the model version does.
+      - name: Cache Kokoro models
+        id: cache-models
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: kokoro-model-files-v1.0
+
+      - name: Download Kokoro models
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p models
+          curl -L --fail --retry 3 -o models/kokoro-v1.0.onnx "$KOKORO_BASE/kokoro-v1.0.onnx"
+          curl -L --fail --retry 3 -o models/voices-v1.0.bin  "$KOKORO_BASE/voices-v1.0.bin"
+
+      - name: Verify models are present
+        shell: bash
+        run: |
+          test -s models/kokoro-v1.0.onnx
+          test -s models/voices-v1.0.bin
+          ls -l models
+
+      # --------------------------------------------------------- freeze sidecar
+      #
+      # --workpath is redirected because PyInstaller's default is ./build, which
+      # in this repo is the pipeline's scratch directory (and holds the spec
+      # itself). --distpath matches the `from: dist/sidecar` in
+      # electron-builder.yml.
+      - name: Freeze Python sidecar
+        shell: bash
+        run: |
+          python -m PyInstaller --noconfirm --clean \
+            --distpath dist/sidecar \
+            --workpath build/pyi \
+            build/sidecar.spec
+
+      # The sidecar is a stdio protocol, so it is tested by speaking it. A
+      # request goes in on stdin, `shutdown` ends the session, and the reply is
+      # checked - which proves the frozen bootloader, CPython and the whole
+      # import graph came through.
+      #
+      # Note the `shutdown`: without it this hangs until the job timeout,
+      # because a service reading stdin is supposed to wait.
+      - name: Smoke-test the sidecar (protocol)
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            SIDECAR=dist/sidecar/soundout-sidecar.exe
+          else
+            SIDECAR=dist/sidecar/soundout-sidecar
+            chmod +x "$SIDECAR"
+          fi
+          ls -l dist/sidecar
+          printf '%s\n' \
+            '{"id":1,"method":"ping","params":{}}' \
+            '{"id":2,"method":"capabilities","params":{}}' \
+            '{"id":3,"method":"shutdown"}' \
+            | "$SIDECAR" | tee /tmp/sidecar-out.txt
+          grep -q '"id": 1' /tmp/sidecar-out.txt
+          grep -q '"ok": true' /tmp/sidecar-out.txt
+
+      # The check above passes even when espeak-ng is missing from the bundle,
+      # because service.py imports the TTS stack lazily - nothing so far has
+      # touched phonemizer at all. This step is the one that would catch it:
+      # `plan` runs Kokoro, which runs phonemizer, which dlopen()s espeak-ng
+      # and reads its dictionaries by path.
+      #
+      # Advisory rather than fatal because `plan` also depends on the sidecar
+      # resolving the model paths correctly under PyInstaller, which is app
+      # logic and not this workflow's business. If it fails, read the output
+      # before shipping - "data path not exists" means the espeakng_loader
+      # entries in build/sidecar.spec are wrong.
+      - name: Smoke-test the sidecar (speech path)
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            SIDECAR=dist/sidecar/soundout-sidecar.exe
+          else
+            SIDECAR=dist/sidecar/soundout-sidecar
+          fi
+          printf '%s\n' \
+            '{"id":1,"method":"plan","params":{"jobId":"ci-smoke","level":1,"theme":"night","options":{"minutes":0}}}' \
+            '{"id":2,"method":"shutdown"}' \
+            | "$SIDECAR" | tee /tmp/sidecar-plan.txt
+          grep -q '"id": 1, "ok": true' /tmp/sidecar-plan.txt \
+            || echo "::warning::sidecar could not complete a plan - the speech path (espeak-ng / model paths) is not proven by this build"
+
+      # ------------------------------------------------------------- Electron
+      - name: Install Node dependencies
+        run: npm ci
+
+      # assets/commons is an extraResources source, and a missing `from`
+      # directory is a hard error - the recorded phoneme clips are in git, but
+      # this keeps a fresh clone or a pruned checkout from failing at the very
+      # last step of a 20-minute build. buildResources is tolerated when
+      # absent, created here only so the icon slot is obvious.
+      - name: Prepare builder resource directories
+        shell: bash
+        run: mkdir -p build/installer assets/commons
+
+      # Renders one frame through the real Chromium to catch a broken font path
+      # or a missing shared library before we wrap 500MB around it. The
+      # fixture is written here rather than read from build/, which is
+      # gitignored. xvfb is required even though nothing is displayed:
+      # frames.js opens a BrowserWindow with offscreen:false, and that needs an
+      # X server whether or not the window is ever shown.
+      # Advisory - this is a packaging workflow, not a test suite.
+      - name: Smoke-test frame rendering (Linux)
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: |
+          mkdir -p build/ci-smoke
+          printf '[{"id":"smoke","html":"<div style=\\"font-family:Andika;font-size:200px\\">sat</div>"}]' \
+            > build/ci-smoke/frames.json
+          xvfb-run -a npx electron app/render-cli.js build/ci-smoke
+          test -s build/ci-smoke/frames/smoke.png
+
+      - name: Build installer
+        shell: bash
+        env:
+          # Belt and braces against electron-builder picking up a signing
+          # identity from the runner keychain. Unsigned is the deliberate
+          # choice - see the long note in electron-builder.yml.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder ${{ matrix.builder_args }} --publish never
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: sound-it-out-${{ runner.os }}-${{ matrix.arch }}
+          # The models make these ~500MB each; keep them off the default
+          # 90-day retention so the repo's artifact storage does not balloon.
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            dist/installers/*.dmg
+            dist/installers/*.exe
+            dist/installers/*.AppImage
+            dist/installers/*.blockmap
+            dist/installers/latest*.yml
+
+      # Kept separate and short-lived: when a build fails at runtime rather
+      # than at build time, the frozen sidecar is the first thing to bisect and
+      # rebuilding it takes several minutes.
+      - name: Upload sidecar (debugging)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sidecar-${{ runner.os }}-${{ matrix.arch }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: dist/sidecar/*
