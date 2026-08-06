@@ -905,3 +905,38 @@ body.studio-open { overflow: hidden; }
 @media (max-width: 720px) {
   .studio-cta { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------------------------- the script */
+
+.script { position: fixed; inset: 0; z-index: 70; background: var(--bg); overflow: auto; }
+body.script-open { overflow: hidden; }
+.script-bar {
+  position: sticky; top: 0; background: var(--surface);
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; padding: .8rem 1.2rem; border-bottom: 1px solid var(--line);
+}
+.script-bar h2 { margin: 0; font-size: 1.05rem; }
+.script-body { max-width: 44rem; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+.script-intro h1 { font-size: 1.5rem; margin: 0 0 .8rem; }
+.script-intro p { margin: 0 0 .7rem; color: var(--ink-soft); max-width: 60ch; }
+
+.script-list { margin: 1.6rem 0 0; padding-left: 2.4rem; }
+.script-list li {
+  margin: 0 0 1rem; padding-left: .4rem;
+  border-bottom: 1px dotted var(--line); padding-bottom: .8rem;
+}
+.script-item {
+  font-family: 'Andika', system-ui, sans-serif; font-weight: 700;
+  font-size: 2rem; display: block; line-height: 1.1;
+}
+.script-hint { display: block; color: var(--ink-soft); margin-top: .2rem; }
+
+/* Printing is the point - she reads it on paper, away from the computer. */
+@media print {
+  .no-print, .tabs, .screen, .studio { display: none !important; }
+  .script { position: static; background: #fff; color: #000; }
+  .script-body { max-width: none; padding: 0; }
+  .script-list li { break-inside: avoid; border-bottom: 1px solid #ddd; }
+  .script-item { font-size: 1.5rem; }
+  .script-hint { color: #444; }
+}

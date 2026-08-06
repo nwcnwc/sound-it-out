@@ -54,41 +54,23 @@ a *t*.
 
 ### What to say
 
-Don't worry about symbols. For each row, **say the sound at the start of the example
-word, on its own.** The word is only there to remind you which sound we mean.
+**Open the app, go to “Your voice”, and press “Show what to say”.** It prints a
+numbered list in the exact order the app expects, so nothing can get out of step.
 
-**Consonants**
+That matters more than it sounds: the app matches what it hears to the list *by
+position*. If item 7 and item 8 are swapped, every name from there on is wrong.
 
-| Sound | as in | | Sound | as in |
-|---|---|---|---|---|
-| s | **s**un (hold it) | | m | **m**an (hold it) |
-| t | **t**op (crisp) | | n | **n**et (hold it) |
-| p | **p**an (crisp) | | ng | ri**ng** (hold it) |
-| k | **c**at (crisp) | | l | **l**eg (hold it) |
-| b | **b**at (crisp) | | r | **r**un (hold it) |
-| d | **d**og (crisp) | | w | **w**et |
-| g | **g**ot (crisp) | | y | **y**es |
-| f | **f**an (hold it) | | h | **h**at |
-| v | **v**an (hold it) | | sh | **sh**op (hold it) |
-| z | **z**ip (hold it) | | ch | **ch**ip (crisp) |
-| th | **th**in (hold it) | | j | **j**am (crisp) |
-| th | **th**is (hold it, voiced) | | zh | vi**si**on (hold it) |
+The printed list also tells you, for each sound, whether to hold it or keep it
+crisp. There is no table to interpret and no order to guess at.
 
-**Vowels** — hold every one for about 2 seconds.
+> Earlier versions of this guide printed the sounds as two side-by-side columns.
+> That was a mistake: a two-column table can be read across or downwards, and the
+> two give different orders. The generated list replaced it.
 
-| Sound | as in | | Sound | as in |
-|---|---|---|---|---|
-| a | c**a**t | | ee | s**ee** |
-| e | b**e**d | | oo | m**oo**n |
-| i | s**i**t | | or | d**oor** |
-| o | d**o**g | | ur | h**er** |
-| u | c**u**p | | ay | d**ay** |
-| oo | p**u**t | | igh | m**y** |
-| ar | c**ar** | | oy | b**oy** |
-| ow | n**ow** | | oa | g**o** |
-| air | h**air** | | ear | n**ear** |
-
----
+**Or skip the phone entirely.** The same screen has **“Record the sounds”**,
+which shows each sound on screen, records a few goes, keeps the best one, and
+tells you straight away if something needs another try. That is the easier path,
+and the one to use if the computer is to hand.
 
 ## Part 2 — The sight words (~15 min)
 

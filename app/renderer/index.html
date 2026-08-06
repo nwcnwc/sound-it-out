@@ -262,7 +262,10 @@
           <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. These are what
              sounding-out is built from, so they matter most.</p>
           <div class="rowbar">
-            <button class="btn btn-second vpart-pick" type="button" data-part="phonemes">
+            <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
+              Show what to say
+            </button>
+            <button class="btn btn-quiet vpart-pick" type="button" data-part="phonemes">
               Choose the recording&hellip;
             </button>
             <span class="vpart-file" id="file-phonemes"></span>
@@ -278,7 +281,10 @@
           <p>Your word list, read normally. Print your list from the
              <b>Words</b> tab first so you know what to say.</p>
           <div class="rowbar">
-            <button class="btn btn-second vpart-pick" type="button" data-part="words">
+            <button class="btn btn-second vpart-script" type="button" data-part="words">
+              Show what to say
+            </button>
+            <button class="btn btn-quiet vpart-pick" type="button" data-part="words">
               Choose the recording&hellip;
             </button>
             <span class="vpart-file" id="file-words"></span>
@@ -311,6 +317,19 @@
     <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
   </section>
 
+  <!-- The script. Generated from the same list the importer aligns against, so
+       what she reads and what the app expects can never disagree. -->
+  <div class="script" id="script" hidden>
+    <div class="script-bar no-print">
+      <h2 id="script-title">What to say</h2>
+      <div class="rowbar">
+        <button class="btn btn-second" id="script-print" type="button">Print this</button>
+        <button class="btn btn-quiet" id="script-close" type="button">Close</button>
+      </div>
+    </div>
+    <div class="script-body" id="script-body"></div>
+  </div>
+
   <!-- The recording studio: a full-window overlay, because reading aloud from a
        prompt needs the whole screen and nothing else competing for attention. -->
   <div class="studio" id="studio" hidden>
@@ -330,6 +349,7 @@
 
       <div class="studio-actions">
         <button class="btn btn-primary btn-big" id="studio-go" type="button">Start recording</button>
+        <button class="btn btn-second btn-big" id="studio-pause" type="button" hidden>Pause</button>
         <button class="btn btn-second" id="studio-redo" type="button" hidden>Do that one again</button>
         <button class="btn btn-quiet" id="studio-skip" type="button">Skip this one</button>
       </div>

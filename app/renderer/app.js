@@ -67,6 +67,7 @@ async function boot () {
   setUpTabs()
   initVoice()
   initStudio()
+  initScript()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -992,7 +993,7 @@ const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md
 
 const studio = {
   items: [], i: 0, takes: 3, part: 'phonemes',
-  buf: [], running: false, cancelled: false
+  buf: [], running: false, cancelled: false, paused: false, advanceTimer: null
 }
 
 const TAKE_MS = { hold: 2600, crisp: 1200, free: 1600 }
@@ -1030,6 +1031,8 @@ async function openStudio (part) {
 
 function closeStudio () {
   studio.cancelled = true
+  studio.paused = false
+  clearTimeout(studio.advanceTimer)
   studio.running = false
   Recorder.release()
   $('studio').hidden = true
@@ -1049,6 +1052,8 @@ function showItem () {
   sEl('studio-go').hidden = false
   sEl('studio-go').disabled = false
   sEl('studio-go').textContent = studio.i === 0 ? 'Start recording' : 'Record this one'
+  sEl('studio-pause').hidden = true
+  setPaused(false)
   renderTakeDots(0)
 }
 
@@ -1064,6 +1069,28 @@ function renderTakeDots (done) {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
+/* Pausing has to be possible mid-item, not only between items: a child
+ * interrupts on their own schedule, and 42 sounds x 3 takes is a long sit.
+ * Every delay in the sequence goes through here, so Pause takes effect at the
+ * next step instead of after the whole item. A take interrupted part-way is
+ * discarded and redone on resume - half a sound is worse than none. */
+async function pauseGate () {
+  while (studio.paused && !studio.cancelled) await wait(120)
+  return !studio.cancelled
+}
+
+function setPaused (on) {
+  studio.paused = on
+  const b = $('studio-pause')
+  if (b) b.textContent = on ? 'Carry on' : 'Pause'
+  if (on) {
+    clearTimeout(studio.advanceTimer)
+    sEl('studio-state').textContent = 'Paused'
+    sEl('studio-meter-fill').style.width = '0%'
+    sEl('studio-word').classList.remove('is-live')
+  }
+}
+
 async function recordItem () {
   const it = studio.items[studio.i]
   studio.running = true
@@ -1073,29 +1100,46 @@ async function recordItem () {
 
   const dur = TAKE_MS[it.length] || TAKE_MS.free
 
-  for (let t = 0; t < studio.takes; t++) {
-    if (studio.cancelled) return
+  sEl('studio-pause').hidden = false
+
+  for (let t = 0; t < studio.takes;) {
+    if (!(await pauseGate())) return
     renderTakeDots(t)
-    for (let c = 3; c > 0; c--) {
+
+    let interrupted = false
+    for (let c = 3; c > 0 && !interrupted; c--) {
       sEl('studio-state').textContent = `Ready… ${c}`
       await wait(360)
       if (studio.cancelled) return
+      if (studio.paused) interrupted = true
     }
+    if (interrupted) continue          // redo this take from the countdown
+
     sEl('studio-state').textContent = t === 0 ? 'Say it now' : 'Again'
     sEl('studio-word').classList.add('is-live')
     Recorder.start()
     const meter = setInterval(() => {
       sEl('studio-meter-fill').style.width = Math.round(Recorder.level() * 100) + '%'
     }, 60)
-    await wait(dur)
+    // Slice the wait so a pause lands mid-take rather than after it.
+    const step = 100
+    for (let waited = 0; waited < dur; waited += step) {
+      await wait(step)
+      if (studio.cancelled || studio.paused) { interrupted = true; break }
+    }
     clearInterval(meter)
     sEl('studio-meter-fill').style.width = '0%'
     const take = Recorder.stop()
     sEl('studio-word').classList.remove('is-live')
+    if (studio.cancelled) return
+    if (interrupted) continue          // discard the part-take, redo it on resume
+
     studio.buf.push(take)
-    renderTakeDots(t + 1)
-    if (t < studio.takes - 1) await wait(GAP_MS)
+    t += 1
+    renderTakeDots(t)
+    if (t < studio.takes) await wait(GAP_MS)
   }
+  sEl('studio-pause').hidden = true
 
   sEl('studio-state').textContent = 'Checking…'
   try {
@@ -1128,8 +1172,10 @@ function showTakeResult (r) {
   box.textContent = 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
   sEl('studio-redo').hidden = false
   // Move on by itself - stopping after every item would double the session.
-  setTimeout(() => {
-    if (!studio.cancelled && !studio.running && !sEl('studio').hidden) {
+  clearTimeout(studio.advanceTimer)
+  studio.advanceTimer = setTimeout(async () => {
+    if (!(await pauseGate())) return
+    if (!studio.running && !sEl('studio').hidden) {
       studio.i += 1
       showItem()
       if (studio.items[studio.i]) recordItem()
@@ -1160,10 +1206,93 @@ function initStudio () {
   on('studio-sounds', () => openStudio('phonemes'))
   on('studio-words', () => openStudio('words'))
   on('studio-close', closeStudio)
+  on('studio-pause', () => setPaused(!studio.paused))
   on('studio-go', recordItem)
   on('studio-skip', () => { studio.i += 1; showItem() })
   on('studio-redo', () => { sEl('studio-result').hidden = true; recordItem() })
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('studio').hidden) closeStudio()
+  })
+}
+
+
+/* ---------------------------------------------------------------- the script
+ *
+ * The importer aligns POSITIONALLY - the nth thing said becomes the nth label -
+ * so saying items in a different order mislabels everything after that point.
+ * Asking someone to record without telling them what to say, in what order, was
+ * not a viable ask. This prints the list from the same source the importer uses,
+ * so the two cannot disagree.
+ *
+ * It is also a single numbered column on purpose: RECORDING.md presents the
+ * sounds as two side-by-side columns, which can be read across or downwards,
+ * and those give different orders.
+ */
+
+async function showScript (part) {
+  let plan
+  try {
+    plan = await api.studioPlan({ part })
+  } catch (err) {
+    alert('Could not build the list: ' + (err.message || err))
+    return
+  }
+  const title = part === 'phonemes' ? 'What to say - the sounds'
+                                    : 'What to say - the words'
+  $('script-title').textContent = title
+
+  const body = $('script-body')
+  body.innerHTML = ''
+
+  const intro = document.createElement('div')
+  intro.className = 'script-intro'
+  intro.innerHTML =
+    '<h1>' + escapeHtml(title) + '</h1>' +
+    '<p><b>Say these in this order</b>, leaving about two seconds of silence between ' +
+    'each one. The order matters: the app matches what it hears to this list by ' +
+    'position, so a swap puts the wrong name on everything after it.</p>' +
+    '<p>If you fluff one, pause and say it again - the last go is the one kept.</p>'
+  body.appendChild(intro)
+
+  const ol = document.createElement('ol')
+  ol.className = 'script-list'
+  for (const it of plan.items) {
+    const li = document.createElement('li')
+    const big = document.createElement('span')
+    big.className = 'script-item'
+    big.textContent = it.display
+    li.appendChild(big)
+    if (it.say) {
+      const hint = document.createElement('span')
+      hint.className = 'script-hint'
+      hint.textContent = it.say
+      li.appendChild(hint)
+    }
+    ol.appendChild(li)
+  }
+  body.appendChild(ol)
+
+  $('script').hidden = false
+  document.body.classList.add('script-open')
+}
+
+function initScript () {
+  for (const b of document.querySelectorAll('.vpart-script')) {
+    b.addEventListener('click', () => showScript(b.dataset.part))
+  }
+  const close = $('script-close')
+  if (close) {
+    close.addEventListener('click', () => {
+      $('script').hidden = true
+      document.body.classList.remove('script-open')
+    })
+  }
+  const pr = $('script-print')
+  if (pr) pr.addEventListener('click', () => window.print())
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('script').hidden) {
+      $('script').hidden = true
+      document.body.classList.remove('script-open')
+    }
   })
 }
