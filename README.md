@@ -224,10 +224,24 @@ half: **a sound that is merely short is useless for teaching.** Phonics instruct
 sounds out — "ssssss", "mmmmm" — so the child can hear each one and join them. A clipped
 75 ms /t/ is technically schwa-free and pedagogically dead.
 
-`shape_phoneme()` in `gen/soundout.py` does both: strip the schwa, then **sustain** what
-remains by looping its steady state with equal-power crossfades, the way a sampler holds a
-note. Kokoro itself can't get there — `speed` is clamped at 0.5× and even a doubled IPA
-length mark only reaches ~394 ms.
+`shape_phoneme()` in `gen/soundout.py` does both: strip the schwa, then stretch what remains.
+
+**Getting the length from the right place matters.** The first working version looped a ~100 ms
+core with crossfades, which repeats the same waveform over and over — the ear hears that
+periodicity as a hard robotic stutter. Two changes fixed it:
+
+1. **Ask Kokoro for the length first.** Repeating the IPA symbol (`ssssss`) makes the model
+   *hold* the sound instead of releasing it: /s/ goes from 298 ms to 640 ms, /m/ to 1024 ms.
+   Vowels use the IPA length mark (`æː`). This is the "trick" — the model will sustain a
+   phoneme if you ask it to, and it sounds natural because it *is* natural.
+2. **Stretch the remainder with a phase vocoder**, not by splicing. ffmpeg's `rubberband`
+   filter stretches continuously with formants preserved, so there is no repeating period to
+   hear. `slower()` uses the same mechanism for whole sentences.
+
+Together these drop the stretch factor from ~6.8× to near 1.0×, which is why the artefacts
+disappear — most of the length is now real audio, not processing.
+
+Stops are excluded from step 1: repeating a stop just gives "t-t-t".
 
 | Class | Result |
 |---|---|

@@ -84,14 +84,33 @@ class Voice:
             )
             assert sr == SR, f"unexpected sample rate {sr}"
             sf.write(path, samples, SR)
-        # Isolated consonants come back with a schwa attached - strip it.
-        if phonemes and len(text) == 1:
-            samples = shape_phoneme(samples, text)
         return samples
+
+    def phoneme(self, ipa: str) -> np.ndarray:
+        """A single sound, schwa-free and long enough to teach with."""
+        # Get as much length as Kokoro will give natively before stretching:
+        # a 6x time-stretch sounds processed, a 1.5x one does not. Repeating
+        # the symbol makes the model hold the sound rather than release it.
+        if ipa in STOPS:
+            src = ipa  # a stop cannot be held; repeating just gives "t-t-t"
+        elif ipa in VOWELS:
+            src = ipa + "ː"  # IPA length mark
+        else:
+            src = ipa * 6
+        return shape_phoneme(self.say(src, phonemes=True), ipa)
 
 
 def silence(seconds: float) -> np.ndarray:
     return np.zeros(int(seconds * SR), dtype="float32")
+
+
+def slower(a: np.ndarray, tempo: float) -> np.ndarray:
+    """Slow speech down without raising the pitch. tempo 0.7 = 30% slower.
+
+    Kokoro's own `speed` bottoms out at 0.5 and degrades before it gets there,
+    so real slowing happens here instead.
+    """
+    return _stretch(a, int(len(a) / tempo))
 
 
 # ------------------------------------------------------ phoneme shaping
@@ -156,20 +175,31 @@ def _xfade(a: np.ndarray, b: np.ndarray, n: int) -> np.ndarray:
     return np.concatenate([a[:-n], mid, b[n:]])
 
 
-def _sustain(a: np.ndarray, target: int, xf_ms=45) -> np.ndarray:
-    """Stretch a clip to `target` samples by looping its steady middle."""
-    if len(a) >= target:
-        return a[:target]
-    core = a[int(len(a) * 0.25) : int(len(a) * 0.90)]  # steady portion
-    if len(core) < int(SR * 0.02):
-        return a  # under 20ms, there is nothing to loop
-    # Isolated frication can be as short as ~75ms, so the crossfade has to
-    # shrink to fit rather than disqualifying the clip from sustaining.
-    n = max(2, min(int(SR * xf_ms / 1000), len(core) // 3))
-    out = a
-    while len(out) < target:
-        out = _xfade(out, core, n)
-    return out[:target]
+def _stretch(a: np.ndarray, target: int) -> np.ndarray:
+    """Time-stretch to `target` samples, preserving pitch and formants.
+
+    Looping a short core with crossfades (the first attempt) repeats the same
+    100ms of waveform over and over, and the ear hears that periodicity as a
+    hard robotic stutter. Rubberband is a phase vocoder - it stretches the
+    sound continuously instead of repeating it, so there is no period to hear.
+    """
+    if len(a) < int(SR * 0.03) or target <= 0:
+        return a
+    tempo = len(a) / target  # <1 slows down
+    if abs(tempo - 1.0) < 0.03:
+        return a
+    tempo = max(tempo, 0.05)  # rubberband's floor
+    src = BUILD / "_st_in.wav"
+    dst = BUILD / "_st_out.wav"
+    sf.write(src, a, SR)
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(src),
+         "-filter:a", f"rubberband=tempo={tempo:.5f}:formant=preserved:pitchq=quality",
+         str(dst)],
+        check=True,
+    )
+    out, _ = sf.read(dst, dtype="float32")
+    return out
 
 
 def shape_phoneme(a: np.ndarray, ipa: str) -> np.ndarray:
@@ -199,8 +229,9 @@ def shape_phoneme(a: np.ndarray, ipa: str) -> np.ndarray:
         region = a
     elif ipa in SONORANTS:
         # Voiced and low-frequency, so the centroid test can't separate them
-        # from the schwa - but they lead with the murmur, so keep the front.
-        region = a[: min(len(a), (live[0][0] + 8) * bs)]
+        # from the schwa - but they lead with the murmur and the schwa only
+        # appears on release, so keep everything but the tail.
+        region = a[: max(len(a) - int(SR * 0.18), min(len(a), (live[0][0] + 8) * bs))]
     else:
         # Fricatives: keep the high-centroid frication and drop the tail where
         # the centroid falls back into vowel territory. That *is* the schwa.
@@ -213,7 +244,7 @@ def shape_phoneme(a: np.ndarray, ipa: str) -> np.ndarray:
         region = a[: min(len(a), max(end, peak + 2) * bs)]
 
     target = int(SR * (SUSTAIN_VOWEL if ipa in VOWELS else SUSTAIN_CONS))
-    return _fade(_sustain(region, target), 60)
+    return _fade(_stretch(region, target), 60)
 
 
 # ------------------------------------------------------------ storyboard

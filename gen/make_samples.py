@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from gen.soundout import (  # noqa: E402
-    SAMPLES, THEMES, Segment, Theme, Voice, build_video, whole,
+    SAMPLES, THEMES, Segment, Theme, Voice, build_video, slower, whole,
 )
 
 # ---------------------------------------------------------------- content
@@ -62,11 +62,11 @@ def sound_out(v: Voice, words, reps=2):
     segs = []
     for parts in words:
         word = "".join(g for g, _ in parts)
-        blended = v.say(word, speed=0.85)
+        blended = slower(v.say(word), 0.80)
         for _ in range(reps):
             for idx, (_, ipa) in enumerate(parts):
                 shown = [(g, i == idx) for i, (g, _) in enumerate(parts)]
-                segs.append(Segment(shown, v.say(ipa, phonemes=True), pad=0.28))
+                segs.append(Segment(shown, v.phoneme(ipa), pad=0.28))
             segs.append(whole(word, blended, pad=1.6))
     return segs
 
@@ -82,7 +82,7 @@ def sentence(v: Voice, text):
                 parts.append((" ", False))
             parts.append((other, i == idx))
         segs.append(Segment(parts, v.say(w.strip(".,!?")), pad=0.35, scale=0.9))
-    segs.append(whole(text, v.say(text, speed=0.9), pad=2.0, scale=0.9))
+    segs.append(whole(text, slower(v.say(text), 0.68), pad=2.0, scale=0.9))
     return segs
 
 
