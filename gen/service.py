@@ -100,10 +100,10 @@ def m_plan(params):
     # Level 6 is a journey, not a playlist: it travels from single letters to a
     # sentence, so filling 30 minutes by playing a 7 minute arc four times is
     # the wrong shape. Stretch the arc instead, by repeating each item more.
-    # ~2.4 min per repetition, measured across all four chapters; approximate,
+    # ~3.1 min per repetition, measured across all four chapters; approximate,
     # because her recordings will not be the same length as the built-in voice.
     if level == 6 and minutes > 0:
-        opts = dict(opts, reps=max(2, min(14, round(minutes / 2.4))))
+        opts = dict(opts, reps=max(2, min(14, round(minutes / 3.1))))
 
     _progress(job_id, "audio", 0, 1, "Working out the sounds...")
     voice = VoiceSource(clone_profile=params.get("cloneProfile"))

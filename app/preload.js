@@ -23,10 +23,14 @@ contextBridge.exposeInMainWorld('soundout', {
   cancelJob: (jobId) => ipcRenderer.invoke('job:cancel', jobId),
   installCloning: () => ipcRenderer.invoke('cloning:install'),
   openPath: (p) => ipcRenderer.invoke('path:open', p),
+  checkForUpdate: () => ipcRenderer.invoke('update:check'),
+  installUpdate: (asset) => ipcRenderer.invoke('update:install', asset),
   chooseDirectory: () => ipcRenderer.invoke('dir:choose'),
 
   onProgress: sub('job:progress'),
   onDone: sub('job:done'),
   onError: sub('job:error'),
-  onInstallProgress: sub('cloning:progress')
+  onInstallProgress: sub('cloning:progress'),
+  onUpdateAvailable: sub('update:available'),
+  onUpdateProgress: sub('update:progress')
 })

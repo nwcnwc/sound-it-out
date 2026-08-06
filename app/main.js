@@ -22,6 +22,7 @@ const os = require('os')
 const { pathToFileURL } = require('url')
 const { Sidecar } = require('./sidecar')
 const { renderFrames } = require('./frames')
+const updater = require('./updater')
 
 const APP_ROOT = path.join(__dirname, '..')
 const isPackaged = app.isPackaged
@@ -274,6 +275,26 @@ function registerIpc () {
     }
   })
 
+  ipcMain.handle('update:check', async () => {
+    try {
+      return { ok: true, ...(await updater.checkForUpdate()) }
+    } catch (err) {
+      // Offline, or no releases published yet. Never nag about it - the app
+      // works perfectly well without ever updating.
+      return { ok: false, available: false, error: err.message }
+    }
+  })
+
+  ipcMain.handle('update:install', async (_e, asset) => {
+    try {
+      const file = await updater.downloadUpdate(asset, (done, total) =>
+        send('update:progress', { done, total }))
+      return { ok: true, ...(await updater.applyUpdate(file)) }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
   ipcMain.handle('path:open', (_e, p) => { shell.openPath(p); return { ok: true } })
 
   ipcMain.handle('dir:choose', async () => {
@@ -294,6 +315,14 @@ app.whenReady().then(() => {
   sidecar.start()
   registerIpc()
   createWindow()
+
+  // Check once, quietly, a few seconds after launch. Never blocks startup and
+  // never interrupts a running job - the UI decides whether to mention it.
+  setTimeout(() => {
+    updater.checkForUpdate()
+      .then((r) => { if (r.available) send('update:available', r) })
+      .catch(() => {})
+  }, 4000)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
