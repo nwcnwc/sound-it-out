@@ -301,10 +301,62 @@ on two lines at large type. One line at smaller type may be better for a beginni
 line returns add a tracking demand — but it trades away size on a TV viewed from a sofa.
 Undecided; it is a one-line change in `_font_size` handling either way.
 
+## How the app is put together
+
+Generation is three phases, split along what each runtime is actually good at:
+
+| # | Phase | Runs in | Does |
+|---|---|---|---|
+| 1 | `plan` | Python | synthesis, storyboard, timing, `audio.wav` + `frames.json` |
+| 2 | `frames` | Electron | `frames.json` → PNGs, via this app's own Chromium |
+| 3 | `encode` | Python | ffmpeg mux to `.mp4` |
+
+Phase 2 lives in Electron deliberately. It means the packaged app has **no external
+Chrome dependency**, and every install rasterises with the same bundled Chromium — so a
+frame is pixel-identical on her Mac and your Linux box. For an app whose entire job is
+precisely-rendered letterforms, that is the point, and it is why Electron was chosen
+over Tauri (which uses each OS's own webview, and would render differently per machine).
+
+Electron talks to Python over JSON lines on stdio (`app/sidecar.js` ↔ `gen/service.py`).
+In development that is the venv; once packaged it is a PyInstaller-frozen binary. Nothing
+else in the app knows the difference.
+
+```
+app/main.js        orchestration, IPC, fullscreen player
+app/frames.js      HTML -> PNG via capturePage
+app/sidecar.js     spawns and talks to Python
+app/renderer/      the UI she uses
+gen/service.py     JSON-lines sidecar - Electron's only way in
+gen/paths.py       read-only RESOURCES vs writable per-user DATA
+gen/levels.py      the curriculum
+gen/voice.py       recordings -> clone -> built-in voice
+gen/recordings.py  splits her recordings into clips, with QC
+gen/clone.py       optional Chatterbox cloning
+```
+
+Run it in development with `npm start` (after `./setup.sh`).
+
 ## Status
 
-Pipeline working end to end: Kokoro → storyboard → headless Chrome → ffmpeg.
-Sample videos generated. App shell not started.
+**Working end to end**, verified by generating real videos through the service:
+levels 1–5, all three themes, both playback and file export.
+
+- Levels 1–5 implemented. 6–8 designed and specified but not built — they need the
+  grapheme-phoneme alignment lexicon, not just more word lists, and the UI correctly
+  reports them as unavailable rather than failing mid-generation.
+- 51 tests passing (`.venv/bin/python -m pytest tests/ -q`).
+- Voice cloning is genuinely optional: the app is fully usable for levels 1–5 with it
+  absent, and never hard-imports torch.
+
+**Not yet verified:**
+
+- **The Electron frame renderer has never been run.** Chromium's multi-process model is
+  blocked in the development container (`/dev/shm` access returns `ESRCH`; single-process
+  mode aborts with `SIGTRAP`). The code is written and the HTML is identical to what the
+  verified Chrome path renders, but phase 2 needs one run on a real desktop. The Chrome
+  path (`render_job_chrome`) is verified and remains as the fallback.
+- No build has been produced on any platform.
+- Nothing has been heard by ear — every audio decision so far rests on measurement.
 
 ## License
 
