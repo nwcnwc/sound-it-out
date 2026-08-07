@@ -56,6 +56,44 @@ CVC_PHONEMES = {
 }
 
 
+# Multi-letter graphemes, longest first. This is the piece levels 7-9 needed:
+# "ship" must highlight "sh" as ONE unit, because that is what it is - showing
+# s-h-i-p teaches a child to look for four sounds in a three-sound word, which
+# is worse than not splitting it at all.
+#
+# Curated rather than general. A full grapheme-phoneme aligner for arbitrary
+# English is a research problem; a table that covers the words these levels
+# actually teach is a afternoon's work and is correct where it applies.
+GRAPHEMES = {
+    # trigraphs first - longest match wins
+    "igh": "aɪ", "air": "eə", "ear": "ɪə", "tch": "tʃ",
+    # consonant digraphs
+    "sh": "ʃ", "ch": "tʃ", "th": "θ", "ng": "ŋ", "ck": "k",
+    "ph": "f", "wh": "w", "qu": "kw",
+    # vowel digraphs
+    "ai": "eɪ", "ay": "eɪ", "ee": "iː", "ea": "iː", "oa": "əʊ",
+    "ow": "aʊ", "oo": "uː", "oi": "ɔɪ", "oy": "ɔɪ",
+    "ar": "ɑː", "or": "ɔː", "er": "ɜː", "ir": "ɜː", "ur": "ɜː",
+}
+
+
+def split_graphemes(word: str):
+    """Split a word into (letters, sound) pairs, keeping digraphs whole."""
+    out, i, low = [], 0, word.lower()
+    while i < len(word):
+        for n in (3, 2):
+            chunk = low[i:i + n]
+            if len(chunk) == n and chunk in GRAPHEMES:
+                out.append((word[i:i + n], GRAPHEMES[chunk]))
+                i += n
+                break
+        else:
+            ch = low[i]
+            out.append((word[i], CVC_PHONEMES.get(ch, ch)))
+            i += 1
+    return out
+
+
 def spell(word: str):
     """Split a word into (letter, phoneme) pairs. Level 5 is CVC only, so a
     straight letter-by-letter mapping is correct here; digraphs arrive at
@@ -119,6 +157,34 @@ LADDER = [
 ]
 
 
+# Level 7: each digraph taught with words that actually contain it.
+DIGRAPH_WORDS = [
+    "ship", "shop", "fish", "wish", "chat", "chip", "chin", "much",
+    "thin", "with", "bath", "duck", "sock", "back", "kick",
+    "ring", "sing", "long", "king",
+]
+
+# Level 8: consonant clusters, at the start and at the end. Clusters are the
+# step after digraphs because they are two sounds that stay two sounds - the
+# child has to hold both rather than swap in a new one.
+CLUSTER_WORDS = [
+    "stop", "step", "spin", "skip", "swim",
+    "black", "flag", "plan", "clap", "glad",
+    "hand", "sand", "bend", "jump", "lamp", "milk",
+    "best", "nest", "must", "lost",
+]
+
+# Level 9: connected text, built only from what levels 1-8 have taught.
+SENTENCES = [
+    "The fish is in the net.",
+    "A duck sat on the rock.",
+    "Sam has a red hat.",
+    "The king can sing.",
+    "Stop and get the lamp.",
+    "A chick is on the sand.",
+]
+
+
 def _check_ladder():
     """Fail loudly at import if a chapter uses an untaught letter.
 
@@ -145,7 +211,10 @@ _check_ladder()
 # README but not built - they need the grapheme-phoneme alignment lexicon, not
 # just more word lists. Kept explicit so the UI can never offer a level that
 # would fail halfway through generating.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6}
+# All nine are built now. Levels 7-9 still lean on generation for the parts
+# nobody can record - nonsense blends, and whole sentences read with real
+# intonation - which is what the "install the extra voice" note is about.
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 
 def level_status(capabilities: dict) -> list:
@@ -165,7 +234,8 @@ def level_status(capabilities: dict) -> list:
             ok = capabilities.get("cloning") or capabilities.get("fallback_voice")
             reason = "" if ok else "Needs the built-in voice or voice cloning installed."
             if ok and not capabilities.get("cloning"):
-                reason = "Will use the built-in voice - install voice cloning for the recorded voice."
+                reason = ("Whole sentences use the built-in voice. Install the "
+                          "extra voice pack to have them read in your own.")
         out.append({"id": lv.id, "name": lv.name, "description": lv.description,
                     "available": bool(ok), "reason": reason})
     return out
@@ -274,6 +344,31 @@ def _build_up(voice, reps, pause):
     return segs
 
 
+def _sentences(voice, sentences, reps, pause):
+    """Level 9: each word lit as it is read, then the whole thing together.
+
+    The sentence is read WHOLE at the end rather than assembled from the word
+    clips: connected speech has stress and intonation across the whole line,
+    and concatenated words have neither. That read is the one part of this
+    level that cannot come from the recorded clips.
+    """
+    segs = []
+    for text in sentences:
+        words = text.split()
+        whole_audio = voice.sentence(text)
+        for _ in range(max(1, reps - 1)):
+            for i, w in enumerate(words):
+                parts = []
+                for j, other in enumerate(words):
+                    if j:
+                        parts.append((" ", False))
+                    parts.append((other, j == i))
+                segs.append(Segment(parts, voice.word(w.strip(".,!?")),
+                                    pad=pause * 0.9, scale=0.85))
+            segs.append(whole(text, whole_audio, pad=pause + 1.6, scale=0.85))
+    return segs
+
+
 def build(level: int, voice, opts: dict) -> list:
     """Produce the segment list for a level. `voice` supplies audio; see
     gen/voice.py for the recorded-first, generated-fallback resolution."""
@@ -303,6 +398,14 @@ def build(level: int, voice, opts: dict) -> list:
         return _sound_out(voice, spellings, reps, pause)
     if level == 6:
         return _build_up(voice, reps, pause)
+    if level == 7:
+        return _sound_out(voice, [split_graphemes(w) for w in DIGRAPH_WORDS],
+                          reps, pause)
+    if level == 8:
+        return _sound_out(voice, [split_graphemes(w) for w in CLUSTER_WORDS],
+                          reps, pause)
+    if level == 9:
+        return _sentences(voice, SENTENCES, reps, pause)
 
     raise NotImplementedError(
         f"Level {level} is designed but not built yet - see README for the plan."

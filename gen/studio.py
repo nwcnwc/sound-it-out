@@ -118,6 +118,12 @@ def plan(part="phonemes", order="rows") -> list:
         ladder = [w for ch in levels.LADDER for w in ch["words"]]
         ladder += [w.strip(".,!?") for ch in levels.LADDER
                    for w in ch["sentence"].split()]
+        # Levels 7-9 teach real words too, so they belong in the list. Without
+        # this those levels fall back to the built-in voice for every word,
+        # even after a complete recording session.
+        ladder += levels.DIGRAPH_WORDS + levels.CLUSTER_WORDS
+        ladder += [w.strip(".,!?") for sent in levels.SENTENCES
+                   for w in sent.split()]
         for w in ladder:
             if w.lower() not in seen:
                 seen.add(w.lower())
