@@ -94,6 +94,12 @@ datas += copy_metadata("kokoro-onnx")
 # imports every backend, so they must be present for the import to succeed.
 datas += collect_data_files("phonemizer")
 
+# The default word lists. Carried inside the frozen payload so the sidecar can
+# seed a user's editable copy however the executable is laid out - the resources
+# directory is right in a real install but absent when the sidecar runs on its
+# own, and the failure mode was an unhandled FileNotFoundError on first plan.
+datas += [(str(ROOT / "wordlists" / "sight-words.txt"), "wordlists")]
+
 # kokoro_onnx reads its vocab/config from config.json via Path(__file__).parent.
 datas += collect_data_files("kokoro_onnx", includes=["*.json"])
 

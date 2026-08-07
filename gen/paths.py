@@ -58,6 +58,23 @@ VOICE_DIR = Path(os.environ.get("SIO_VOICE_DIR") or (DATA / "assets" / "voice"))
 WORDLISTS = DATA / "wordlists"
 
 
+def _shipped_wordlists():
+    """Where the default word lists can be found, most specific first.
+
+    A frozen onefile build unpacks its own data to sys._MEIPASS, which is the
+    only location guaranteed to exist however the executable is laid out. The
+    resources directory is right in a real install but absent when the sidecar
+    is run on its own - as CI does - and the failure mode was an unhandled
+    FileNotFoundError rather than anything a user could act on.
+    """
+    here = []
+    meipass = getattr(sys, "_MEIPASS", None)
+    if meipass:
+        here.append(Path(meipass) / "wordlists")
+    here.append(RESOURCES / "wordlists")
+    return [d for d in here if d.exists()]
+
+
 def ensure_user_files():
     """Seed the writable area from shipped defaults on first run.
 
@@ -66,8 +83,9 @@ def ensure_user_files():
     """
     for d in (BUILD, JOBS, AUDIO_CACHE, VOICE_DIR, WORDLISTS):
         d.mkdir(parents=True, exist_ok=True)
-    shipped = RESOURCES / "wordlists"
-    if shipped.exists() and shipped != WORDLISTS:
+    for shipped in _shipped_wordlists():
+        if shipped == WORDLISTS:
+            continue
         for src in shipped.glob("*.txt"):
             dst = WORDLISTS / src.name
             if not dst.exists():

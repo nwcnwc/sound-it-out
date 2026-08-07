@@ -79,10 +79,6 @@ extraResources:
 # for a certificate in the keychain on a developer's Mac and sign the build
 # with whatever it happens to find.
 mac:
-  extendInfo:
-    NSMicrophoneUsageDescription: >-
-      Sound It Out records your voice so your child hears you reading,
-      instead of a computer voice. Recordings stay on this computer.
   identity: null
   # Ad-hoc signing is still applied by electron-builder on arm64 because macOS
   # will not execute an unsigned arm64 binary at all. That is not real signing
@@ -93,10 +89,15 @@ mac:
         - arm64
         - x64
   category: public.app-category.education
-  # Nothing here talks to the network, the camera or the microphone; the app is
-  # offline by design and asks for no permissions.
+  # One extendInfo block only - two of them is a duplicated YAML key and
+  # electron-builder refuses the whole file.
   extendInfo:
     LSMinimumSystemVersion: "11.0"
+    # Required, or macOS denies the microphone and the recording studio
+    # silently captures nothing. The app records; it does not upload.
+    NSMicrophoneUsageDescription: >-
+      Sound It Out records your voice so your child hears you reading,
+      instead of a computer voice. Recordings stay on this computer.
 
 dmg:
   title: Sound It Out
