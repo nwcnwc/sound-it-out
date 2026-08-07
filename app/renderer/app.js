@@ -1086,6 +1086,7 @@ function startMicCheck () {
   check.hidden = false
   stage.hidden = true
   let best = 0
+  studio.micWaits = 0
   clearInterval(studio.micTimer)
   studio.micTimer = setInterval(() => {
     const l = Recorder.level()
@@ -1095,7 +1096,13 @@ function startMicCheck () {
       $('mic-verdict').textContent = 'That is working. Press Start recording when ready.'
       $('mic-ok').disabled = false
     } else {
-      $('mic-verdict').textContent = 'Waiting to hear you\u2026'
+      studio.micWaits = (studio.micWaits || 0) + 1
+      // After ~8 seconds of nothing, stop saying "waiting" and say what to do.
+      $('mic-verdict').textContent = studio.micWaits > 80
+        ? 'Still not hearing anything. The computer may be blocking microphone ' +
+          'access for this app - check your system sound settings, and that the ' +
+          'right microphone is selected.'
+        : 'Waiting to hear you\u2026'
     }
   }, 100)
 }
