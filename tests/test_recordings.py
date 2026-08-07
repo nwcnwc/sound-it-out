@@ -454,7 +454,7 @@ def test_every_sound_is_classified_the_way_soundout_would():
     assert {k for k, v in kinds.items() if v == "vowel"} == {
         k for k, p in R.PHONEMES.items() if p.example in
         ("cat", "bed", "sit", "dog", "cup", "put", "car", "now", "hair",
-         "see", "moon", "door", "their", "day", "my", "boy", "go", "near")
+         "see", "moon", "door", "her", "day", "my", "boy", "go", "near")
     } - {"k", "d"}  # 'cat' and 'dog' are also consonant examples
 
 

@@ -89,10 +89,15 @@ def plan(part="phonemes", order="rows") -> list:
         source = R.PHONEME_COLS if order == "columns" else R.PHONEME_ROWS
         for p in source:
             hold = p.length == "hold"
+            # NOT "the sound at the start of" - that is only true for the
+            # consonants. Nearly every vowel example has the sound in the
+            # middle or at the end ("oo" in moon, "ar" in car), so the old
+            # wording told her to say the wrong part of the word. This phrasing
+            # is correct wherever the sound falls.
             items.append(Item(
                 key=p.key, kind="phoneme", display=p.display, ipa=p.ipa,
                 length=p.length,
-                say=(f"Say the sound at the start of “{p.example}” - "
+                say=(f"Say the “{p.display}” sound, as in “{p.example}” - "
                      + ("hold it for about two seconds." if hold else
                         "keep it short and crisp." if p.length == "crisp" else
                         "say it naturally.")),

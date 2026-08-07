@@ -99,7 +99,7 @@ _ROWS = [
     (("a", "a", "cat", "a", HOLD), ("ee", "ee", "see", "iː", HOLD)),
     (("e", "e", "bed", "ɛ", HOLD), ("oo", "oo", "moon", "uː", HOLD)),
     (("i", "i", "sit", "ɪ", HOLD), ("or", "or", "door", "ɔː", HOLD)),
-    (("o", "o", "dog", "ɒ", HOLD), ("ur", "ur", "their", "ɜː", HOLD)),
+    (("o", "o", "dog", "ɒ", HOLD), ("ur", "ur", "her", "ɜː", HOLD)),
     (("u", "u", "cup", "ʌ", HOLD), ("ay", "ay", "day", "eɪ", HOLD)),
     (("oo-put", "oo", "put", "ʊ", HOLD), ("igh", "igh", "my", "aɪ", HOLD)),
     (("ar", "ar", "car", "ɑː", HOLD), ("oy", "oy", "boy", "ɔɪ", HOLD)),
