@@ -969,3 +969,12 @@ body.script-open { overflow: hidden; }
   background: var(--surface);
 }
 .vpart-pick:hover, .rev-play:hover { background: var(--surface-2); }
+
+.miccheck {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 1.1rem; padding: 2rem; text-align: center;
+}
+.miccheck h2 { margin: 0; font-size: 1.6rem; }
+.miccheck p { margin: 0; color: var(--ink-soft); max-width: 44ch; }
+.meter-big { width: min(520px, 80vw); height: 1.1rem; }
+.mic-verdict { min-height: 1.5rem; font-weight: 600; }

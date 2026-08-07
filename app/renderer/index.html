@@ -378,7 +378,22 @@
     </div>
     <div class="bar bar-slim studio-track"><div class="bar-fill" id="studio-bar-fill" style="width:0%"></div></div>
 
-    <div class="studio-stage">
+    <!-- Microphone check. Recording 42 items and finding out afterwards that
+         the microphone was not working is the failure this prevents. -->
+    <div class="miccheck" id="miccheck" hidden>
+      <h2>First, let's check the microphone</h2>
+      <p>Say something out loud &mdash; anything. The bar should move.</p>
+      <div class="meter meter-big"><div class="meter-fill" id="mic-meter"></div></div>
+      <p class="mic-verdict" id="mic-verdict">Waiting to hear you&hellip;</p>
+      <div class="studio-actions">
+        <button class="btn btn-primary btn-big" id="mic-ok" type="button" disabled>
+          Start recording
+        </button>
+        <button class="btn btn-quiet" id="mic-skip" type="button">Skip this check</button>
+      </div>
+    </div>
+
+    <div class="studio-stage" id="studio-stage">
       <p class="studio-say" id="studio-say"></p>
       <div class="studio-word" id="studio-word"></div>
       <p class="studio-state" id="studio-state" role="status" aria-live="polite"></p>

@@ -14,6 +14,9 @@ const Recorder = (() => {
   let node = null
   let source = null
   let stream = null
+  let sink = null
+  let analyser = null
+  let probe = null
   let chunks = []
   let capturing = false
 
@@ -32,9 +35,24 @@ const Recorder = (() => {
     source = ctx.createMediaStreamSource(stream)
     node = new AudioWorkletNode(ctx, 'recorder-processor')
     node.port.onmessage = (e) => { if (capturing) chunks.push(e.data) }
+
+    // The worklet MUST reach the destination or the graph never pulls audio
+    // through it and process() is not called - which records pure silence.
+    // Routing through a muted gain keeps it live without monitoring, which
+    // would otherwise feed the laptop speakers back into the microphone.
+    sink = ctx.createGain()
+    sink.gain.value = 0
     source.connect(node)
-    // Not connected to the destination: monitoring would feed back through
-    // the laptop speakers into the same microphone.
+    node.connect(sink)
+    sink.connect(ctx.destination)
+
+    // A separate analyser so the level meter works before and between takes,
+    // not only while capturing. Without it there is no way to see the
+    // microphone is alive until after committing to a recording.
+    analyser = ctx.createAnalyser()
+    analyser.fftSize = 1024
+    probe = new Float32Array(analyser.fftSize)
+    source.connect(analyser)
   }
 
   function start () {
@@ -87,23 +105,26 @@ const Recorder = (() => {
     }
   }
 
-  /** Live input level 0..1, for the meter that shows the mic is working. */
+  /** Live input level 0..1. Reads the analyser, so it works whether or not a
+   *  take is in progress - that is what makes a microphone check possible. */
   function level () {
-    if (!chunks.length) return 0
-    const last = chunks[chunks.length - 1]
+    if (!analyser) return 0
+    analyser.getFloatTimeDomainData(probe)
     let s = 0
-    for (let i = 0; i < last.length; i++) s += last[i] * last[i]
-    return Math.min(1, Math.sqrt(s / last.length) * 4)
+    for (let i = 0; i < probe.length; i++) s += probe[i] * probe[i]
+    return Math.min(1, Math.sqrt(s / probe.length) * 4)
   }
 
   function release () {
     try {
       if (node) node.disconnect()
+      if (sink) sink.disconnect()
+      if (analyser) analyser.disconnect()
       if (source) source.disconnect()
       if (stream) stream.getTracks().forEach((t) => t.stop())
       if (ctx) ctx.close()
     } catch { /* nothing useful to do if teardown fails */ }
-    ctx = node = source = stream = null
+    ctx = node = source = stream = sink = analyser = probe = null
     chunks = []
     capturing = false
   }

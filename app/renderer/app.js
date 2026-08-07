@@ -1073,10 +1073,42 @@ async function openStudio (part) {
       'The microphone could not be used. Check that this app is allowed to use it, then try again.'
     return
   }
+  startMicCheck()
+}
+
+/* Runs before the first item. Requires actually HEARING something before the
+ * session can start, because "record 42 sounds, then discover the microphone
+ * was dead" is a 15 minute loss and it has already happened once. */
+function startMicCheck () {
+  const check = $('miccheck')
+  const stage = $('studio-stage')
+  if (!check || !stage) { showItem(); return }
+  check.hidden = false
+  stage.hidden = true
+  let best = 0
+  clearInterval(studio.micTimer)
+  studio.micTimer = setInterval(() => {
+    const l = Recorder.level()
+    best = Math.max(best, l)
+    $('mic-meter').style.width = Math.round(l * 100) + '%'
+    if (best > 0.06) {
+      $('mic-verdict').textContent = 'That is working. Press Start recording when ready.'
+      $('mic-ok').disabled = false
+    } else {
+      $('mic-verdict').textContent = 'Waiting to hear you\u2026'
+    }
+  }, 100)
+}
+
+function endMicCheck () {
+  clearInterval(studio.micTimer)
+  $('miccheck').hidden = true
+  $('studio-stage').hidden = false
   showItem()
 }
 
 function closeStudio () {
+  clearInterval(studio.micTimer)
   studio.cancelled = true
   studio.paused = false
   clearTimeout(studio.advanceTimer)
@@ -1290,6 +1322,8 @@ function initStudio () {
       })
     })
   }
+  on('mic-ok', endMicCheck)
+  on('mic-skip', endMicCheck)
   on('studio-close', closeStudio)
   on('studio-pause', () => setPaused(!studio.paused))
   on('studio-go', recordItem)
