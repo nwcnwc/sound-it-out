@@ -68,6 +68,7 @@ async function boot () {
   initVoice()
   initStudio()
   initScript()
+  initReview()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -874,6 +875,10 @@ async function voiceCounts (caps) {
 
   showPartProgress('phonemes', p, totals.phonemes)
   showPartProgress('words', w, totals.words)
+  for (const [part, n] of [['phonemes', p], ['words', w]]) {
+    const b = document.querySelector(`.vpart-review[data-part="${part}"]`)
+    if (b) b.hidden = n === 0
+  }
 
   const foot = $('voice-foot')
   if (!foot) return
@@ -1339,5 +1344,134 @@ function initScript () {
       $('script').hidden = true
       document.body.classList.remove('script-open')
     }
+  })
+}
+
+
+/* -------------------------------------------------------- listen back & redo
+ *
+ * The first thing anyone does after hearing their own voice is want to redo
+ * three of them, so choosing individual items has to be as easy as recording
+ * them. Deleting a clip IS the redo: progress is read from the files, so
+ * removing one puts exactly that item back in the queue and leaves the rest
+ * alone.
+ */
+
+const review = { part: 'phonemes', items: [], chosen: new Set(), audio: null }
+
+async function openReview (part) {
+  review.part = part
+  review.chosen.clear()
+  let plan
+  try {
+    plan = await api.studioPlan({ part })
+  } catch (err) {
+    alert('Could not load the list: ' + (err.message || err))
+    return
+  }
+  review.items = plan.items || []
+  $('review-title').textContent =
+    part === 'phonemes' ? 'Listen back - the sounds' : 'Listen back - the words'
+  $('review-hint').textContent =
+    `${plan.done} of ${plan.total} recorded. Press a word to hear it. ` +
+    'Tick any you want to do again, then Re-record selected.'
+  renderReview()
+  $('review').hidden = false
+  document.body.classList.add('script-open')
+}
+
+function renderReview () {
+  const host = $('review-list')
+  host.innerHTML = ''
+  for (const it of review.items) {
+    const row = document.createElement('div')
+    row.className = 'rev-row' + (it.done ? '' : ' is-todo')
+
+    const box = document.createElement('input')
+    box.type = 'checkbox'
+    box.id = 'rev-' + it.key
+    box.disabled = !it.done
+    box.checked = review.chosen.has(it.key)
+    box.addEventListener('change', () => {
+      if (box.checked) review.chosen.add(it.key)
+      else review.chosen.delete(it.key)
+      $('review-redo').disabled = review.chosen.size === 0
+      $('review-redo').textContent = review.chosen.size
+        ? `Re-record ${review.chosen.size} selected` : 'Re-record selected'
+    })
+    row.appendChild(box)
+
+    const label = document.createElement('label')
+    label.setAttribute('for', box.id)
+    label.className = 'rev-name'
+    label.textContent = it.display
+    row.appendChild(label)
+
+    const state = document.createElement('span')
+    state.className = 'rev-state'
+    state.textContent = it.done ? '' : 'not recorded yet'
+    row.appendChild(state)
+
+    if (it.done) {
+      const play = document.createElement('button')
+      play.type = 'button'
+      play.className = 'btn btn-quiet rev-play'
+      play.textContent = 'Play'
+      play.addEventListener('click', () => playClip(it, play))
+      row.appendChild(play)
+    }
+    host.appendChild(row)
+  }
+}
+
+async function playClip (it, btn) {
+  try {
+    const r = await api.studioClip({ part: review.part, key: it.key })
+    if (!r || !r.path) return
+    if (review.audio) { review.audio.pause(); review.audio = null }
+    // The renderer is a file:// page, so a file:// media source loads.
+    review.audio = new Audio('file://' + encodeURI(r.path).replace(/#/g, '%23'))
+    btn.textContent = 'Playing'
+    review.audio.addEventListener('ended', () => { btn.textContent = 'Play' })
+    await review.audio.play()
+  } catch {
+    btn.textContent = 'Play'
+  }
+}
+
+async function redoSelected () {
+  const keys = [...review.chosen]
+  if (!keys.length) return
+  await api.studioRemove({ part: review.part, keys })
+  closeReview()
+  openStudio(review.part)
+}
+
+async function clearPart () {
+  const what = review.part === 'phonemes' ? 'sounds' : 'words'
+  if (!confirm(`Delete all recorded ${what} and start that part again?\n\n` +
+               'The recordings are removed from this computer. This cannot be undone.')) return
+  await api.studioRemove({ part: review.part })
+  closeReview()
+  refreshVoiceState()
+}
+
+function closeReview () {
+  if (review.audio) { review.audio.pause(); review.audio = null }
+  $('review').hidden = true
+  document.body.classList.remove('script-open')
+  refreshVoiceState()
+}
+
+function initReview () {
+  for (const b of document.querySelectorAll('.vpart-review')) {
+    b.addEventListener('click', () => openReview(b.dataset.part))
+  }
+  const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
+  on('review-close', closeReview)
+  on('review-redo', redoSelected)
+  on('review-clear', clearPart)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('review').hidden) closeReview()
   })
 }

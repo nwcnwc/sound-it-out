@@ -270,6 +270,23 @@ def m_studio_submit(params):
             "saved": saved}
 
 
+def m_studio_clip(params):
+    from gen import studio
+
+    return {"path": studio.clip_path(params.get("part", "phonemes"),
+                                     params["key"],
+                                     params.get("order", "rows"))}
+
+
+def m_studio_remove(params):
+    from gen import studio
+
+    keys = params.get("keys")
+    n = studio.remove(params.get("part", "phonemes"), keys,
+                      params.get("order", "rows"))
+    return {"removed": n}
+
+
 def m_ping(_params):
     return {"pong": True}
 
@@ -286,6 +303,8 @@ METHODS = {
     "recordings.import": m_recordings_import,
     "studio.plan": m_studio_plan,
     "studio.submit": m_studio_submit,
+    "studio.clip": m_studio_clip,
+    "studio.remove": m_studio_remove,
 }
 
 

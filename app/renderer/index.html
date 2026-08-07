@@ -265,6 +265,9 @@
             <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
           </div>
           <div class="rowbar">
+            <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
+              Listen back &amp; redo
+            </button>
             <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
               Show what to say
             </button>
@@ -287,6 +290,9 @@
             <div class="bar-fill" id="bar-words" style="width:0%"></div>
           </div>
           <div class="rowbar">
+            <button class="btn btn-second vpart-review" type="button" data-part="words" hidden>
+              Listen back &amp; redo
+            </button>
             <button class="btn btn-second vpart-script" type="button" data-part="words">
               Show what to say
             </button>
@@ -322,6 +328,21 @@
 
     <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
   </section>
+
+  <!-- Listen back and redo. Deleting a clip is the redo: progress is read from
+       the files, so removing one puts exactly that item back in the queue. -->
+  <div class="review" id="review" hidden>
+    <div class="script-bar">
+      <h2 id="review-title">Listen back</h2>
+      <div class="rowbar">
+        <button class="btn btn-quiet" id="review-clear" type="button">Start this part again</button>
+        <button class="btn btn-second" id="review-redo" type="button" disabled>Re-record selected</button>
+        <button class="btn btn-quiet" id="review-close" type="button">Close</button>
+      </div>
+    </div>
+    <p class="review-hint" id="review-hint"></p>
+    <div class="review-list" id="review-list"></div>
+  </div>
 
   <!-- The script. Generated from the same list the importer aligns against, so
        what she reads and what the app expects can never disagree. -->

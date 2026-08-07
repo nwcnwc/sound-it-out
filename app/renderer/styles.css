@@ -943,3 +943,24 @@ body.script-open { overflow: hidden; }
 
 .studio-track { border-radius: 0; height: .35rem; }
 .vpart-bar { margin: .2rem 0 .9rem; max-width: 26rem; }
+
+/* ------------------------------------------------------- listen back & redo */
+
+.review { position: fixed; inset: 0; z-index: 70; background: var(--bg); overflow: auto; }
+.review-hint { max-width: 44rem; margin: 1.2rem auto 0; padding: 0 1.5rem; color: var(--ink-soft); }
+.review-list { max-width: 44rem; margin: 1rem auto; padding: 0 1.5rem 4rem; }
+
+.rev-row {
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  gap: .9rem; align-items: center;
+  padding: .55rem .2rem; border-bottom: 1px solid var(--line);
+}
+.rev-row.is-todo { opacity: .55; }
+.rev-name {
+  font-family: 'Andika', system-ui, sans-serif; font-weight: 700;
+  font-size: 1.5rem; cursor: pointer; line-height: 1.2;
+}
+.rev-row.is-todo .rev-name { cursor: default; }
+.rev-state { color: var(--ink-soft); font-size: .9rem; }
+.rev-play { padding: .3rem .8rem; }
+.rev-row input[type=checkbox] { width: 1.1rem; height: 1.1rem; }

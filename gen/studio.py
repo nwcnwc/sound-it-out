@@ -262,3 +262,38 @@ def save(item: Item, audio: np.ndarray) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     sf.write(path, audio.astype("float32"), SR)
     return str(path)
+
+
+def find(part: str, key: str, order="rows"):
+    """One item by key, so a single clip can be replayed or replaced."""
+    for it in plan(part, order):
+        if it.key == key:
+            return it
+    return None
+
+
+def clip_path(part: str, key: str, order="rows"):
+    """Where a recorded clip lives, or None if it has not been recorded."""
+    it = find(part, key, order)
+    if it is None:
+        return None
+    p = it.path()
+    return str(p) if p.exists() else None
+
+
+def remove(part: str, keys=None, order="rows") -> int:
+    """Delete recordings so they can be done again.
+
+    `keys=None` clears the whole part. Deleting is the honest way to redo:
+    progress is read from the files, so removing one puts exactly that item
+    back in the queue and leaves everything else untouched.
+    """
+    n = 0
+    for it in plan(part, order):
+        if keys is not None and it.key not in keys:
+            continue
+        p = it.path()
+        if p.exists():
+            p.unlink()
+            n += 1
+    return n
