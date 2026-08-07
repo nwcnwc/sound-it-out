@@ -274,6 +274,21 @@ def choose(takes: list, item: Item) -> dict:
     }
 
 
+def backup_existing(item: Item) -> None:
+    """Keep the previous take before overwriting it.
+
+    Re-recording used to destroy the old clip outright. A spare copy costs a
+    few KB and means a worse second attempt is not a one-way door.
+    """
+    p = item.path()
+    if p.exists():
+        prev = p.with_suffix(".previous.wav")
+        try:
+            prev.write_bytes(p.read_bytes())
+        except OSError:
+            pass  # a failed backup must never block the new recording
+
+
 def save(item: Item, audio: np.ndarray) -> str:
     """Write the chosen take where gen/voice.py will find it.
 
@@ -281,6 +296,7 @@ def save(item: Item, audio: np.ndarray) -> str:
     keep in step, and nothing to corrupt. Whatever exists on disk is what has
     been recorded, which is also what the video generator will use.
     """
+    backup_existing(item)
     path = item.path()
     path.parent.mkdir(parents=True, exist_ok=True)
     sf.write(path, audio.astype("float32"), SR)

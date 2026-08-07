@@ -50,7 +50,11 @@ FONTS = RESOURCES / "app" / "fonts"
 BUILD = DATA / "build"
 JOBS = BUILD / "jobs"
 AUDIO_CACHE = BUILD / "audio"
-VOICE_DIR = DATA / "assets" / "voice"
+# Overridable so tests and experiments NEVER write into, or clear, the real
+# recordings. This exists because they were once deleted by a cleanup step
+# that assumed the directory held only test data - 42 recorded phonemes,
+# unrecoverable, because the folder is gitignored and rm does not use Trash.
+VOICE_DIR = Path(os.environ.get("SIO_VOICE_DIR") or (DATA / "assets" / "voice"))
 WORDLISTS = DATA / "wordlists"
 
 
