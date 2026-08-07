@@ -1104,6 +1104,9 @@ function showItem () {
   sEl('studio-go').disabled = false
   sEl('studio-go').textContent = studio.i === 0 ? 'Start recording' : 'Record this one'
   sEl('studio-pause').hidden = true
+  sEl('studio-skip').hidden = false
+  sEl('studio-meter').hidden = false
+  sEl('studio-close').textContent = 'Finish for now'
   setPaused(false)
   renderTakeDots(0)
 }
@@ -1236,12 +1239,34 @@ function showTakeResult (r) {
 }
 
 function finishStudio () {
-  sEl('studio-word').textContent = 'All done'
-  sEl('studio-say').textContent = 'That is the whole list recorded.'
-  sEl('studio-pause').hidden = true
+  // The header last rendered when the final item was SHOWN - i.e. before it
+  // was recorded - which is why it read "42 of 42 - 41 recorded". Recount here.
+  const total = studio.items.length
+  const done = studio.items.filter((x) => x.done).length
+  const missed = total - done
+
+  sEl('studio-progress').textContent = `${done} of ${total} recorded`
+  const fill = $('studio-bar-fill')
+  if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
+
+  const what = studio.part === 'phonemes' ? 'sounds' : 'words'
+  sEl('studio-word').textContent = missed ? 'Finished' : 'All done'
+  sEl('studio-say').textContent = missed
+    ? `${done} of the ${total} ${what} are recorded. ` +
+      `${missed} ${missed === 1 ? 'was' : 'were'} skipped \u2014 you can come ` +
+      'back to those any time from Listen back.'
+    : `All ${total} ${what} recorded, in your own voice.`
+
+  // Nothing left to act on here, so leave only the way out.
   sEl('studio-state').textContent = ''
+  sEl('studio-pause').hidden = true
   sEl('studio-go').hidden = true
   sEl('studio-redo').hidden = true
+  sEl('studio-skip').hidden = true
+  sEl('studio-takes').innerHTML = ''
+  sEl('studio-result').hidden = true
+  sEl('studio-meter').hidden = true
+  sEl('studio-close').textContent = 'Done'
 }
 
 async function refreshVoiceState () {
