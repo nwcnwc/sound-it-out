@@ -301,12 +301,89 @@ def m_studio_passage(params):
     }
 
 
+def m_voice_info(_params):
+    """Where the recordings live, and how much there is. Shown in Settings."""
+    from gen.paths import VOICE_DIR
+
+    files = sorted(VOICE_DIR.rglob("*.wav")) if VOICE_DIR.exists() else []
+    return {
+        "dir": str(VOICE_DIR),
+        "count": len(files),
+        "bytes": sum(f.stat().st_size for f in files),
+        "hasPassage": (VOICE_DIR / "passage.wav").exists(),
+    }
+
+
+def m_voice_export(params):
+    """Copy every recording into one zip the user can put somewhere safe.
+
+    Recording takes about forty minutes and cannot be redone identically, so
+    it is the one thing in here worth protecting. The app's data folder is
+    inside Library on macOS, where nobody would think to look, let alone back
+    up - so this has to be one button rather than a path to go hunting for.
+    """
+    import zipfile
+    from gen.paths import VOICE_DIR
+
+    dest = Path(params["path"]).expanduser()
+    if dest.suffix.lower() != ".zip":
+        dest = dest.with_suffix(".zip")
+    files = sorted(VOICE_DIR.rglob("*.wav")) if VOICE_DIR.exists() else []
+    if not files:
+        raise ValueError("There are no recordings to back up yet.")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in files:
+            z.write(f, f.relative_to(VOICE_DIR).as_posix())
+    return {"path": str(dest), "count": len(files),
+            "bytes": dest.stat().st_size}
+
+
+def m_voice_restore(params):
+    """Put a backup back. Existing clips of the same name are replaced."""
+    import zipfile
+    from gen.paths import VOICE_DIR
+
+    src = Path(params["path"]).expanduser()
+    if not src.exists():
+        raise ValueError(f"Can't find that file: {src}")
+    VOICE_DIR.mkdir(parents=True, exist_ok=True)
+    n = 0
+    with zipfile.ZipFile(src) as z:
+        for name in z.namelist():
+            # Never write outside the voice directory, whatever the zip claims.
+            rel = Path(name)
+            if rel.is_absolute() or ".." in rel.parts or not name.endswith(".wav"):
+                continue
+            out = VOICE_DIR / rel
+            out.parent.mkdir(parents=True, exist_ok=True)
+            out.write_bytes(z.read(name))
+            n += 1
+    if not n:
+        raise ValueError("That file did not contain any recordings.")
+    return {"restored": n}
+
+
 def m_studio_clip(params):
+    """Where a clip is, AND whether it actually contains anything.
+
+    Without the level, a silent playback is indistinguishable from broken
+    headphones - and the person cannot fix either without knowing which.
+    """
+    import numpy as np
+    import soundfile as sf
     from gen import studio
 
-    return {"path": studio.clip_path(params.get("part", "phonemes"),
-                                     params["key"],
-                                     params.get("order", "rows"))}
+    path = studio.clip_path(params.get("part", "phonemes"), params["key"],
+                            params.get("order", "rows"))
+    out = {"path": path, "peak": 0.0, "seconds": 0.0, "silent": True}
+    if path:
+        a, sr = sf.read(path, dtype="float32")
+        out["peak"] = round(float(np.abs(a).max()) if a.size else 0.0, 4)
+        out["seconds"] = round(len(a) / sr, 2)
+        # Below this nothing is audible on a laptop speaker.
+        out["silent"] = out["peak"] < 0.01
+    return out
 
 
 def m_studio_remove(params):
@@ -335,6 +412,9 @@ METHODS = {
     "studio.plan": m_studio_plan,
     "studio.submit": m_studio_submit,
     "studio.clip": m_studio_clip,
+    "voice.info": m_voice_info,
+    "voice.export": m_voice_export,
+    "voice.restore": m_voice_restore,
     "studio.passage": m_studio_passage,
     "passage.text": m_passage_text,
     "studio.remove": m_studio_remove,

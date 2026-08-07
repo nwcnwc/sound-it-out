@@ -317,6 +317,32 @@ function registerIpc () {
   ipcMain.handle('studio:plan', async (_e, o) => sidecar.call('studio.plan', o || {}))
   ipcMain.handle('studio:passage', async (_e, o) => sidecar.call('studio.passage', o || {}))
   ipcMain.handle('passage:text', async () => sidecar.call('passage.text', {}))
+  ipcMain.handle('voice:info', async () => sidecar.call('voice.info', {}))
+
+  ipcMain.handle('voice:export', async () => {
+    const r = await dialog.showSaveDialog(win, {
+      title: 'Save a backup of your recordings',
+      defaultPath: path.join(os.homedir(), 'sound-it-out-voice-backup.zip'),
+      filters: [{ name: 'Backup', extensions: ['zip'] }]
+    })
+    if (r.canceled) return { ok: false, canceled: true }
+    try {
+      return { ok: true, ...(await sidecar.call('voice.export', { path: r.filePath })) }
+    } catch (err) { return { ok: false, error: err.message } }
+  })
+
+  ipcMain.handle('voice:restore', async () => {
+    const r = await dialog.showOpenDialog(win, {
+      title: 'Choose a backup to restore',
+      properties: ['openFile'],
+      filters: [{ name: 'Backup', extensions: ['zip'] }]
+    })
+    if (r.canceled) return { ok: false, canceled: true }
+    try {
+      return { ok: true, ...(await sidecar.call('voice.restore', { path: r.filePaths[0] })) }
+    } catch (err) { return { ok: false, error: err.message } }
+  })
+
   ipcMain.handle('studio:clip', async (_e, o) => sidecar.call('studio.clip', o || {}))
   ipcMain.handle('studio:remove', async (_e, o) => sidecar.call('studio.remove', o || {}))
   ipcMain.handle('studio:submit', async (_e, o) => sidecar.call('studio.submit', o || {}))

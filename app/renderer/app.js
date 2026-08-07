@@ -70,6 +70,7 @@ async function boot () {
   initScript()
   initReview()
   initReader()
+  initVoiceSettings()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -1459,17 +1460,32 @@ function renderReview () {
 }
 
 async function playClip (it, btn) {
+  const note = btn.parentElement.querySelector('.rev-state')
   try {
     const r = await api.studioClip({ part: review.part, key: it.key })
-    if (!r || !r.path) return
+    if (!r || !r.path) { if (note) note.textContent = 'not found'; return }
+
+    // Say what is in the clip, so silence on playback can be told apart from
+    // a headphone problem. Without this both look identical.
+    if (r.silent) {
+      if (note) note.textContent = 'this clip is silent - re-record it'
+      btn.textContent = 'Play'
+      return
+    }
+    if (note) note.textContent = `${r.seconds}s, level ${Math.round(r.peak * 100)}%`
+
     if (review.audio) { review.audio.pause(); review.audio = null }
-    // The renderer is a file:// page, so a file:// media source loads.
     review.audio = new Audio('file://' + encodeURI(r.path).replace(/#/g, '%23'))
     btn.textContent = 'Playing'
     review.audio.addEventListener('ended', () => { btn.textContent = 'Play' })
+    review.audio.addEventListener('error', () => {
+      btn.textContent = 'Play'
+      if (note) note.textContent = 'could not play it here - the clip itself is fine'
+    })
     await review.audio.play()
-  } catch {
+  } catch (err) {
     btn.textContent = 'Play'
+    if (note) note.textContent = 'could not play: ' + (err.message || err)
   }
 }
 
@@ -1497,7 +1513,31 @@ function closeReview () {
   refreshVoiceState()
 }
 
+/* Plays a tone through the same audio path the clips use. If this is silent
+ * the problem is the speakers or the output device, not the recordings - which
+ * is otherwise impossible to tell from the app. */
+async function testSpeakers (btn) {
+  try {
+    const ctx = new AudioContext()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.frequency.value = 440
+    gain.gain.value = 0.18
+    osc.connect(gain).connect(ctx.destination)
+    btn.textContent = 'Playing a tone…'
+    osc.start()
+    await new Promise((r) => setTimeout(r, 900))
+    osc.stop()
+    await ctx.close()
+    btn.textContent = 'Heard it? Speakers are fine'
+  } catch (err) {
+    btn.textContent = 'Could not play a tone: ' + (err.message || err)
+  }
+}
+
 function initReview () {
+  const t = $('review-test')
+  if (t) t.addEventListener('click', () => testSpeakers(t))
   for (const b of document.querySelectorAll('.vpart-review')) {
     b.addEventListener('click', () => openReview(b.dataset.part))
   }
@@ -1618,4 +1658,65 @@ function initReader () {
   on('reader-pause', toggleReaderPause)
   on('reader-done', finishReading)
   on('reader-close', closeReader)
+}
+
+
+/* ------------------------------------------------------- recordings settings
+ *
+ * The clips live in the app's data folder - inside Library on macOS, where
+ * nobody would find them and nothing would back them up. Showing the path is
+ * the small part; the backup button is the point.
+ */
+
+function human (bytes) {
+  if (!bytes) return '0 MB'
+  const mb = bytes / 1048576
+  return mb < 1 ? Math.round(bytes / 1024) + ' KB' : mb.toFixed(1) + ' MB'
+}
+
+async function refreshVoiceSettings () {
+  try {
+    const v = await api.voiceInfo()
+    setText('voice-dir', v.dir)
+    setText('voice-info', v.count
+      ? `${v.count} recordings, ${human(v.bytes)}` +
+        (v.hasPassage ? ', including the reading passage.' : '.')
+      : 'Nothing recorded yet.')
+    const b = $('voice-backup')
+    if (b) b.disabled = !v.count
+  } catch { /* Settings is still usable without this */ }
+}
+
+function voiceStatus (msg, bad) {
+  const el = $('voice-status')
+  if (!el) return
+  el.hidden = false
+  el.textContent = msg
+  el.style.color = bad ? 'var(--bad)' : ''
+}
+
+function initVoiceSettings () {
+  const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
+  on('voice-open', async () => {
+    const v = await api.voiceInfo().catch(() => null)
+    if (v && v.dir) api.openPath(v.dir)
+  })
+  on('voice-backup', async () => {
+    voiceStatus('Saving…')
+    const r = await api.voiceExport()
+    if (r.canceled) { voiceStatus(''); $('voice-status').hidden = true; return }
+    voiceStatus(r.ok
+      ? `Saved ${r.count} recordings to ${r.path}`
+      : 'Could not save the backup: ' + (r.error || ''), !r.ok)
+  })
+  on('voice-restore', async () => {
+    voiceStatus('Restoring…')
+    const r = await api.voiceRestore()
+    if (r.canceled) { voiceStatus(''); $('voice-status').hidden = true; return }
+    voiceStatus(r.ok ? `Restored ${r.restored} recordings.`
+                     : 'Could not restore: ' + (r.error || ''), !r.ok)
+    refreshVoiceSettings()
+    refreshVoiceState()
+  })
+  refreshVoiceSettings()
 }

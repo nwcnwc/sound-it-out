@@ -346,6 +346,7 @@
     <div class="script-bar">
       <h2 id="review-title">Listen back</h2>
       <div class="rowbar">
+        <button class="btn btn-quiet" id="review-test" type="button">Test my speakers</button>
         <button class="btn btn-quiet" id="review-clear" type="button">Start this part again</button>
         <button class="btn btn-second" id="review-redo" type="button" disabled>Re-record selected</button>
         <button class="btn btn-quiet" id="review-close" type="button">Close</button>
@@ -423,6 +424,23 @@
           <button class="btn btn-quiet" id="cancel-outdir" type="button">Never mind</button>
         </div>
       </div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>Your recordings</legend>
+      <p id="voice-info" class="hint">&nbsp;</p>
+      <p class="path-box" id="voice-dir">&nbsp;</p>
+      <div class="rowbar">
+        <button class="btn btn-second" id="voice-open" type="button">Open this folder</button>
+        <button class="btn btn-primary" id="voice-backup" type="button">Save a backup&hellip;</button>
+        <button class="btn btn-second" id="voice-restore" type="button">Restore a backup&hellip;</button>
+      </div>
+      <p class="hint">
+        Recording takes about forty minutes and cannot be redone exactly, so it is the
+        one thing here worth keeping a copy of. The backup is a single file &mdash; put it
+        on a memory stick or in your cloud drive.
+      </p>
+      <p class="install-status" id="voice-status" role="status" aria-live="polite" hidden></p>
     </fieldset>
 
     <fieldset class="block">
