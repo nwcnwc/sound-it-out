@@ -364,13 +364,21 @@ app.whenReady().then(() => {
             buttons: ['OK']
           })
         }
-      } catch {
+      } catch (err) {
+        // "Offline" was the wrong guess and the commonest case: before the
+        // first release is published the API returns 404, which is not a
+        // network problem at all. Saying so beats blaming the connection.
+        const none = err && err.noReleases
         dialog.showMessageBox(win, {
           type: 'info',
           title: 'Sound It Out',
-          message: 'Could not check for updates.',
-          detail: 'This usually means the computer is offline. ' +
-                  'Sound It Out works normally without checking.',
+          message: none ? 'No updates have been published yet.'
+                        : 'Could not check for updates.',
+          detail: none
+            ? `You are running version ${app.getVersion()}, which is the only ` +
+              'version so far. The app will tell you when a newer one appears.'
+            : 'The computer may be offline, or GitHub may be unavailable. ' +
+              'Sound It Out works normally without checking.',
           buttons: ['OK']
         })
       }

@@ -1038,8 +1038,10 @@ function sEl (id) { return $(id) }
 async function openStudio (part) {
   studio.part = part
   studio.cancelled = false
+  // `plan` is used well below, so it must not be scoped to the try block.
+  let plan
   try {
-    const plan = await api.studioPlan({ part })
+    plan = await api.studioPlan({ part })
     studio.items = plan.items || []
     studio.takes = plan.takes || 3
   } catch (err) {
@@ -1255,7 +1257,12 @@ async function refreshVoiceState () {
 function initStudio () {
   const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
   for (const b of document.querySelectorAll('.vpart-record')) {
-    b.addEventListener('click', () => openStudio(b.dataset.part))
+    b.addEventListener('click', () => {
+      openStudio(b.dataset.part).catch((err) => {
+        console.error(err)
+        alert('Recording could not start: ' + (err.message || err))
+      })
+    })
   }
   on('studio-close', closeStudio)
   on('studio-pause', () => setPaused(!studio.paused))

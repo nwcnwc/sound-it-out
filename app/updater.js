@@ -45,6 +45,10 @@ function get (url, { json = false } = {}) {
           res.resume()
           return resolve(get(res.headers.location, { json }))
         }
+        if (res.statusCode === 404) {
+          res.resume()
+          return reject(Object.assign(new Error('no releases yet'), { noReleases: true }))
+        }
         if (res.statusCode !== 200) {
           res.resume()
           return reject(new Error(`GitHub returned ${res.statusCode}`))
