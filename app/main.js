@@ -315,6 +315,8 @@ function registerIpc () {
   })
 
   ipcMain.handle('studio:plan', async (_e, o) => sidecar.call('studio.plan', o || {}))
+  ipcMain.handle('studio:passage', async (_e, o) => sidecar.call('studio.passage', o || {}))
+  ipcMain.handle('passage:text', async () => sidecar.call('passage.text', {}))
   ipcMain.handle('studio:clip', async (_e, o) => sidecar.call('studio.clip', o || {}))
   ipcMain.handle('studio:remove', async (_e, o) => sidecar.call('studio.remove', o || {}))
   ipcMain.handle('studio:submit', async (_e, o) => sidecar.call('studio.submit', o || {}))

@@ -98,9 +98,27 @@ def plan(part="phonemes", order="rows") -> list:
                         "say it naturally.")),
             ))
     else:
-        from gen import wordlists
+        from gen import levels, wordlists
 
+        # Her own list first, then any word level 6 needs that is not already
+        # in it. Without this the build-up level was 32% her voice even after a
+        # full recording session: it teaches "sat", "mat", "dog" and so on,
+        # none of which are sight words, so every one fell back to the built-in
+        # voice with nothing on screen to explain why.
+        seen, order = set(), []
         for w in wordlists.all_words():
+            if w.lower() not in seen:
+                seen.add(w.lower())
+                order.append(w)
+        ladder = [w for ch in levels.LADDER for w in ch["words"]]
+        ladder += [w.strip(".,!?") for ch in levels.LADDER
+                   for w in ch["sentence"].split()]
+        for w in ladder:
+            if w.lower() not in seen:
+                seen.add(w.lower())
+                order.append(w)
+
+        for w in order:
             items.append(Item(key=w.lower(), kind="word", display=w,
                               length="free",
                               say="Say it normally, the way you would in a sentence."))

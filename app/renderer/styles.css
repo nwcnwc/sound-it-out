@@ -841,19 +841,7 @@ dl.format dd { margin: .2rem 0 0; color: var(--ink-soft); font-size: .95rem; }
 
 /* ---------------------------------------------------------- record studio */
 
-.studio-cta {
-  display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center;
-  padding: 1.2rem 1.3rem; margin-bottom: 1.4rem;
-  border: 1px solid var(--accent-wash); background: var(--accent-wash);
-  border-radius: var(--radius);
-}
-.studio-cta h2 { margin: 0 0 .35rem; font-size: 1.1rem; }
-.studio-cta p { margin: 0; max-width: 56ch; color: var(--ink-soft); }
-.studio-cta-actions { display: grid; gap: .5rem; }
-
-.import-alt { margin: 0 0 1.4rem; }
-.import-alt summary { cursor: pointer; color: var(--ink-soft); padding: .4rem 0; }
-.import-alt-body { padding-top: .8rem; }
+.voice-lead { max-width: 62ch; margin: 0 0 1.6rem; color: var(--ink-soft); }
 
 .studio {
   position: fixed; inset: 0; z-index: 60; background: var(--bg);
@@ -964,3 +952,12 @@ body.script-open { overflow: hidden; }
 .rev-state { color: var(--ink-soft); font-size: .9rem; }
 .rev-play { padding: .3rem .8rem; }
 .rev-row input[type=checkbox] { width: 1.1rem; height: 1.1rem; }
+
+.reader { position: fixed; inset: 0; z-index: 70; background: var(--bg); overflow: auto; }
+.reader-clock { font-variant-numeric: tabular-nums; color: var(--ink-soft); min-width: 3.2rem; }
+.reader-body { max-width: 40rem; margin: 0 auto; padding: 2rem 1.5rem 6rem; font-size: 1.25rem; line-height: 1.75; }
+.reader-body h3 { margin: 2rem 0 .6rem; font-size: 1rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; }
+.reader-body p { margin: 0 0 1.1rem; }
+.reader-result { position: sticky; bottom: 0; margin: 0; padding: 1rem 1.5rem; background: var(--surface); border-top: 1px solid var(--line); }
+.reader-result.is-good { background: var(--accent-wash); }
+.reader-result.is-bad { background: var(--bad-wash); }

@@ -43,6 +43,17 @@ const Recorder = (() => {
     node.port.postMessage('start')
   }
 
+  /* Pause keeps what has been captured so far, unlike start(). Reading a six
+   * minute passage in one go is not realistic with a child in the house, so
+   * the passage recorder pauses and carries on into the same take. */
+  function pause () { capturing = false; if (node) node.port.postMessage('stop') }
+  function resume () { capturing = true; if (node) node.port.postMessage('start') }
+  function seconds () {
+    let n = 0
+    for (const c of chunks) n += c.length
+    return n / (ctx ? ctx.sampleRate : 48000)
+  }
+
   /** Stops and returns { b64, sampleRate, seconds, peak }. */
   function stop () {
     capturing = false
@@ -97,5 +108,5 @@ const Recorder = (() => {
     capturing = false
   }
 
-  return { init, start, stop, level, release, ready: () => !!ctx }
+  return { init, start, stop, pause, resume, seconds, level, release, ready: () => !!ctx }
 })()

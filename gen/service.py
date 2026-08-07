@@ -270,6 +270,37 @@ def m_studio_submit(params):
             "saved": saved}
 
 
+def m_passage_text(_params):
+    """The passage itself, so it can be read from the screen."""
+    from gen.paths import RESOURCES
+
+    raw = (RESOURCES / "PASSAGE.md").read_text(encoding="utf-8")
+    body = raw.split("## One", 1)[-1]
+    return {"markdown": "## One" + body}
+
+
+def m_studio_passage(params):
+    """Save a passage recorded in the app, then check it as an import would."""
+    import soundfile as sf
+    from gen import recordings as R
+    from gen import studio
+    from gen.paths import VOICE_DIR
+
+    audio = studio.decode(params["audio"], int(params.get("sampleRate", 48000)))
+    VOICE_DIR.mkdir(parents=True, exist_ok=True)
+    dest = VOICE_DIR / "passage.wav"
+    sf.write(dest, audio.astype("float32"), studio.SR)
+
+    issues, notes, _ = R.check_passage(dest, None, dry_run=True)
+    return {
+        "path": str(dest),
+        "seconds": round(len(audio) / studio.SR, 1),
+        "issues": [{"label": i.label, "severity": i.severity, "message": i.message}
+                   for i in issues],
+        "notes": list(notes),
+    }
+
+
 def m_studio_clip(params):
     from gen import studio
 
@@ -304,6 +335,8 @@ METHODS = {
     "studio.plan": m_studio_plan,
     "studio.submit": m_studio_submit,
     "studio.clip": m_studio_clip,
+    "studio.passage": m_studio_passage,
+    "passage.text": m_passage_text,
     "studio.remove": m_studio_remove,
 }
 

@@ -236,24 +236,13 @@
       </p>
     </div>
 
-    <div class="studio-cta">
-      <div>
-        <h2>Record it here, one at a time</h2>
-        <p>
-          Each sound or word appears on screen, you say it a few times, and the app keeps
-          the best one. It tells you straight away if something needs another go &mdash;
-          no waiting until the end to find out.
-        </p>
-      </div>
-      <div class="studio-cta-actions">
-        <button class="btn btn-primary" id="studio-sounds" type="button">Record the sounds</button>
-        <button class="btn btn-second" id="studio-words" type="button">Record the words</button>
-      </div>
-    </div>
+    <p class="voice-lead">
+      For each part you can either <b>record it here</b>, one item at a time with the
+      app checking as you go, or record it on a phone and bring the file in. Recording
+      here is easier &mdash; it tells you straight away if something needs another go.
+    </p>
 
-    <details class="import-alt">
-      <summary>Or bring in a recording made on a phone</summary>
-      <div class="import-alt-body">
+
 
       <li class="vpart" data-part="phonemes">
         <div class="vpart-num">1</div>
@@ -265,6 +254,9 @@
             <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
           </div>
           <div class="rowbar">
+            <button class="btn btn-primary vpart-record" type="button" data-part="phonemes">
+              Record these here
+            </button>
             <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
               Listen back &amp; redo
             </button>
@@ -290,6 +282,9 @@
             <div class="bar-fill" id="bar-words" style="width:0%"></div>
           </div>
           <div class="rowbar">
+            <button class="btn btn-primary vpart-record" type="button" data-part="words">
+              Record these here
+            </button>
             <button class="btn btn-second vpart-review" type="button" data-part="words" hidden>
               Listen back &amp; redo
             </button>
@@ -312,7 +307,8 @@
           <p>Six minutes of ordinary reading aloud. This one is never played to your child
              &mdash; it is what lets the later levels sound like you.</p>
           <div class="rowbar">
-            <button class="btn btn-second vpart-pick" type="button" data-part="passage">
+            <button class="btn btn-primary" id="read-passage" type="button">Read it here</button>
+            <button class="btn btn-quiet vpart-pick" type="button" data-part="passage">
               Choose the recording&hellip;
             </button>
             <span class="vpart-file" id="file-passage"></span>
@@ -323,11 +319,26 @@
 
     </ol>
 
-      </div>
-    </details>
-
     <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
   </section>
+
+  <!-- The passage reader. Continuous rather than take-based: it is six minutes
+       of connected speech, and the prosody is the whole point. -->
+  <div class="reader" id="reader" hidden>
+    <div class="script-bar">
+      <h2>Read this out loud</h2>
+      <div class="rowbar">
+        <span class="reader-clock" id="reader-clock">0:00</span>
+        <button class="btn btn-primary" id="reader-go" type="button">Start reading</button>
+        <button class="btn btn-second" id="reader-pause" type="button" hidden>Pause</button>
+        <button class="btn btn-second" id="reader-done" type="button" hidden>I have finished</button>
+        <button class="btn btn-quiet" id="reader-close" type="button">Close</button>
+      </div>
+    </div>
+    <div class="bar bar-slim"><div class="bar-fill" id="reader-level" style="width:0%"></div></div>
+    <div class="reader-body" id="reader-body"></div>
+    <p class="reader-result" id="reader-result" hidden></p>
+  </div>
 
   <!-- Listen back and redo. Deleting a clip is the redo: progress is read from
        the files, so removing one puts exactly that item back in the queue. -->

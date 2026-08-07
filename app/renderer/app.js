@@ -69,6 +69,7 @@ async function boot () {
   initStudio()
   initScript()
   initReview()
+  initReader()
   setUpWords()
   setUpMake()
   setUpSettings()
@@ -1253,8 +1254,9 @@ async function refreshVoiceState () {
 
 function initStudio () {
   const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
-  on('studio-sounds', () => openStudio('phonemes'))
-  on('studio-words', () => openStudio('words'))
+  for (const b of document.querySelectorAll('.vpart-record')) {
+    b.addEventListener('click', () => openStudio(b.dataset.part))
+  }
   on('studio-close', closeStudio)
   on('studio-pause', () => setPaused(!studio.paused))
   on('studio-go', recordItem)
@@ -1474,4 +1476,114 @@ function initReview () {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('review').hidden) closeReview()
   })
+}
+
+
+/* ------------------------------------------------------------- the passage
+ *
+ * Continuous, not take-based. The passage is the voice-cloning reference and
+ * its whole value is connected prosody - rhythm, melody, where the breaths
+ * fall - so it must be read straight through rather than assembled from
+ * fragments. Pause carries on into the same take rather than starting a new
+ * one, because six unbroken minutes is not realistic with a child in the house.
+ */
+
+const reader = { recording: false, paused: false, tick: null }
+
+async function openReader () {
+  try {
+    const t = await api.passageText()
+    const body = $('reader-body')
+    body.innerHTML = ''
+    for (const block of (t.markdown || '').split('\n\n')) {
+      const line = block.trim()
+      if (!line) continue
+      const el = document.createElement(line.startsWith('##') ? 'h3' : 'p')
+      el.textContent = line.replace(/^#+\s*/, '')
+      body.appendChild(el)
+    }
+  } catch (err) {
+    alert('Could not load the passage: ' + (err.message || err))
+    return
+  }
+  try {
+    await Recorder.init()
+  } catch {
+    alert('The microphone could not be used. Check this app is allowed to use it.')
+    return
+  }
+  $('reader-result').hidden = true
+  $('reader').hidden = false
+  document.body.classList.add('script-open')
+}
+
+function readerClock () {
+  const s = Math.floor(Recorder.seconds())
+  $('reader-clock').textContent =
+    Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')
+  $('reader-level').style.width = Math.round(Recorder.level() * 100) + '%'
+}
+
+function startReading () {
+  Recorder.start()
+  reader.recording = true
+  reader.paused = false
+  $('reader-go').hidden = true
+  $('reader-pause').hidden = false
+  $('reader-done').hidden = false
+  reader.tick = setInterval(readerClock, 200)
+}
+
+function toggleReaderPause () {
+  if (!reader.recording) return
+  reader.paused = !reader.paused
+  if (reader.paused) Recorder.pause()
+  else Recorder.resume()
+  $('reader-pause').textContent = reader.paused ? 'Carry on' : 'Pause'
+}
+
+async function finishReading () {
+  clearInterval(reader.tick)
+  reader.recording = false
+  const take = Recorder.stop()
+  $('reader-pause').hidden = true
+  $('reader-done').hidden = true
+  const box = $('reader-result')
+  box.hidden = false
+  box.className = 'reader-result'
+  box.textContent = 'Checking the recording…'
+  try {
+    const r = await api.studioPassage({ audio: take.b64, sampleRate: take.sampleRate })
+    const fails = (r.issues || []).filter((i) => i.severity === 'fail')
+    box.className = 'reader-result ' + (fails.length ? 'is-bad' : 'is-good')
+    box.textContent = (fails.length
+      ? fails.map((i) => i.message).join(' ')
+      : 'Saved. ' + (r.notes || []).join(' ')) +
+      (fails.length ? ' Press Start reading to go again.' : '')
+    $('reader-go').hidden = false
+    $('reader-go').textContent = fails.length ? 'Read it again' : 'Record it again'
+  } catch (err) {
+    box.className = 'reader-result is-bad'
+    box.textContent = 'That could not be saved: ' + (err.message || err)
+    $('reader-go').hidden = false
+  }
+  refreshVoiceState()
+}
+
+function closeReader () {
+  clearInterval(reader.tick)
+  if (reader.recording) Recorder.stop()
+  reader.recording = false
+  Recorder.release()
+  $('reader').hidden = true
+  document.body.classList.remove('script-open')
+}
+
+function initReader () {
+  const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
+  on('read-passage', openReader)
+  on('reader-go', startReading)
+  on('reader-pause', toggleReaderPause)
+  on('reader-done', finishReading)
+  on('reader-close', closeReader)
 }

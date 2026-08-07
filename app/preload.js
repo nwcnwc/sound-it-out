@@ -30,6 +30,8 @@ contextBridge.exposeInMainWorld('soundout', {
   studioSubmit: (opts) => ipcRenderer.invoke('studio:submit', opts),
   studioClip: (opts) => ipcRenderer.invoke('studio:clip', opts),
   studioRemove: (opts) => ipcRenderer.invoke('studio:remove', opts),
+  studioPassage: (opts) => ipcRenderer.invoke('studio:passage', opts),
+  passageText: () => ipcRenderer.invoke('passage:text'),
   checkForUpdate: () => ipcRenderer.invoke('update:check'),
   installUpdate: (asset) => ipcRenderer.invoke('update:install', asset),
   chooseDirectory: () => ipcRenderer.invoke('dir:choose'),
