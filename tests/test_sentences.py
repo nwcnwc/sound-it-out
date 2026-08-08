@@ -343,3 +343,10 @@ def test_the_bank_catalog_is_what_is_on_disk(library, monkeypatch):
 def test_bank_display_decodes_safe_names(library):
     assert studio._undo_safe("dogu0027s") == "dog's"
     assert studio._undo_safe("sun") == "sun"
+
+
+def test_soft_c_and_g_in_rimes():
+    """"face" ends /eɪs/ and "cage" ends /eɪdʒ/ - the e softens c and g
+    inside a rime, while an opening c stays hard."""
+    assert levels.word_parts("face") == [("f", "f"), ("ace", "eɪs")]
+    assert levels.word_parts("cage") == [("c", "k"), ("age", "eɪdʒ")]

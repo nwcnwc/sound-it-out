@@ -13,6 +13,16 @@ Workflow, run from the repo:
 
 Record whatever it reports missing the same way any content is recorded -
 add the pack on the Sentences tab, press Record - then run --copy again.
+Or generate the gaps from the developer's cloned voice:
+
+    .venv/bin/python -m gen.starter --copy --generate
+
+which speaks every missing word, line, and magic-e rime with the slow
+high-quality clone model. The rimes matter beyond the packs: the buildup
+says "ase" as one sound /eɪs/, which is not among the 42 phonemes, so
+every rime the spelling rules can produce ships as a clip - that is what
+lets arbitrary magic-e words build up without a synthesiser in the app.
+
 The copied files are tracked and shipped (see electron-builder.yml); the
 family's own recordings always beat them at lookup time (gen/voice.py).
 """
@@ -22,10 +32,14 @@ from __future__ import annotations
 import shutil
 import sys
 
+import numpy as np
+import soundfile as sf
+
 from gen import sentences as slib
 from gen import studio
 from gen.paths import STARTER_VOICE, VOICE_DIR
-from gen.voice import sentence_key
+from gen.soundout import SR, tidy_word
+from gen.voice import _safe, sentence_key
 
 
 def needed() -> tuple:
@@ -76,6 +90,71 @@ def run(copy=False) -> dict:
     }
 
 
+def all_rimes() -> list:
+    """Every (spelling, ipa) rime the magic-e rule can produce.
+
+    The spelling doubles as what the clone is asked to SAY - "ase", "ike",
+    "ome" read aloud are the rimes themselves - and the ipa is the filename
+    the phoneme lookup asks for.
+    """
+    from gen.levels import CVC_PHONEMES, LONG_VOWELS, MAGIC_E, RIME_CONS
+
+    out = []
+    for v in "aeiou":
+        for c in "bcdfgklmnpstz":
+            spelling = f"{v}{c}e"
+            if MAGIC_E.search(spelling):
+                out.append((spelling,
+                            LONG_VOWELS[v] + RIME_CONS.get(c, CVC_PHONEMES[c])))
+    return out
+
+
+def generate_missing(profile="mum", variant="english", log=print) -> dict:
+    """Speak every gap with the developer's cloned voice and stage it.
+
+    Slow on purpose: these ship to every install, so they get the
+    high-quality model, hours and all. Each clip is levelled at lookup
+    time like everything else; words get the same conservative tidy-up
+    as any generated word. A clip that comes back silent or absurdly
+    long is reported and NOT written - a bad shipped default is worse
+    than a missing one.
+    """
+    from gen import clone
+
+    prof = clone.PROFILES / profile
+    words, lines = needed()
+    jobs = []
+    for w in words:
+        dest = STARTER_VOICE / "words" / f"{_safe(w.lower())}.wav"
+        if not dest.exists():
+            jobs.append(("word", w, dest))
+    for text in lines:
+        dest = STARTER_VOICE / "sentences" / f"{sentence_key(text)}.wav"
+        if not dest.exists():
+            jobs.append(("line", text, dest))
+    for spelling, ipa in all_rimes():
+        dest = STARTER_VOICE / "phonemes" / f"{_safe(ipa)}.wav"
+        if not dest.exists():
+            jobs.append(("rime", spelling, dest))
+
+    bad, done = [], 0
+    for i, (kind, text, dest) in enumerate(jobs):
+        log(f"[{i + 1}/{len(jobs)}] {kind}: {text}")
+        a = clone.synthesize(text, prof, variant=variant)
+        if kind != "line":
+            a = tidy_word(a)
+        seconds = len(a) / SR
+        peak = float(np.abs(a).max()) if a.size else 0.0
+        limit = 12.0 if kind == "line" else 4.0
+        if peak < 0.01 or seconds < 0.15 or seconds > limit:
+            bad.append((kind, text, round(seconds, 2), round(peak, 3)))
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        sf.write(dest, a.astype("float32"), SR)
+        done += 1
+    return {"generated": done, "rejected": bad, "jobs": len(jobs)}
+
+
 def main():
     copy = "--copy" in sys.argv
     r = run(copy=copy)
@@ -90,7 +169,13 @@ def main():
         for t in r["missing_lines"]:
             print("  " + t)
     if not r["missing_words"] and not r["missing_lines"]:
-        print("\nnothing missing - the packs are fully covered.")
+        print("\nnothing recorded is missing - the packs are fully covered.")
+
+    if "--generate" in sys.argv:
+        g = generate_missing()
+        print(f"\ngenerated {g['generated']} of {g['jobs']} clips with the cloned voice")
+        for kind, text, secs, peak in g["rejected"]:
+            print(f"  REJECTED {kind} '{text}': {secs}s, peak {peak}")
 
 
 if __name__ == "__main__":

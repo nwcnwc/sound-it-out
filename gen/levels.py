@@ -90,6 +90,9 @@ GRAPHEMES = {
 # irregular instead - "case" and "chase" keep /s/ and are the common case.
 MAGIC_E = re.compile(r"[aeiou][bcdfgklmnpstz]e$")
 LONG_VOWELS = {"a": "eɪ", "e": "iː", "i": "aɪ", "o": "əʊ", "u": "uː"}
+# Inside a rime the e also softens c and g: "face" is /eɪs/, "cage" is
+# /eɪdʒ/. Everywhere else c stays /k/ and g stays /ɡ/.
+RIME_CONS = {"c": "s", "g": "dʒ"}
 
 # Buildable exceptions the letter rules cannot produce: the s in these is
 # voiced. Small and explicit beats a clever rule that misfires.
@@ -106,7 +109,8 @@ def split_graphemes(word: str):
     low = word.lower()
     if len(low) >= 3 and MAGIC_E.search(low):
         head = split_graphemes(word[:-3]) if len(word) > 3 else []
-        rime = LONG_VOWELS[low[-3]] + CVC_PHONEMES.get(low[-2], low[-2])
+        c = low[-2]
+        rime = LONG_VOWELS[low[-3]] + RIME_CONS.get(c, CVC_PHONEMES.get(c, c))
         return head + [(word[-3:], rime)]
     out, i = [], 0
     while i < len(word):
