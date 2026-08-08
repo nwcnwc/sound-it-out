@@ -1714,29 +1714,37 @@ function initReview () {
 
 /* ------------------------------------------------------------- the passage
  *
- * Continuous, not take-based. The passage is the voice-cloning reference and
- * its whole value is connected prosody - rhythm, melody, where the breaths
- * fall - so it must be read straight through rather than assembled from
- * fragments. Pause carries on into the same take rather than starting a new
- * one, because six unbroken minutes is not realistic with a child in the house.
+ * Recorded one section at a time, and resumable.
+ *
+ * It used to be a single unbroken take of about five minutes, on the reasoning
+ * that the passage is the voice-cloning reference and connected prosody is its
+ * whole value. The prosody argument is right; the conclusion was not. Five
+ * undisturbed minutes is precisely what a parent with a small child does not
+ * have, and what actually happened was a session interrupted part-way, leaving
+ * thirty-three seconds of a five-minute script on disk - a real, playable file
+ * that simply was not the passage.
+ *
+ * Sections are 20-70 seconds each, which is far more connected speech than a
+ * reference needs, and they break where PASSAGE.md has always told her she may
+ * stop. Splitting any finer - per paragraph, per sentence - would start eating
+ * into the prosody that matters, so it is not offered.
  */
 
-const reader = { recording: false, paused: false, tick: null }
+const reader = { recording: false, paused: false, tick: null, plan: null, i: 0 }
+
+function clockText (s) {
+  return Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0')
+}
 
 async function openReader () {
   try {
-    const t = await api.passageText()
-    const body = $('reader-body')
-    body.innerHTML = ''
-    for (const block of (t.markdown || '').split('\n\n')) {
-      const line = block.trim()
-      if (!line) continue
-      const el = document.createElement(line.startsWith('##') ? 'h3' : 'p')
-      el.textContent = line.replace(/^#+\s*/, '')
-      body.appendChild(el)
-    }
+    reader.plan = await api.passagePlan()
   } catch (err) {
     alert('Could not load the passage: ' + (err.message || err))
+    return
+  }
+  if (!reader.plan.total) {
+    alert('The passage could not be read from this copy of the app.')
     return
   }
   try {
@@ -1745,15 +1753,89 @@ async function openReader () {
     alert('The microphone could not be used. Check this app is allowed to use it.')
     return
   }
+  // Pick up where she left off rather than making her find her place.
+  reader.i = Math.min(reader.plan.resumeAt, reader.plan.total - 1)
   $('reader-result').hidden = true
   $('reader').hidden = false
   document.body.classList.add('script-open')
+  showSection()
+}
+
+/* The row of section chips: progress, and a way to go back and redo one. */
+function renderParts () {
+  const host = $('reader-parts')
+  if (!host) return
+  host.innerHTML = ''
+  reader.plan.sections.forEach((sec, n) => {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.className = 'part-chip' +
+      (sec.done ? ' is-done' : '') + (n === reader.i ? ' is-current' : '')
+    b.textContent = (n + 1) + (sec.done ? ' \u2713' : '')
+    b.title = sec.title + (sec.done ? ` \u2014 ${clockText(sec.seconds)} recorded` : '')
+    b.setAttribute('aria-label',
+      `Part ${n + 1}, ${sec.title}` + (sec.done ? ', recorded' : ', not recorded yet'))
+    // Not while recording: switching mid-take would silently bin it.
+    b.addEventListener('click', () => {
+      if (reader.recording) return
+      reader.i = n
+      showSection()
+    })
+    host.appendChild(b)
+  })
+}
+
+function showSection () {
+  const sec = reader.plan.sections[reader.i]
+  if (!sec) return finishedAll()
+
+  renderParts()
+  setText('reader-title', `Part ${reader.i + 1} of ${reader.plan.total}: ${sec.title}`)
+
+  const left = reader.plan.total - reader.plan.done
+  setText('reader-lede', sec.done
+    ? `You have already read this one (${clockText(sec.seconds)}). ` +
+      'Reading it again replaces it.'
+    : `About ${clockText(sec.expectedSeconds)}. ` +
+      (left > 1
+        ? `${left} parts left \u2014 you can stop after any of them and carry on later.`
+        : 'This is the last one.'))
+
+  const body = $('reader-body')
+  body.innerHTML = ''
+  for (const para of sec.text.split('\n\n')) {
+    const el = document.createElement('p')
+    el.textContent = para
+    body.appendChild(el)
+  }
+  body.scrollTop = 0
+
+  $('reader-result').hidden = true
+  $('reader-clock').textContent = '0:00'
+  $('reader-go').hidden = false
+  $('reader-go').textContent = sec.done ? 'Read this part again' : 'Start reading'
+  $('reader-pause').hidden = true
+  $('reader-done').hidden = true
+}
+
+function finishedAll () {
+  setText('reader-title', 'That is the whole passage')
+  setText('reader-lede', '')
+  renderParts()
+  $('reader-body').innerHTML = ''
+  const box = $('reader-result')
+  box.hidden = false
+  box.className = 'reader-result is-good'
+  box.textContent = 'All ' + reader.plan.total + ' parts recorded, ' +
+    clockText(reader.plan.recordedSeconds) + ' in total. ' +
+    'You can pick any part above to read it again.'
+  $('reader-go').hidden = true
+  $('reader-pause').hidden = true
+  $('reader-done').hidden = true
 }
 
 function readerClock () {
-  const s = Math.floor(Recorder.seconds())
-  $('reader-clock').textContent =
-    Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0')
+  $('reader-clock').textContent = clockText(Recorder.seconds())
   $('reader-level').style.width = Math.round(Recorder.level() * 100) + '%'
 }
 
@@ -1764,6 +1846,7 @@ function startReading () {
   $('reader-go').hidden = true
   $('reader-pause').hidden = false
   $('reader-done').hidden = false
+  $('reader-result').hidden = true
   reader.tick = setInterval(readerClock, 200)
 }
 
@@ -1779,22 +1862,47 @@ async function finishReading () {
   clearInterval(reader.tick)
   reader.recording = false
   const take = Recorder.stop()
+  const sec = reader.plan.sections[reader.i]
   $('reader-pause').hidden = true
+  $('reader-pause').textContent = 'Pause'
   $('reader-done').hidden = true
   const box = $('reader-result')
   box.hidden = false
   box.className = 'reader-result'
-  box.textContent = 'Checking the recording…'
+  box.textContent = 'Saving this part\u2026'
   try {
-    const r = await api.studioPassage({ audio: take.b64, sampleRate: take.sampleRate })
+    const r = await api.studioPassage({
+      audio: take.b64, sampleRate: take.sampleRate, index: reader.i
+    })
+    if (r.plan) reader.plan = r.plan
+    const saved = reader.plan.sections[reader.i]
     const fails = (r.issues || []).filter((i) => i.severity === 'fail')
+
+    // Cut short is the one failure this whole arrangement exists to catch, so
+    // it is checked per part rather than only at the end.
+    if (saved && saved.short) {
+      box.className = 'reader-result is-warn'
+      box.textContent = `Saved, but that was only ${clockText(saved.seconds)} and this ` +
+        `part takes about ${clockText(saved.expectedSeconds)}. If you stopped early, ` +
+        'read it again - otherwise carry on.'
+      $('reader-go').hidden = false
+      $('reader-go').textContent = 'Read this part again'
+      renderParts()
+      refreshVoiceState()
+      return
+    }
+
     box.className = 'reader-result ' + (fails.length ? 'is-bad' : 'is-good')
-    box.textContent = (fails.length
+    box.textContent = fails.length
       ? fails.map((i) => i.message).join(' ')
-      : 'Saved. ' + (r.notes || []).join(' ')) +
-      (fails.length ? ' Press Start reading to go again.' : '')
-    $('reader-go').hidden = false
-    $('reader-go').textContent = fails.length ? 'Read it again' : 'Record it again'
+      : 'Saved. ' + ((r.notes || []).join(' ') || '')
+
+    // On to the next unrecorded part, so a parent with a spare minute does not
+    // have to decide anything to use it.
+    const next = reader.plan.sections.findIndex((x) => !x.done)
+    if (next === -1) return finishedAll()
+    reader.i = next
+    setTimeout(() => { if (!reader.recording && !$('reader').hidden) showSection() }, 1200)
   } catch (err) {
     box.className = 'reader-result is-bad'
     box.textContent = 'That could not be saved: ' + (err.message || err)
@@ -1810,6 +1918,7 @@ function closeReader () {
   Recorder.release()
   $('reader').hidden = true
   document.body.classList.remove('script-open')
+  refreshVoiceState()
 }
 
 function initReader () {

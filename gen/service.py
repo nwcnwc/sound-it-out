@@ -281,25 +281,65 @@ def m_passage_text(_params):
 
 
 def m_studio_passage(params):
-    """Save a passage recorded in the app, then check it as an import would."""
+    """Save a passage recording, then check it as an import would.
+
+    With `index`, one section is saved and the whole passage reassembled from
+    every section recorded so far - this is how the app records it, because
+    five undisturbed minutes is not something a parent reliably has. Without
+    `index`, the audio is the entire passage in one take, which is how a file
+    imported from a phone arrives.
+    """
     import soundfile as sf
+    from gen import passage as P
     from gen import recordings as R
     from gen import studio
     from gen.paths import VOICE_DIR
 
     audio = studio.decode(params["audio"], int(params.get("sampleRate", 48000)))
-    VOICE_DIR.mkdir(parents=True, exist_ok=True)
-    dest = VOICE_DIR / "passage.wav"
-    sf.write(dest, audio.astype("float32"), studio.SR)
+    index = params.get("index")
 
-    issues, notes, _ = R.check_passage(dest, None, dry_run=True)
-    return {
+    if index is None:
+        VOICE_DIR.mkdir(parents=True, exist_ok=True)
+        dest = VOICE_DIR / "passage.wav"
+        sf.write(dest, audio.astype("float32"), studio.SR)
+        built = {"complete": True, "seconds": round(len(audio) / studio.SR, 1)}
+    else:
+        built = P.save_section(int(index), audio)
+        dest = Path(built["path"])
+
+    # Only judge the whole passage once it is whole. Running the import checks
+    # against a third of the script would report it as too short every time,
+    # which is true and useless while she is still working through it.
+    issues, notes = [], []
+    if built.get("complete"):
+        issues, notes, _ = R.check_passage(dest, None, dry_run=True)
+
+    out = {
         "path": str(dest),
-        "seconds": round(len(audio) / studio.SR, 1),
+        "seconds": built.get("seconds", 0.0),
         "issues": [{"label": i.label, "severity": i.severity, "message": i.message}
                    for i in issues],
         "notes": list(notes),
     }
+    if index is not None:
+        out["section"] = int(index)
+        out["plan"] = P.plan()
+    return out
+
+
+def m_passage_plan(_params):
+    """The sections, which are recorded, and where to pick up."""
+    from gen import passage as P
+
+    return P.plan()
+
+
+def m_passage_remove(params):
+    """Drop one section so it can be read again."""
+    from gen import passage as P
+
+    removed = P.remove_section(int(params["index"]))
+    return {"removed": removed, "plan": P.plan()}
 
 
 def m_voice_info(_params):
@@ -447,6 +487,8 @@ METHODS = {
     "voice.restore": m_voice_restore,
     "studio.passage": m_studio_passage,
     "passage.text": m_passage_text,
+    "passage.plan": m_passage_plan,
+    "passage.remove": m_passage_remove,
     "studio.remove": m_studio_remove,
 }
 

@@ -325,20 +325,23 @@
     <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
   </section>
 
-  <!-- The passage reader. Continuous rather than take-based: it is six minutes
-       of connected speech, and the prosody is the whole point. -->
+  <!-- The passage reader. One section at a time: each is 20-70 seconds of
+       connected speech, which is what the cloning needs, and the breaks are
+       where the passage already tells her she may stop. -->
   <div class="reader" id="reader" hidden>
     <div class="script-bar">
-      <h2>Read this out loud</h2>
+      <h2 id="reader-title">Read this out loud</h2>
       <div class="rowbar">
         <span class="reader-clock" id="reader-clock">0:00</span>
         <button class="btn btn-primary" id="reader-go" type="button">Start reading</button>
         <button class="btn btn-second" id="reader-pause" type="button" hidden>Pause</button>
-        <button class="btn btn-second" id="reader-done" type="button" hidden>I have finished</button>
-        <button class="btn btn-quiet" id="reader-close" type="button">Close</button>
+        <button class="btn btn-second" id="reader-done" type="button" hidden>Done this part</button>
+        <button class="btn btn-quiet" id="reader-close" type="button">Finish for now</button>
       </div>
     </div>
     <div class="bar bar-slim"><div class="bar-fill" id="reader-level" style="width:0%"></div></div>
+    <nav class="reader-parts" id="reader-parts" aria-label="Sections of the passage"></nav>
+    <p class="reader-lede" id="reader-lede"></p>
     <div class="reader-body" id="reader-body"></div>
     <p class="reader-result" id="reader-result" hidden></p>
   </div>

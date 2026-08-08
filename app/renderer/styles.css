@@ -964,6 +964,29 @@ body.script-open { overflow: hidden; }
 .reader-result { position: sticky; bottom: 0; margin: 0; padding: 1rem 1.5rem; background: var(--surface); border-top: 1px solid var(--line); }
 .reader-result.is-good { background: var(--accent-wash); }
 .reader-result.is-bad { background: var(--bad-wash); }
+.reader-result.is-warn { background: var(--warm-wash); }
+
+/* The row of section chips. Doubles as progress and as the way back to a part
+   she wants to read again, so the recorded ones have to be obvious at a
+   glance - a tick as well as a colour, because colour alone is not enough. */
+.reader-parts {
+  display: flex; gap: .4rem; flex-wrap: wrap; justify-content: center;
+  padding: .9rem 1.5rem 0; max-width: 40rem; margin: 0 auto;
+}
+.part-chip {
+  min-width: 2.6rem; padding: .35rem .6rem; border-radius: 999px;
+  border: 1px solid var(--line-firm); background: var(--surface);
+  color: var(--ink-soft); font: inherit; font-size: .9rem; cursor: pointer;
+}
+.part-chip:hover { border-color: var(--accent); }
+.part-chip.is-done { background: var(--accent-wash); color: var(--ink); border-color: var(--accent-wash); }
+.part-chip.is-current { border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.part-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.reader-lede {
+  max-width: 40rem; margin: .6rem auto 0; padding: 0 1.5rem;
+  color: var(--ink-soft); text-align: center; font-size: .95rem;
+}
 
 /* A quiet button still has to look like a button. Sitting beside a filled one
    with no border, it read as a caption and went unclicked. */
