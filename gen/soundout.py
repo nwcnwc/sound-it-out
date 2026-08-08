@@ -363,6 +363,11 @@ class Segment:
     pad: float = 0.0  # silence after, in seconds
     scale: float = 1.0  # relative font size
     color: str | None = None  # override theme fg
+    # True on the last segment of a pedagogical item (a word fully sounded
+    # out, a chapter finished). Fitting a video to a requested length may cut
+    # only at these points - stopping mid-item would end the video with a word
+    # half sounded out, which teaches the wrong thing.
+    item_end: bool = False
 
     @property
     def duration(self) -> float:

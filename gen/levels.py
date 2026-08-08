@@ -17,6 +17,7 @@ content that is not yet in use.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from gen import openended, wordlists
@@ -101,6 +102,47 @@ def spell(word: str):
     return [(ch, CVC_PHONEMES.get(ch.lower(), ch.lower())) for ch in word]
 
 
+# Common words the grapheme table gets WRONG - not merely words it cannot
+# split, but words it would split confidently into the wrong sounds ("said"
+# as s-ai-d says "sayed"). Sounding a word out incorrectly teaches something
+# worse than nothing, so these are always shown and spoken whole, the way
+# the sight-word levels treat every word.
+IRREGULAR_WORDS = {
+    "the", "a", "an", "i", "to", "of", "was", "is", "his", "has", "as",
+    "said", "are", "were", "you", "your", "they", "their", "there", "one",
+    "once", "two", "who", "what", "want", "we", "me", "be", "he", "she",
+    "my", "by", "no", "go", "so", "do", "into", "some", "come", "love",
+    "have", "give", "live", "does", "gone", "put", "pull", "push", "full",
+    "oh", "mr", "mrs", "any", "many", "only", "very", "every", "again",
+    "friend", "school", "people", "because", "could", "would", "should",
+    "here", "where", "were",
+}
+
+
+def decodable(word: str) -> bool:
+    """Can this word honestly be built up from the sounds we can say?
+
+    Conservative on purpose: the cost of a false no is a word taught whole
+    (which is how half the curriculum teaches words anyway); the cost of a
+    false yes is a child shown "Chase" sounded out as c-h-a-s-e. So anything
+    the table is not sure of - irregular words, magic-e words, consonant+y
+    endings - is read whole.
+    """
+    w = word.lower().strip(".,!?;:‘’“”'\"")
+    if not w or not w.isascii() or not w.isalpha():
+        return False
+    if w in IRREGULAR_WORDS:
+        return False
+    # Magic-e: "like", "home", "chase" - the table has no way to say the
+    # long vowel or the silent e.
+    if re.search(r"[aeiou][b-df-hj-np-tv-z]+e$", w):
+        return False
+    # "happy", "pony": final y as a vowel sound the table does not model.
+    if len(w) > 2 and re.search(r"[b-df-hj-np-tv-z]y$", w):
+        return False
+    return True
+
+
 # ----------------------------------------------------------------- levels
 
 
@@ -138,6 +180,15 @@ LEVELS = [
     Level(12, "A story that grows",
           "A story told only with the letters they have learned so far. "
           "It gets longer as they learn more.", "open"),
+
+    # The simplified shape the app is growing toward: she adds a sentence,
+    # records its words and the whole line in a short walk-through, and the
+    # video builds the sentence from its sounds up - ending with her own
+    # read, the highlight following her voice.
+    Level(13, "Your sentences",
+          "Any sentence you add and record: sounds build into words, words "
+          "into the line, then your own read of it, followed along on "
+          "screen.", "library"),
 ]
 
 # The Building-up ladder, in chapters.
@@ -228,7 +279,7 @@ _check_ladder()
 # All nine are built now. Levels 7-9 still lean on generation for the parts
 # nobody can record - nonsense blends, and whole sentences read with real
 # intonation - which is what the "install the extra voice" note is about.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
 
 
 def level_status(capabilities: dict) -> list:
@@ -244,6 +295,13 @@ def level_status(capabilities: dict) -> list:
             reason = "" if ok else "Needs the voice recordings, or the built-in voice."
             if ok and not capabilities.get("recordings"):
                 reason = "Will use the built-in voice until the recordings are imported."
+        elif lv.voice == "library":
+            # Recorded in the walk-through on its own tab, with the built-in
+            # voice covering anything not yet recorded - so it is usable the
+            # moment a sentence exists, and gets better as she records.
+            ok = capabilities.get("recordings") or capabilities.get("fallback_voice")
+            reason = ("" if ok else
+                      "Needs the voice recordings, or the built-in voice.")
         elif lv.voice == "open":
             # Nothing here can be pre-recorded, so the voice question is real
             # rather than a fallback: without cloning these levels work, but
@@ -266,10 +324,12 @@ def level_status(capabilities: dict) -> list:
                           "extra voice pack to have them read in your own.")
         out.append({"id": lv.id, "name": lv.name, "description": lv.description,
                     "available": bool(ok), "reason": reason,
-                    # The UI has to know to show a text box for level 10, and
-                    # to group the open-ended levels apart from the ladder.
+                    # The UI has to know to show a text box for level 10, a
+                    # sentence picker for level 13, and to group the
+                    # open-ended levels apart from the ladder.
                     "kind": lv.voice,
-                    "needsText": lv.id == 10})
+                    "needsText": lv.id == 10,
+                    "needsSentences": lv.id == 13})
     return out
 
 
@@ -283,6 +343,7 @@ def _sight_words(voice, words, reps, pause):
         for i in range(reps):
             segs.append(whole(word, audio, pad=pause if i < reps - 1 else pause + 0.6,
                               color=color))
+        segs[-1].item_end = True
     return segs
 
 
@@ -292,20 +353,55 @@ def _sounds(voice, letters, reps, pause):
         audio = voice.phoneme(ipa)
         for i in range(reps):
             segs.append(whole(letter, audio, pad=pause if i < reps - 1 else pause + 0.6))
+        segs[-1].item_end = True
+    return segs
+
+
+# The gap never quite reaches zero: the sounds are separate clips, and 120ms
+# is about where they stop being heard as a list and start being heard as one
+# thing about to happen.
+APPROACH_FLOOR = 0.12
+
+
+def _approach(voice, parts, pause, passes):
+    """Say the sounds over and over, the gap shrinking each time.
+
+    This is successive blending, and the shrink is the actual teaching move:
+    "s...a...t, s..a..t, s-a-t" and only then "sat". A single pass followed by
+    the blended word asks the child to make the whole jump at once - from
+    isolated sounds to a spoken word - and that jump is precisely what is
+    hardest with weak phonological awareness. Shrinking the gaps makes the
+    sounds audibly *become* the word instead of being replaced by it.
+
+    Each sound still highlights its letter, so the eye rehearses the same
+    left-to-right sweep at every speed.
+    """
+    segs = []
+    for r in range(passes):
+        frac = (passes - 1 - r) / max(1, passes - 1)
+        gap = APPROACH_FLOOR * (max(pause, APPROACH_FLOOR * 2) / APPROACH_FLOOR) ** frac
+        for j, (_, ipa) in enumerate(parts):
+            shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
+            segs.append(Segment(shown, voice.phoneme(ipa), pad=gap))
     return segs
 
 
 def _sound_out(voice, spellings, reps, pause):
-    """Highlight each letter as its sound plays, then blend the whole word."""
+    """Sound a word out with the gaps closing pass by pass, then blend it.
+
+    Earlier this repeated the same flat cycle - sounds at a fixed gap, then
+    the word - `reps` times over. Repetition is not approach: every cycle
+    asked for the same jump from separate sounds to the whole word. Now each
+    repetition brings the sounds closer together until they run into the
+    blended word (see _approach), and the word is played once, as the arrival
+    rather than one more item in the list.
+    """
     segs = []
     for parts in spellings:
         word = "".join(g for g, _ in parts)
-        blended = voice.word(word, slow=True)
-        for _ in range(reps):
-            for idx, (_, ipa) in enumerate(parts):
-                shown = [(g, i == idx) for i, (g, _) in enumerate(parts)]
-                segs.append(Segment(shown, voice.phoneme(ipa), pad=pause))
-            segs.append(whole(word, blended, pad=pause + 1.2))
+        segs += _approach(voice, parts, pause, passes=max(2, reps))
+        segs.append(whole(word, voice.word(word, slow=True), pad=pause + 1.2))
+        segs[-1].item_end = True
     return segs
 
 
@@ -352,11 +448,26 @@ def _build_up(voice, reps, pause):
                     segs.append(Segment(shown, voice.phoneme(sofar[i][1]),
                                         pad=pause * 1.15))
                     if i > 0:
-                        # ...then everything so far, blended together. This is
-                        # the payoff of the step, so it gets the longest beat.
-                        flat = [(g, False) for g, _ in sofar]
-                        segs.append(Segment(flat, voice.blend([p for _, p in sofar]),
-                                            pad=pause * 1.35))
+                        # ...then everything so far, said with the gaps
+                        # closing (see _approach), and only then blended.
+                        complete = i == len(parts) - 1
+                        segs += _approach(voice, sofar, pause,
+                                          passes=3 if complete else 2)
+                        if not complete:
+                            # The halfway blend - /sæ/ on the way to "sat" -
+                            # is a nonsense fragment nobody can record, so it
+                            # is synthesised. The payoff of the step, so it
+                            # gets the longest beat.
+                            flat = [(g, False) for g, _ in sofar]
+                            segs.append(Segment(flat,
+                                                voice.blend([p for _, p in sofar]),
+                                                pad=pause * 1.35))
+                        # When the word is complete there is no blend step at
+                        # all: the blend of every sound IS the word, and the
+                        # recorded word follows immediately below. Playing a
+                        # synthesised /sæt/ and then her "sat" said the same
+                        # thing twice in two different voices back to back -
+                        # the one place the voice seam was impossible to miss.
                 segs.append(whole(word, voice.word(word), pad=pause + 1.4))
 
         # 3. Grow the chapter's sentence, one word at a time.
@@ -373,6 +484,33 @@ def _build_up(voice, reps, pause):
             segs.append(whole(chapter["sentence"],
                               voice.sentence(chapter["sentence"]),
                               pad=pause + 1.6, scale=0.9))
+
+        # A chapter is the unit a shortened video may end after: it closes on
+        # its sentence, so stopping here is a complete (if shorter) journey.
+        segs[-1].item_end = True
+    return segs
+
+
+def _readalong(text, audio, clip_lens, scale=0.85):
+    """The whole line read once, with the highlight following the voice.
+
+    One continuous recording, karaoke-style: the audio is sliced at the word
+    boundaries word_spans() estimates, and each slice is a segment with its
+    word lit. The slices concatenate back to the original audio exactly, so
+    however rough an estimate is, sound and picture cannot drift apart.
+    """
+    from gen import sentences as slib
+
+    words = text.split()
+    spans = slib.word_spans(audio, words, clip_lens)
+    segs = []
+    for i, (a, b) in enumerate(spans):
+        parts = []
+        for j, w in enumerate(words):
+            if j:
+                parts.append((" ", False))
+            parts.append((w, j == i))
+        segs.append(Segment(parts, audio[a:b], scale=scale))
     return segs
 
 
@@ -382,12 +520,14 @@ def _sentences(voice, sentences, reps, pause):
     The sentence is read WHOLE at the end rather than assembled from the word
     clips: connected speech has stress and intonation across the whole line,
     and concatenated words have neither. That read is the one part of this
-    level that cannot come from the recorded clips.
+    level that cannot come from the recorded clips - and it is shown as a
+    read-along, the highlight moving with the voice (see _readalong).
     """
     segs = []
     for text in sentences:
         words = text.split()
         whole_audio = voice.sentence(text)
+        word_clips = [voice.word(w.strip(".,!?")) for w in words]
         for _ in range(max(1, reps - 1)):
             for i, w in enumerate(words):
                 parts = []
@@ -395,9 +535,61 @@ def _sentences(voice, sentences, reps, pause):
                     if j:
                         parts.append((" ", False))
                     parts.append((other, j == i))
-                segs.append(Segment(parts, voice.word(w.strip(".,!?")),
+                segs.append(Segment(parts, word_clips[i],
                                     pad=pause * 0.9, scale=0.85))
-            segs.append(whole(text, whole_audio, pad=pause + 1.6, scale=0.85))
+            segs += _readalong(text, whole_audio,
+                               [len(c) for c in word_clips], scale=0.85)
+            segs[-1].pad = pause + 1.6
+        segs[-1].item_end = True
+    return segs
+
+
+def _library(voice, texts, reps, pause):
+    """The sentence library's video: every sentence built from its sounds.
+
+    Per sentence: each word is met on its own - sounded out with the gaps
+    closing (see _approach) if the grapheme table can honestly say it,
+    shown and spoken whole if it cannot (see decodable) - then the sentence
+    is grown word by word, and finally read whole as a read-along, the
+    highlight moving with her voice.
+    """
+    segs = []
+    for text in texts:
+        words = text.split()
+        word_clips = [voice.word(w.strip(".,!?;:‘’“”'\"")) for w in words]
+
+        # 1. Each word on its own, first time it appears.
+        seen = set()
+        for w in words:
+            clean = w.strip(".,!?;:‘’“”'\"")
+            if not clean or clean.lower() in seen:
+                continue
+            seen.add(clean.lower())
+            if decodable(clean):
+                segs += _approach(voice, split_graphemes(clean), pause,
+                                  passes=max(2, reps))
+                segs.append(whole(clean, voice.word(clean), pad=pause + 1.0))
+            else:
+                audio = voice.word(clean)
+                for i in range(max(2, reps - 1)):
+                    segs.append(whole(clean, audio,
+                                      pad=pause if i < max(2, reps - 1) - 1
+                                      else pause + 1.0))
+
+        # 2. Grow the sentence word by word.
+        for i, w in enumerate(words):
+            parts = []
+            for j, other in enumerate(words[: i + 1]):
+                if j:
+                    parts.append((" ", False))
+                parts.append((other, j == i))
+            segs.append(Segment(parts, word_clips[i], pad=pause, scale=0.9))
+
+        # 3. The payoff: her whole read, highlight following the voice.
+        segs += _readalong(text, voice.sentence(text),
+                           [len(c) for c in word_clips], scale=0.9)
+        segs[-1].pad = pause + 1.6
+        segs[-1].item_end = True
     return segs
 
 
@@ -464,6 +656,17 @@ def build(level: int, voice, opts: dict) -> list:
         if not lines:
             raise ValueError("No part of the story is readable yet.")
         return _sentences(voice, lines, reps, pause)
+
+    if level == 13:
+        from gen import sentences as slib
+
+        texts = slib.texts_for(opts.get("sentences"))
+        if not texts:
+            raise ValueError(
+                "Add a sentence on the Sentences tab first - anything you "
+                "would like read, in your own words."
+            )
+        return _library(voice, texts, reps, pause)
 
     raise NotImplementedError(
         f"Level {level} is designed but not built yet - see README for the plan."

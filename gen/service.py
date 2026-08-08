@@ -98,24 +98,42 @@ def m_plan(params):
     minutes = float(opts.get("minutes") or 0)
 
     # Level 6 is a journey, not a playlist: it travels from single letters to a
-    # sentence, so filling 30 minutes by playing a 7 minute arc four times is
+    # sentence, so filling 30 minutes by playing the arc four times over is
     # the wrong shape. Stretch the arc instead, by repeating each item more.
-    # ~3.3 min per repetition, measured across all four chapters; approximate,
-    # because real recordings will not be the same length as the built-in voice.
+    # Measured at ~11 min for the whole journey at reps=2 and ~10.5 min per
+    # extra rep (approximate - real recordings are not the same length as the
+    # built-in voice). Requests shorter than the journey rely on the trim
+    # below, which ends the video after a whole chapter.
     if level == 6 and minutes > 0:
-        opts = dict(opts, reps=max(2, min(14, round(minutes / 3.3))))
+        opts = dict(opts, reps=max(2, min(14, round(minutes / 10.5) + 1)))
 
     _progress(job_id, "audio", 0, 1, "Working out the sounds...")
     voice = VoiceSource(clone_profile=params.get("cloneProfile"))
     segments = levels.build(level, voice, opts)
 
-    # Every other level is a playlist of independent items, so repeat the whole
-    # thing to fill the running time. The video loops anyway, but a longer file
-    # means fewer restarts on a TV's own player.
-    if minutes > 0 and segments and level != 6:
+    # Fit the running time that was actually asked for, in both directions.
+    #
+    # Repeating fills a short pass: the video loops anyway, but a longer file
+    # means fewer restarts on a TV's own player. Trimming handles the opposite
+    # case, which used to be silently ignored - `//` rounds down to a floor of
+    # one whole pass, so a 5 minute request on a level whose single pass runs
+    # 9 minutes came out 9 minutes long. Level 6 is never repeated (it is a
+    # journey, not a playlist - reps above stretch it instead) but it is
+    # trimmed: its items are whole chapters, so a short video ends after a
+    # chapter's sentence rather than mid-story.
+    if minutes > 0 and segments:
+        target = minutes * 60
         one = sum(s.duration for s in segments)
-        if one > 0:
-            segments = segments * max(1, int((minutes * 60) // one))
+        if one > target:
+            segments = _whole_items_upto(segments, target)
+        elif one > 0 and level != 6:
+            # Whole passes, then whole items from the start of another pass
+            # to cover the remainder - repeating passes alone left a 5 minute
+            # request at 3.6 when the pass ran 1.8. The video loops anyway,
+            # so a partial final pass is just the loop arriving early.
+            n = int(target // one)
+            extra = _whole_items_upto(segments, target - n * one, allow_empty=True)
+            segments = segments * n + extra
 
     base = THEMES.get(params.get("theme", "night"), THEMES["night"])
     colors = {w: c for g in _groups() for w, c in g.words if c}
@@ -126,6 +144,33 @@ def m_plan(params):
     plan = plan_job(segments, theme, work)
     plan.update({"jobDir": str(work), "voice": voice.summary()})
     return plan
+
+
+def _whole_items_upto(segments, target, allow_empty=False):
+    """Trim a segment list to `target` seconds, cutting only at item ends.
+
+    Items stay in curriculum order and nothing is skipped - the list just
+    stops at the item boundary nearest the target, which may be slightly over
+    it. Cutting mid-item would end the video with a word half sounded out,
+    which teaches the wrong thing. Unless `allow_empty`, the first item is
+    always kept whole, so a request shorter than a single item still produces
+    a video.
+    """
+    out, item, total = [], [], 0.0
+    for seg in segments:
+        item.append(seg)
+        if seg.item_end:
+            dur = sum(s.duration for s in item)
+            if (out or allow_empty) and total + dur > target:
+                # Overrunning by less than we would fall short lands closer
+                # to what was asked for, so the boundary item stays in.
+                if (total + dur - target) < (target - total):
+                    out += item
+                break
+            out += item
+            total += dur
+            item = []
+    return out if (out or allow_empty) else segments
 
 
 def _groups():
@@ -257,8 +302,41 @@ def m_recordings_import(params):
     }
 
 
+def m_sentences_list(_params):
+    from gen import sentences
+
+    return {"sentences": sentences.status()}
+
+
+def m_sentences_add(params):
+    from gen import sentences
+
+    sentences.add(params.get("text", ""))
+    return {"sentences": sentences.status()}
+
+
+def m_sentences_remove(params):
+    from gen import sentences
+
+    sentences.remove(params["key"])
+    return {"sentences": sentences.status()}
+
+
 def m_studio_plan(params):
     from gen import studio
+
+    # The sentence walk-through: the words of ONE sentence, then its whole
+    # line. Words already in the shared bank show as done and are resumed
+    # past, so each sentence she adds is cheaper to record than the last.
+    if params.get("part") == "sentence":
+        from gen import sentences
+
+        items = sentences.walkthrough_items(params["key"])
+        dicts = [i.as_dict() for i in items]
+        done = sum(1 for d in dicts if d["done"])
+        resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
+        return {"part": "sentence", "takes": 1, "items": dicts,
+                "done": done, "total": len(dicts), "resumeAt": resume}
 
     items = studio.plan(params.get("part", "phonemes"), params.get("order", "rows"))
     dicts = [i.as_dict() for i in items]
@@ -498,6 +576,9 @@ METHODS = {
     "capabilities": m_capabilities,
     "wordlist.load": m_wordlist_load,
     "wordlist.save": m_wordlist_save,
+    "sentences.list": m_sentences_list,
+    "sentences.add": m_sentences_add,
+    "sentences.remove": m_sentences_remove,
     "plan": m_plan,
     "encode": m_encode,
     "render.chrome": m_render_chrome,
