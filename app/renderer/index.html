@@ -165,8 +165,34 @@
         </div>
       </li>
 
-      <li class="vpart" data-part="bank">
+      <li class="vpart" data-part="rimes">
         <div class="vpart-num">2</div>
+        <div class="vpart-body">
+          <h2>Record the word endings <span class="vpart-count" id="count-rimes"></span></h2>
+          <p>The magic-e endings &mdash; <i>ase</i> as in case, <i>ike</i> as in like,
+             <i>ome</i> as in home. Words like these are sounded out as a first sound
+             plus an ending, so the endings are sounds of their own. Recorded live,
+             like the sounds above, because they teach.</p>
+          <div class="bar bar-slim vpart-bar" id="barwrap-rimes" hidden>
+            <div class="bar-fill" id="bar-rimes" style="width:0%"></div>
+          </div>
+          <div class="rowbar">
+            <button class="btn btn-primary vpart-record" type="button" data-part="rimes">
+              Record them here
+            </button>
+            <button class="btn btn-second vpart-review" type="button" data-part="rimes" hidden>
+              Listen back &amp; redo
+            </button>
+            <button class="btn btn-second vpart-script" type="button" data-part="rimes">
+              Show what to say
+            </button>
+          </div>
+          <div class="vpart-result" id="result-rimes" hidden></div>
+        </div>
+      </li>
+
+      <li class="vpart" data-part="bank">
+        <div class="vpart-num">3</div>
         <div class="vpart-body">
           <h2>Your recorded words <span class="vpart-count" id="count-bank"></span></h2>
           <p>Every word you have recorded &mdash; from your sentences, and from before.
@@ -182,7 +208,7 @@
       </li>
 
       <li class="vpart" data-part="passage">
-        <div class="vpart-num">3</div>
+        <div class="vpart-num">4</div>
         <div class="vpart-body">
           <h2>The reading passage <span class="vpart-count" id="count-passage"></span></h2>
           <p><b>Optional, in six short parts.</b> Anything on the list you have not

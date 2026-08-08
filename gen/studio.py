@@ -68,7 +68,21 @@ TAKES_DEFAULT = 3
 # something the speaker does correctly by reflex, and three takes of "dog"
 # turns a manageable sitting into an hour of repeating herself. One take, and
 # the scorer speaks up when it actually went wrong.
-TAKES = {"phonemes": 3, "words": 1, "sentences": 1}
+TAKES = {"phonemes": 3, "rimes": 2, "words": 1, "sentences": 1}
+
+# A real word carrying each rime, so the prompt can say "as in ...". Only
+# the ones with an everyday word; the rest fall back to the spelling alone.
+RIME_EXAMPLES = {
+    "abe": "babe", "ace": "face", "ade": "made", "afe": "safe",
+    "age": "page", "ake": "cake", "ale": "tale", "ame": "name",
+    "ane": "plane", "ape": "tape", "ase": "case", "ate": "gate",
+    "ete": "Pete", "ide": "ride", "ike": "like", "ile": "smile",
+    "ime": "time", "ine": "nine", "ipe": "pipe", "ite": "kite",
+    "obe": "robe", "ode": "rode", "oke": "joke", "ole": "hole",
+    "ome": "home", "one": "bone", "ope": "hope", "ote": "note",
+    "ube": "cube", "ude": "rude", "uke": "duke", "ule": "mule",
+    "une": "June", "ute": "flute",
+}
 
 
 def takes_for(part: str) -> int:
@@ -135,6 +149,24 @@ def plan(part="phonemes", order="rows") -> list:
                      + ("hold it for about two seconds." if hold else
                         "keep it short and crisp." if p.length == "crisp" else
                         "say it naturally.")),
+            ))
+    elif part == "rimes":
+        # The magic-e endings, recorded live for the same reason the 42
+        # sounds are: an isolated sound is what cloning does worst, and a
+        # wrong sound teaches a wrong thing. They save into phonemes/ under
+        # their IPA, which is exactly where the lookup already asks - so a
+        # family recording these overrides the shipped ones with no new
+        # machinery at all.
+        from gen.starter import all_rimes
+
+        for spelling, ipa in all_rimes():
+            ex = RIME_EXAMPLES.get(spelling)
+            items.append(Item(
+                key=spelling, kind="phoneme", display=spelling, ipa=ipa,
+                length="free",
+                say=(f"Say the ending “{spelling}”"
+                     + (f", as in “{ex}”" if ex else "")
+                     + " — the two sounds run together, no word around them."),
             ))
     elif part == "sentences":
         # Every whole line any level reads out. There are about ten and they

@@ -350,3 +350,22 @@ def test_soft_c_and_g_in_rimes():
     inside a rime, while an opening c stays hard."""
     assert levels.word_parts("face") == [("f", "f"), ("ace", "eɪs")]
     assert levels.word_parts("cage") == [("c", "k"), ("age", "eɪdʒ")]
+
+
+# ------------------------------------------------------------------ rimes
+
+
+def test_rimes_record_into_the_phoneme_bank(library):
+    """A rime item saves under its IPA in phonemes/ - exactly where
+    voice.phoneme() already looks, so a family recording one overrides the
+    shipped clip with no new machinery."""
+    items = studio.plan("rimes")
+    assert len(items) == 65
+    ase = next(i for i in items if i.key == "ase")
+    assert ase.ipa == "eɪs" and ase.kind == "phoneme"
+    assert ase.path().parent.name == "phonemes"
+    assert "case" in ase.say
+
+
+def test_rime_takes_are_two(library):
+    assert studio.takes_for("rimes") == 2

@@ -65,6 +65,7 @@ def needed() -> tuple:
 def run(copy=False) -> dict:
     words, lines = needed()
     have_w, miss_w, have_l, miss_l = [], [], [], []
+    have_r, miss_r = [], []
 
     for w in words:
         src = studio.Item(key=w.lower(), kind="word", display=w,
@@ -73,19 +74,25 @@ def run(copy=False) -> dict:
     for text in lines:
         src = VOICE_DIR / "sentences" / f"{sentence_key(text)}.wav"
         (have_l if src.exists() else miss_l).append((text, src))
+    for spelling, ipa in all_rimes():
+        src = VOICE_DIR / "phonemes" / f"{_safe(ipa)}.wav"
+        (have_r if src.exists() else miss_r).append((spelling, src))
 
     if copy:
-        for sub, pairs in (("words", have_w), ("sentences", have_l)):
+        for sub, pairs in (("words", have_w), ("sentences", have_l),
+                           ("phonemes", have_r)):
             d = STARTER_VOICE / sub
             d.mkdir(parents=True, exist_ok=True)
             for _, src in pairs:
                 shutil.copy2(src, d / src.name)
 
     return {
-        "words": len(words), "lines": len(lines),
+        "words": len(words), "lines": len(lines), "rimes": len(all_rimes()),
         "have_words": len(have_w), "have_lines": len(have_l),
+        "have_rimes": len(have_r),
         "missing_words": [w for w, _ in miss_w],
         "missing_lines": [t for t, _ in miss_l],
+        "missing_rimes": [s for s, _ in miss_r],
         "copied": copy,
     }
 
@@ -132,10 +139,10 @@ def generate_missing(profile="mum", variant="english", log=print) -> dict:
         dest = STARTER_VOICE / "sentences" / f"{sentence_key(text)}.wav"
         if not dest.exists():
             jobs.append(("line", text, dest))
-    for spelling, ipa in all_rimes():
-        dest = STARTER_VOICE / "phonemes" / f"{_safe(ipa)}.wav"
-        if not dest.exists():
-            jobs.append(("rime", spelling, dest))
+    # Rimes are deliberately NOT generated: an isolated sound is what
+    # cloning does worst, and a wrong sound teaches a wrong thing. They are
+    # recorded live in Setup (part "rimes") like the 42 phonemes, and
+    # --copy stages them from the developer's own bank.
 
     bad, done = [], 0
     for i, (kind, text, dest) in enumerate(jobs):
@@ -168,7 +175,10 @@ def main():
         print(f"\nstill to read whole ({len(r['missing_lines'])} lines):")
         for t in r["missing_lines"]:
             print("  " + t)
-    if not r["missing_words"] and not r["missing_lines"]:
+    if r["missing_rimes"]:
+        print(f"\nrimes still to record live, in Setup ({len(r['missing_rimes'])}):")
+        print("  " + " ".join(r["missing_rimes"]))
+    if not r["missing_words"] and not r["missing_lines"] and not r["missing_rimes"]:
         print("\nnothing recorded is missing - the packs are fully covered.")
 
     if "--generate" in sys.argv:

@@ -995,17 +995,29 @@ boot()
  * terminal. This is the way in.
  */
 
-const PART_NAMES = { phonemes: 'sounds', bank: 'words', passage: 'reading passage' }
+const PART_NAMES = {
+  phonemes: 'sounds', rimes: 'word endings', bank: 'words',
+  passage: 'reading passage'
+}
 
 async function voiceCounts (caps) {
-  const p = (caps && caps.recorded_phonemes) || 0
   const w = (caps && caps.recorded_words) || 0
 
+  // Counts come from the plans, not from counting files: rimes save into
+  // the same phonemes folder, so a directory count would say "65 of 42".
+  let p = (caps && caps.recorded_phonemes) || 0
   let total = 42
   try {
     const ps = await api.studioPlan({ part: 'phonemes' })
     total = ps.total || 42
-  } catch { /* fall back to the number everyone knows */ }
+    p = ps.done || 0
+  } catch { /* fall back to the numbers we know */ }
+  try {
+    const rs = await api.studioPlan({ part: 'rimes' })
+    showPartProgress('rimes', rs.done || 0, rs.total || 0)
+    const rb = document.querySelector('.vpart-review[data-part="rimes"]')
+    if (rb) rb.hidden = (rs.done || 0) === 0
+  } catch { /* the panel still works without a count */ }
 
   showPartProgress('phonemes', p, total)
   setText('count-bank', w ? `— ${w} word${w === 1 ? '' : 's'} so far` : '— none yet')
@@ -1517,7 +1529,8 @@ function finishStudio () {
   if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
 
   const what = studio.part === 'phonemes' ? 'sounds'
-    : studio.part === 'sentence' ? 'parts' : 'words'
+    : studio.part === 'rimes' ? 'endings'
+      : studio.part === 'sentence' ? 'parts' : 'words'
   sEl('studio-word').textContent = missed ? 'Finished' : 'All done'
   sEl('studio-say').textContent = missed
     ? `${done} of the ${total} ${what} are recorded. ` +
