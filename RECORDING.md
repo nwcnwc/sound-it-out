@@ -40,7 +40,8 @@ doesn't turn into "cat". This is the single most common reason home phonics stal
 
 ### Stretch the ones that stretch
 
-Some sounds can be held for a long breath. **Hold these for about 2 seconds:**
+Some sounds can be held for a long breath. **Hold these for a second or two —
+longer than feels natural, but don't strain:**
 
 > `s` `f` `m` `n` `l` `r` `v` `z` `sh` `th` `ng` — and every vowel
 

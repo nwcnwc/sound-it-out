@@ -44,10 +44,17 @@ from gen import recordings as R
 from gen.paths import VOICE_DIR
 from gen.soundout import SR
 
-# Per class, the length a take should be. From RECORDING.md: continuants are
-# held for about two seconds, stops are a burst and cannot be held at all.
+# Per class, the length a take should be. Continuants are held for a second
+# or so; stops are a burst and cannot be held at all.
+#
+# The hold ideal is 1.3s, not the 2.0 it used to be, and the floor is 0.7.
+# Measured against the guidance that said "about two seconds": a motivated
+# adult following it held a MEDIAN of 1.22s - two full seconds is a length
+# real mouths do not produce - and the scorer was docking every normal take
+# for missing a target nobody hits. The videos prefer the shorter holds
+# anyway: a long phoneme clip slows every buildup it appears in.
 LENGTH_TARGET = {
-    "hold": (1.0, 3.0, 2.0),    # min, max, ideal seconds
+    "hold": (0.7, 3.0, 1.3),    # min, max, ideal seconds
     "crisp": (0.05, 0.60, 0.20),
     "free": (0.08, 1.50, 0.40),
     # A whole line, not a word. Scored against "free" every sentence would be
@@ -171,7 +178,7 @@ def plan(part="phonemes", order="rows") -> list:
                 key=p.key, kind="phoneme", display=p.display, ipa=p.ipa,
                 length=p.length,
                 say=(f"Say the “{p.display}” sound, as in “{p.example}” - "
-                     + ("hold it for about two seconds." if hold else
+                     + ("hold it for a second or two." if hold else
                         "keep it short and crisp." if p.length == "crisp" else
                         "say it naturally.")),
             ))
