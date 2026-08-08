@@ -1025,3 +1025,37 @@ body.script-open { overflow: hidden; }
 /* The generation-time warning. Uses the warm notice style rather than the bad
    one: a long render is a fact to plan around, not a failure. */
 .make-slow { display: block; max-width: 52rem; margin-top: 1rem; font-size: .95rem; }
+
+/* -------------------------------------------------------------- sentences */
+
+.sentence-list {
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+  margin-top: 1.4rem;
+  max-width: 68ch;
+}
+.sentence-row {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+}
+.sentence-text {
+  font-size: 1.15rem;
+  font-weight: 650;
+  margin-bottom: .15rem;
+}
+.sentence-status {
+  margin: 0 0 .7rem;
+  color: var(--ink-soft);
+  font-size: .92rem;
+}
+.sentence-status.is-ready { color: var(--accent); }
+#sentence-input {
+  display: block; width: 100%; max-width: 68ch; margin-top: .5rem;
+  padding: .7rem .85rem; font: inherit; line-height: 1.6; color: var(--ink);
+  background: var(--surface); border: 1px solid var(--line-firm);
+  border-radius: 10px; resize: vertical;
+}

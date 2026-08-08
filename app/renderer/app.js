@@ -72,6 +72,7 @@ async function boot () {
   initReader()
   initVoiceSettings()
   setUpWords()
+  initSentences()
   setUpMake()
   setUpSettings()
   setUpJobEvents()
@@ -111,6 +112,183 @@ function devPreview () {
       'Free up about 1 GB and try again, or pick a different folder in Settings.'
     )
   }
+}
+
+/* ------------------------------------------------------------- sentences */
+
+/* The sentence library. One list drives two places: the Sentences tab (add,
+ * record, remove) and the picker on the Make screen (which ones go in the
+ * video). Both re-render from the same fetch so they can never disagree. */
+
+let sentenceLib = []
+
+async function refreshSentences () {
+  if (!api.sentencesList) return
+  try {
+    const r = await api.sentencesList()
+    sentenceLib = (r && r.sentences) || []
+  } catch (err) {
+    console.error(err)
+  }
+  renderSentenceLib()
+  renderSentencePicker()
+  updateSummary()
+}
+
+function renderSentenceLib () {
+  const host = $('sentence-list')
+  if (!host) return
+  host.textContent = ''
+
+  if (!sentenceLib.length) {
+    const p = document.createElement('p')
+    p.className = 'hint'
+    p.textContent = 'Nothing here yet. Add a sentence above — anything you would like read.'
+    host.appendChild(p)
+    return
+  }
+
+  for (const s of sentenceLib) {
+    const row = document.createElement('div')
+    row.className = 'sentence-row'
+
+    const text = document.createElement('div')
+    text.className = 'sentence-text'
+    text.textContent = s.text
+
+    const stat = document.createElement('p')
+    stat.className = 'sentence-status' + (s.ready ? ' is-ready' : '')
+    if (s.ready) {
+      stat.textContent = 'Recorded, in your own voice. Ready to use.'
+    } else {
+      const bits = []
+      if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
+      if (!s.lineRecorded) bits.push('the whole line')
+      stat.textContent = 'Still to record: ' + bits.join(', and ') +
+        '. It can be used now — the built-in voice fills the gaps.'
+    }
+
+    const bar = document.createElement('div')
+    bar.className = 'rowbar'
+
+    const rec = document.createElement('button')
+    rec.type = 'button'
+    rec.className = s.ready ? 'btn btn-second' : 'btn btn-primary'
+    rec.textContent = s.ready ? 'Record it again' : 'Record it'
+    rec.addEventListener('click', () => {
+      openStudio('sentence', { key: s.key }).catch((err) => {
+        alert('Could not start recording: ' + (err.message || err))
+      })
+    })
+
+    const del = document.createElement('button')
+    del.type = 'button'
+    del.className = 'btn btn-quiet'
+    del.textContent = 'Remove'
+    del.addEventListener('click', async () => {
+      const sure = confirm(
+        'Take this sentence off the list?\n\n' +
+        'Its recordings are kept — the words serve your other sentences, and ' +
+        'the line comes straight back if you ever re-add it.')
+      if (!sure) return
+      try {
+        const r = await api.sentencesRemove(s.key)
+        sentenceLib = (r && r.sentences) || []
+      } catch (err) {
+        alert('Could not remove it: ' + (err.message || err))
+      }
+      renderSentenceLib()
+      renderSentencePicker()
+      updateSummary()
+    })
+
+    bar.append(rec, del)
+    row.append(text, stat, bar)
+    host.appendChild(row)
+  }
+}
+
+function initSentences () {
+  const add = $('sentence-add')
+  if (!add) return
+  add.addEventListener('click', async () => {
+    const box = $('sentence-input')
+    const msg = $('sentence-error')
+    msg.hidden = true
+    let r
+    try {
+      r = await api.sentencesAdd(box.value)
+    } catch (err) {
+      r = { ok: false, error: String(err.message || err) }
+    }
+    if (r && r.ok === false) {
+      msg.hidden = false
+      msg.textContent = r.error || 'That could not be added.'
+      return
+    }
+    box.value = ''
+    sentenceLib = (r && r.sentences) || sentenceLib
+    renderSentenceLib()
+    renderSentencePicker()
+    updateSummary()
+  })
+  refreshSentences()
+}
+
+/* The picker on the Make screen: same library, as tickboxes. */
+
+function renderSentencePicker () {
+  const host = $('level-sentences')
+  if (!host) return
+  const before = new Set(pickedSentences())
+  const hadAny = host.querySelector('input') !== null
+  host.textContent = ''
+
+  if (!sentenceLib.length) {
+    const p = document.createElement('p')
+    p.className = 'hint'
+    p.textContent = 'Add sentences on the Sentences tab first.'
+    host.appendChild(p)
+    return
+  }
+
+  for (const s of sentenceLib) {
+    const label = document.createElement('label')
+    label.className = 'choice'
+
+    const input = document.createElement('input')
+    input.type = 'checkbox'
+    input.name = 'sentence'
+    input.value = s.key
+    // Everything ticked by default; after that, keep whatever she set.
+    input.checked = hadAny ? before.has(s.key) : true
+
+    const tick = document.createElement('span')
+    tick.className = 'tick'
+    tick.setAttribute('aria-hidden', 'true')
+
+    const text = document.createElement('span')
+    text.className = 'choice-text'
+    const title = document.createElement('span')
+    title.className = 'choice-title'
+    title.textContent = s.text
+    text.appendChild(title)
+    if (!s.ready) {
+      const d = document.createElement('span')
+      d.className = 'choice-desc'
+      d.textContent = 'Not fully recorded yet — the built-in voice fills the gaps.'
+      text.appendChild(document.createElement('br'))
+      text.appendChild(d)
+    }
+
+    label.append(input, tick, text)
+    host.appendChild(label)
+  }
+}
+
+function pickedSentences () {
+  return Array.from(document.querySelectorAll('input[name="sentence"]:checked'))
+    .map((i) => i.value)
 }
 
 /* ------------------------------------------------------------------ tabs */
@@ -348,7 +526,7 @@ function setUpMake () {
   // firing the moment the level list is re-rendered, which it is every time
   // recordings change.
   $('screen-make').addEventListener('change', (e) => {
-    if (e.target && e.target.type === 'radio') {
+    if (e.target && (e.target.type === 'radio' || e.target.type === 'checkbox')) {
       showLevelExtras()
       updateSummary()
       persistChoices()
@@ -494,7 +672,7 @@ const STAGES = [
 ]
 
 function currentOptions () {
-  return {
+  const o = {
     level: picked('level'),
     theme: picked('theme'),
     reps: Number(picked('reps')),
@@ -504,6 +682,10 @@ function currentOptions () {
     text: ($('level-text') && $('level-text').value) || '',
     stage: Number(picked('stage')) || 2
   }
+  // Which library sentences to read. Only for level 13: an empty list must
+  // mean "none ticked" there, and nothing at all everywhere else.
+  if (String(o.level) === '13') o.sentences = pickedSentences()
+  return o
 }
 
 /* The open-ended levels need something the fixed ones do not - text to read,
@@ -515,8 +697,10 @@ function showLevelExtras () {
   const lvl = (state.levels || []).find((l) => String(l.id) === id)
   const textWrap = $('level-text-wrap')
   const stageWrap = $('level-stage-wrap')
+  const sentWrap = $('level-sentences-wrap')
   if (textWrap) textWrap.hidden = !(lvl && lvl.needsText)
   if (stageWrap) stageWrap.hidden = id !== '12'
+  if (sentWrap) sentWrap.hidden = !(lvl && lvl.needsSentences)
   updateTextCount()
   updateStageNote()
 }
@@ -581,7 +765,18 @@ function updateSummary (knownTotal) {
   // The open-ended levels are worth describing differently: what makes them
   // interesting is where the content comes from, and that is the thing a
   // parent cannot see by reading the level name.
-  if (id === '10') {
+  if (id === '13') {
+    const n = (o.sentences || []).length
+    if (!n) {
+      el.textContent = sentenceLib.length
+        ? 'Tick at least one sentence to read.'
+        : 'Add a sentence or two on the Sentences tab first.'
+      $('btn-play').disabled = true
+      $('btn-export').disabled = true
+      return
+    }
+    words = ', building up ' + n + ' of your own sentence' + (n === 1 ? '' : 's')
+  } else if (id === '10') {
     const n = (o.text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean).length
     words = n ? ', reading the ' + n + ' line' + (n === 1 ? '' : 's') + ' you pasted in' : ''
   } else if (id === '11') {
@@ -1279,18 +1474,23 @@ const studio = {
   buf: [], running: false, cancelled: false, paused: false, advanceTimer: null
 }
 
-const TAKE_MS = { hold: 2600, crisp: 1200, free: 1600 }
+// "line" is a whole sentence read aloud to a child - unhurried, it needs
+// several seconds. Missing from this table, it fell through to `free` and
+// the recording stopped at 1.6s, mid-line.
+const TAKE_MS = { hold: 2600, crisp: 1200, free: 1600, line: 6000 }
 const GAP_MS = 500
 
 function sEl (id) { return $(id) }
 
-async function openStudio (part) {
+async function openStudio (part, extra) {
   studio.part = part
   studio.cancelled = false
   // `plan` is used well below, so it must not be scoped to the try block.
   let plan
   try {
-    plan = await api.studioPlan({ part })
+    // `extra` carries anything beyond the part itself - the sentence
+    // walk-through passes the sentence's key this way.
+    plan = await api.studioPlan(Object.assign({ part }, extra || {}))
     studio.items = plan.items || []
     studio.takes = plan.takes || 3
   } catch (err) {
@@ -1372,6 +1572,9 @@ function closeStudio () {
   $('studio').hidden = true
   document.body.classList.remove('studio-open')
   refreshVoiceState()
+  // A sentence walk-through changes what the Sentences tab and the Make
+  // picker should show, whichever screen she goes back to.
+  refreshSentences()
 }
 
 function showItem () {
@@ -1571,7 +1774,8 @@ function finishStudio () {
   const fill = $('studio-bar-fill')
   if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
 
-  const what = studio.part === 'phonemes' ? 'sounds' : 'words'
+  const what = studio.part === 'phonemes' ? 'sounds'
+    : studio.part === 'sentence' ? 'parts' : 'words'
   sEl('studio-word').textContent = missed ? 'Finished' : 'All done'
   sEl('studio-say').textContent = missed
     ? `${done} of the ${total} ${what} are recorded. ` +

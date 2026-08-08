@@ -274,6 +274,19 @@ function registerIpc () {
     }
   })
 
+  // The sentence library. Text in, recording status out; the walk-through
+  // recording itself goes through the studio channel with part "sentence".
+  ipcMain.handle('sentences:list', async () => sidecar.call('sentences.list', {}))
+  ipcMain.handle('sentences:add', async (_e, text) => {
+    try {
+      return { ok: true, ...(await sidecar.call('sentences.add', { text })) }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+  ipcMain.handle('sentences:remove', async (_e, key) =>
+    sidecar.call('sentences.remove', { key }))
+
   ipcMain.handle('job:generate', (_e, opts) => runJob(opts || {}))
 
   ipcMain.handle('job:cancel', (_e, jobId) => {

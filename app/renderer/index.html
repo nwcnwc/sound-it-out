@@ -25,6 +25,8 @@
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" id="tab-words" aria-controls="screen-words"
             aria-selected="true" data-screen="words">Words</button>
+    <button class="tab" role="tab" id="tab-sentences" aria-controls="screen-sentences"
+            aria-selected="false" tabindex="-1" data-screen="sentences">Sentences</button>
     <button class="tab" role="tab" id="tab-make" aria-controls="screen-make"
             aria-selected="false" tabindex="-1" data-screen="make">Make a video</button>
     <button class="tab" role="tab" id="tab-voice" aria-controls="screen-voice"
@@ -133,6 +135,51 @@
     </div>
   </section>
 
+  <!-- ======================================================== SENTENCES -->
+  <section class="screen" id="screen-sentences" role="tabpanel" aria-labelledby="tab-sentences" tabindex="-1" hidden>
+
+    <div class="page-head">
+      <h1>Sentences</h1>
+      <p class="lede">
+        Add any sentence, record it in a couple of minutes, and it becomes a video:
+        the sounds build into words, the words build into your sentence, and it ends
+        with your own read of it &mdash; the words lighting up as you say them.
+      </p>
+    </div>
+
+    <div class="field">
+      <label for="sentence-input">A sentence to add</label>
+      <textarea id="sentence-input" rows="2" spellcheck="false" autocapitalize="sentences"
+                placeholder="Alex went to the park with Nana."></textarea>
+      <p class="hint">
+        Paste a few at once if you like &mdash; they are split up sentence by sentence.
+      </p>
+    </div>
+
+    <div class="rowbar">
+      <button class="btn btn-primary" id="sentence-add" type="button">Add to the list</button>
+    </div>
+    <p class="error-line" id="sentence-error" role="alert" hidden></p>
+
+    <div id="sentence-list" class="sentence-list" aria-live="polite"></div>
+
+    <details class="explain">
+      <summary>How the recording works</summary>
+      <div class="explain-body">
+        <p>
+          Each sentence is recorded as its parts: every word on its own, then the whole
+          line read the way you would to your child. Words you have recorded before
+          &mdash; here or on the Words tab &mdash; are skipped automatically, so each new
+          sentence gets quicker than the last.
+        </p>
+        <p class="hint">
+          Anything not recorded yet is filled in by the built-in voice, so a video can
+          always be made &mdash; it just gets better as you record.
+        </p>
+      </div>
+    </details>
+  </section>
+
   <!-- ============================================================= MAKE -->
   <section class="screen" id="screen-make" role="tabpanel" aria-labelledby="tab-make" tabindex="-1" hidden>
 
@@ -163,6 +210,14 @@
         <textarea id="level-text" rows="6" spellcheck="false"
                   placeholder="Alex went to the park with Nana. They saw a big brown dog."></textarea>
         <p class="hint" id="level-text-count"></p>
+      </div>
+
+      <!-- Only for the sentence-library level: which of her sentences to
+           include. Rendered from the same list the Sentences tab shows. -->
+      <div class="level-extra" id="level-sentences-wrap" hidden>
+        <span class="setting-label">Which sentences?</span>
+        <p class="hint">From your Sentences tab. Tick the ones to include.</p>
+        <div class="choice-list" id="level-sentences"></div>
       </div>
 
       <p class="notice notice-warm make-slow" id="make-slow" role="status" aria-live="polite" hidden></p>

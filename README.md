@@ -70,6 +70,24 @@ Paste any text — a favourite book, a birthday card, a list of family names. Ea
 sounded out and blended, and at the end of each sentence the whole sentence is displayed
 and read aloud with each word highlighted in time.
 
+### 3. The sentence library
+
+The simplified flow the app is growing toward: the parent adds any sentence, records it
+in a short walk-through — each word once, then the whole line — and it becomes a video
+that travels the entire arc: sounds build into words (with the gaps closing pass by
+pass), words build into the sentence, and it ends with the parent's own read of the
+line, each word highlighted in time with their voice.
+
+Words are saved to the shared word bank, so every sentence gets cheaper to record than
+the last. The read-along timing needs no aligner: the isolated word clips give each
+word's relative length (same speaker, same words), the line recording gives the total,
+and the word boundaries are the cumulative product of the two — with grammar words
+discounted, because "the" said alone is a full syllable and "the" mid-sentence is not.
+
+Words the grapheme table would sound out *wrong* — `said`, `one`, irregular names — are
+shown and spoken whole instead, the way the sight-word levels treat every word: a wrong
+buildup teaches worse than none.
+
 ---
 
 ## Why nonsense words

@@ -103,6 +103,25 @@ down
     settings: { level: '1', theme: 'night', reps: 3, pauseSeconds: 1.5, minutes: 20 }
   }
 
+  const mockSentences = [
+    {
+      key: 'sam_sat_on_a_mat',
+      text: 'Sam sat on a mat.',
+      words: 5,
+      missing: [],
+      lineRecorded: true,
+      ready: true
+    },
+    {
+      key: 'the_dog_can_nap',
+      text: 'The dog can nap.',
+      words: 4,
+      missing: ['nap'],
+      lineRecorded: false,
+      ready: false
+    }
+  ]
+
   const listeners = { progress: [], done: [], error: [], install: [] }
   const fire = (k, payload) => listeners[k].forEach((fn) => { try { fn(payload) } catch (e) { console.error(e) } })
   const wait = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -172,6 +191,38 @@ down
     },
 
     async cancelJob (jobId) { cancelled = jobId; return { ok: true } },
+
+    // The sentence library, in memory. Enough behaviour to exercise the
+    // whole tab: adding splits on sentence ends, statuses vary.
+    async sentencesList () {
+      await wait(100)
+      return { sentences: JSON.parse(JSON.stringify(mockSentences)) }
+    },
+    async sentencesAdd (text) {
+      await wait(150)
+      const lines = String(text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean)
+      if (!lines.length) return { ok: false, error: 'That did not contain a sentence to add.' }
+      for (const t of lines) {
+        const key = t.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+        if (!mockSentences.some((s) => s.key === key)) {
+          mockSentences.push({
+            key,
+            text: t,
+            words: t.split(/\s+/).length,
+            missing: t.split(/\s+/).slice(0, 2).map((w) => w.replace(/[^\w]/g, '')),
+            lineRecorded: false,
+            ready: false
+          })
+        }
+      }
+      return { ok: true, sentences: JSON.parse(JSON.stringify(mockSentences)) }
+    },
+    async sentencesRemove (key) {
+      await wait(100)
+      const i = mockSentences.findIndex((s) => s.key === key)
+      if (i >= 0) mockSentences.splice(i, 1)
+      return { sentences: JSON.parse(JSON.stringify(mockSentences)) }
+    },
 
     async saveSettings (obj) {
       await wait(80)
