@@ -5,10 +5,19 @@
 #  1. PyInstaller cannot cross-compile. The Python sidecar has to be frozen on
 #     the same OS *and* CPU architecture it will run on, which is why there is
 #     a runner per target rather than one runner producing three installers.
-#     macOS gets two entries: macos-latest is Apple Silicon and macos-13 is the
-#     last Intel image, and shipping an arm64 sidecar inside the x64 dmg would
-#     produce an app that installs perfectly and then dies the first time it
-#     tries to speak.
+#     macOS gets two entries: macos-latest is Apple Silicon and macos-15-intel
+#     is the Intel image, and shipping an arm64 sidecar inside the x64 dmg
+#     would produce an app that installs perfectly and then dies the first time
+#     it tries to speak.
+#
+#     The Intel label matters and is easy to get wrong. macos-13 was the Intel
+#     image until GitHub retired it in December 2025; a job asking for it now
+#     does not fail, it queues forever against a pool that no longer exists.
+#     macos-15-intel replaced it and is the last x86_64 macOS image Actions
+#     will offer - it goes away in August 2027. Intel Macs will still be in
+#     people's hands after that, so whoever reads this then will need a
+#     different plan (a self-hosted Intel Mac, or PyInstaller under Rosetta on
+#     an Apple Silicon runner).
 #
 #  2. The Kokoro weights are 338MB and are not in git. Every job fetches them
 #     from the same release URLs setup.sh uses, and caches them.
@@ -45,7 +54,7 @@ jobs:
             label: macOS (arm64)
             arch: arm64
             builder_args: --mac dmg --arm64
-          - os: macos-13
+          - os: macos-15-intel
             label: macOS (x64)
             arch: x64
             builder_args: --mac dmg --x64
