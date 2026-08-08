@@ -1701,6 +1701,10 @@ const review = { part: 'phonemes', items: [], chosen: new Set(), audio: null }
 async function openReview (part) {
   review.part = part
   review.chosen.clear()
+  const all = $('review-all')
+  if (all) all.textContent = 'Select all'
+  const redo = $('review-redo')
+  if (redo) { redo.disabled = true; redo.textContent = 'Re-record selected' }
   let plan
   try {
     plan = await api.studioPlan({ part })
@@ -1795,20 +1799,28 @@ async function playClip (it, btn) {
   }
 }
 
+function toggleSelectAll () {
+  const doable = review.items.filter((it) => it.done).map((it) => it.key)
+  const allOn = doable.length > 0 && doable.every((k) => review.chosen.has(k))
+  review.chosen.clear()
+  if (!allOn) doable.forEach((k) => review.chosen.add(k))
+  renderReview()
+  $('review-all').textContent = allOn ? 'Select all' : 'Select none'
+  $('review-redo').disabled = review.chosen.size === 0
+  $('review-redo').textContent = review.chosen.size
+    ? `Re-record ${review.chosen.size} selected` : 'Re-record selected'
+}
+
 async function redoSelected () {
   const keys = [...review.chosen]
   if (!keys.length) return
-  // The bank is redone in place, NOT deleted first: its items exist only as
-  // files, so deleting one removes it from the catalog rather than queueing
-  // it - and a new take overwrites with a backup kept anyway.
-  if (review.part === 'bank') {
-    closeReview()
-    openStudio('bank', { keys })
-    return
-  }
-  await api.studioRemove({ part: review.part, keys })
+  // Redo EXACTLY the selection, in place. Nothing is deleted first: the
+  // old flow deleted the clips and reopened the whole part at its first
+  // gap - which could land somewhere other than the selection, auto-run
+  // into items never chosen, and leave a deleted clip deleted if she quit
+  // half way. A new take records over the top, previous kept as a backup.
   closeReview()
-  openStudio(review.part)
+  openStudio(review.part, { keys })
 }
 
 async function clearPart () {
@@ -1859,6 +1871,7 @@ function initReview () {
   on('review-close', closeReview)
   on('review-redo', redoSelected)
   on('review-clear', clearPart)
+  on('review-all', toggleSelectAll)
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('review').hidden) closeReview()
   })

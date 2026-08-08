@@ -409,7 +409,23 @@ def m_studio_plan(params):
                 "total": len(dicts), "resumeAt": 0,
                 "redo": keys is not None}
 
-    items = studio.plan(params.get("part", "phonemes"), params.get("order", "rows"))
+    part = params.get("part", "phonemes")
+    items = studio.plan(part, params.get("order", "rows"))
+
+    # `keys` narrows any part to the chosen items - the redo path. Nothing
+    # is deleted first: the old flow removed the clips and reopened the
+    # WHOLE part at its first gap, which could land somewhere other than
+    # the selection, auto-advance into items never chosen, and leave a
+    # deleted clip deleted if she quit half way. A redo records over the
+    # top, and the previous take is kept as a backup.
+    keys = params.get("keys")
+    if keys is not None:
+        want = set(keys)
+        dicts = [i.as_dict() for i in items if i.key in want]
+        return {"part": part, "takes": studio.takes_for(part),
+                "items": dicts, "done": 0, "total": len(dicts),
+                "resumeAt": 0, "redo": True}
+
     dicts = [i.as_dict() for i in items]
     done = sum(1 for d in dicts if d["done"])
     # Where to pick up: the first thing not yet recorded. A busy parent does

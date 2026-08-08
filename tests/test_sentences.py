@@ -376,3 +376,15 @@ def test_every_rime_prompt_carries_an_example_word(library):
     Every rime must anchor its sound to a real word."""
     for it in studio.plan("rimes"):
         assert "as in" in it.say, f"rime '{it.key}' has no example word"
+
+
+def test_redo_plans_contain_exactly_the_selection(library, monkeypatch):
+    """Selecting one phoneme to redo must queue that phoneme and nothing
+    else - the old flow deleted it, reopened the whole part at its first
+    gap, and auto-ran into items never chosen."""
+    from gen import service
+
+    plan = service.m_studio_plan({"part": "phonemes", "keys": ["s"]})
+    assert plan["redo"] is True and plan["total"] == 1
+    assert plan["items"][0]["key"] == "s"
+    assert plan["resumeAt"] == 0
