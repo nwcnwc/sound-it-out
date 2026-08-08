@@ -104,6 +104,34 @@ def silence(seconds: float) -> np.ndarray:
     return np.zeros(int(seconds * SR), dtype="float32")
 
 
+def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndarray:
+    """Bring one clip up to a consistent speaking level. Gain only - the
+    content is untouched, which is what "recordings are used verbatim" has
+    always meant; a mother recorded quietly at arm's length should not play
+    quietly forever on the TV.
+
+    Measured before this existed: her word clips peaked around 0.12 and the
+    finished videos came out at -30 LUFS, sixteen decibels below what any
+    streaming service plays at. Every clip is levelled here so her voice,
+    the starter voice and the synthesiser sit at the same volume, and the
+    final encode then masters the whole track (see encode_job).
+
+    The gain cap keeps a near-silent clip from being amplified into a wall
+    of room noise, and the ceiling leaves headroom rather than clipping."""
+    if not a.size:
+        return a
+    rms = float(np.sqrt(np.mean(a.astype("float64") ** 2)))
+    if rms < 1e-5:  # effectively silence: boosting it only amplifies hiss
+        return a
+    g = min(target_rms / rms, max_gain)
+    peak = float(np.abs(a).max())
+    if peak * g > ceiling:
+        g = ceiling / peak
+    if abs(g - 1.0) < 0.05:
+        return a
+    return (a * g).astype("float32")
+
+
 def slower(a: np.ndarray, tempo: float) -> np.ndarray:
     """Slow speech down without raising the pitch. tempo 0.7 = 30% slower.
 
@@ -375,8 +403,13 @@ class Segment:
 
 
 def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
-    """A segment showing `text` with no letter highlighted."""
-    return Segment([(text, False)], audio, pad, scale, color)
+    """A segment speaking `text` whole, so the whole text is lit.
+
+    The rule, everywhere: whatever the audio is SAYING is in the highlight
+    colour, and everything else is neutral. It used to show spoken whole
+    words in the plain colour, which broke the child's one reliable cue -
+    colour means "this is the thing being said right now"."""
+    return Segment([(text, True)], audio, pad, scale, color)
 
 
 # -------------------------------------------------------------- render
@@ -431,9 +464,11 @@ def frame_html(seg: Segment, theme: Theme) -> str:
     Identical HTML in identical Chromium means identical pixels.
     """
     text = "".join(p for p, _ in seg.parts)
+    # Two states only: being said (highlight) or not (neutral). There used
+    # to be a third - unsaid letters dimmed to grey whenever anything was
+    # highlighted - and three colours meaning two things read as noise.
     spans = "".join(
-        f'<span class="{"hl" if on else ("dim" if any(o for _, o in seg.parts) else "")}">'
-        f"{html.escape(p)}</span>"
+        f'<span class="{"hl" if on else ""}">{html.escape(p)}</span>'
         for p, on in seg.parts
     )
     # Multi-word text may wrap between words; a single word never may.
@@ -490,12 +525,32 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
 
     # One frame per unique visual state - dedupe so repeats cost nothing.
     # A 20 minute video is a few hundred PNGs, not 36,000.
+    #
+    # The highlight goes out when the voice stops: a segment's pad shows the
+    # same text NEUTRAL, so colour keeps exactly one meaning - "this is what
+    # is being said right now". A lit letter hanging through two seconds of
+    # silence taught the opposite. Below the threshold the light stays on:
+    # the closing gaps of a blending buildup are a fast rhythm, and flicking
+    # the colour at that rate is a strobe, not a cue.
+    NEUTRAL_PAD = 0.35
     seen, timeline, audio = {}, [], []
-    for seg in segments:
-        sig = json.dumps([seg.parts, seg.scale, seg.color])
+
+    def add_frame(parts, scale, color, duration):
+        sig = json.dumps([parts, scale, color])
         if sig not in seen:
-            seen[sig] = (f"f{len(seen):04d}", frame_html(seg, theme))
-        timeline.append({"frame": seen[sig][0], "duration": round(seg.duration, 4)})
+            ref = Segment(parts, np.zeros(0, dtype="float32"),
+                          scale=scale, color=color)
+            seen[sig] = (f"f{len(seen):04d}", frame_html(ref, theme))
+        timeline.append({"frame": seen[sig][0], "duration": round(duration, 4)})
+
+    for seg in segments:
+        talk = len(seg.audio) / SR
+        dark = seg.pad >= NEUTRAL_PAD and any(on for _, on in seg.parts)
+        add_frame(seg.parts, seg.scale, seg.color,
+                  talk if dark else talk + seg.pad)
+        if dark:
+            add_frame([(t, False) for t, _ in seg.parts],
+                      seg.scale, seg.color, seg.pad)
         audio.append(seg.audio)
         if seg.pad:
             audio.append(silence(seg.pad))
@@ -583,6 +638,13 @@ def encode_job(work: Path, out: Path, progress=None) -> Path:
         # standard rate that TV built-in players handle without complaint.
         # Raise it if any player ever objects; nothing else depends on it.
         "-r", "15", "-preset", "veryfast", "-tune", "stillimage", "-crf", "21",
+        # Master the whole track to streaming loudness. The clips are already
+        # levelled individually (see loud()), so this is mostly one static
+        # gain rather than anything that pumps; -14 LUFS is what YouTube and
+        # Spotify play at, which is exactly how loud a TV expects things to
+        # be. Before this the videos measured -30 LUFS - a sixteen-decibel
+        # apology - and the fix lived in every family's volume button.
+        "-af", "loudnorm=I=-14:TP=-1.0:LRA=11",
         "-c:a", "aac", "-b:a", "160k", "-ar", "48000",
         "-movflags", "+faststart", "-shortest",
         "-progress", "pipe:1", "-nostats", str(out),

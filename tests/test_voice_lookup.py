@@ -194,3 +194,40 @@ def test_the_studio_and_the_lookup_agree_on_every_sentence(voice_dir, monkeypatc
         v = V.VoiceSource()
         v.sentence(it.display)
         assert v.used["recorded"] == 1, f"{it.display!r} saved somewhere the lookup cannot see"
+
+
+# -------------------------------------------------------------- loudness
+
+
+def test_a_quiet_recording_comes_back_at_speaking_level(voice_dir):
+    """Measured: her clips peaked at 0.12 and videos came out at -30 LUFS.
+    Levelling is gain only, but it must actually happen."""
+    from gen.soundout import loud
+
+    quiet = np.full(int(SR * 0.5), 0.02, dtype="float32")
+    out = loud(quiet)
+    rms = float(np.sqrt(np.mean(out ** 2)))
+    assert 0.07 < rms < 0.12
+
+
+def test_levelling_never_clips(voice_dir):
+    from gen.soundout import loud
+
+    peaky = np.zeros(int(SR * 0.5), dtype="float32")
+    peaky[100] = 0.9          # one hot sample in a quiet clip
+    out = loud(peaky)
+    assert float(np.abs(out).max()) <= 0.97 + 1e-6
+
+
+def test_silence_is_not_amplified_into_noise(voice_dir):
+    from gen.soundout import loud
+
+    hiss = np.full(int(SR * 0.5), 1e-6, dtype="float32")
+    assert float(np.abs(loud(hiss)).max()) < 1e-4
+
+
+def test_the_lookup_levels_what_it_returns(voice_dir):
+    put(voice_dir / "phonemes", "s")  # written at 0.2 - quiet
+    v = V.VoiceSource()
+    out = v.phoneme("s")
+    assert float(np.sqrt(np.mean(out ** 2))) > 0.06

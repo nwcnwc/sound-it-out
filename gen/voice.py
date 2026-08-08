@@ -27,7 +27,7 @@ import numpy as np
 import soundfile as sf
 
 from gen.paths import MODELS, STARTER_VOICE, VOICE_DIR
-from gen.soundout import SR, Voice as KokoroVoice, slower, tidy_word
+from gen.soundout import SR, Voice as KokoroVoice, loud, slower, tidy_word
 
 
 # The same sound written two ways, and a recording of one must satisfy a
@@ -156,39 +156,41 @@ class VoiceSource:
         return a
 
     def word(self, text: str, slow=False) -> np.ndarray:
+        # Every return passes through loud(): gain only, so a quiet
+        # recording session does not become a quiet television. Content is
+        # still verbatim - see loud() for what that distinction means.
         a = self._recorded("words", text.lower())
         if a is not None:
-            return slower(a, 0.80) if slow else a
+            return loud(slower(a, 0.80) if slow else a)
         if self.clone_profile is not None:
             try:
                 from gen import clone
 
                 a = clone.synthesize(text, self.clone_profile)
                 self.used["cloned"] += 1
-                return slower(a, 0.80) if slow else a
+                return loud(slower(a, 0.80) if slow else a)
             except Exception:
                 pass  # fall through to the built-in voice rather than fail
-        # Generated only. Recordings above are returned untouched.
         self.used["generated"] += 1
         a = tidy_word(self.kokoro.say(text))
-        return slower(a, 0.80) if slow else a
+        return loud(slower(a, 0.80) if slow else a)
 
     def phoneme(self, ipa: str) -> np.ndarray:
         a = self._recorded("phonemes", ipa)
         if a is not None:
-            return a
+            return loud(a)
         # The shipped starter voice: a real human saying the sound, used until
         # the family records their own (their recording above always wins).
         if self.prefer_recordings:
             a = self._lookup(STARTER_VOICE, "phonemes", ipa)
             if a is not None:
                 self.used["starter"] += 1
-                return a
+                return loud(a)
         # Never cloned: isolated phonemes are exactly what cloning models are
         # worst at, and a wrong phoneme teaches a wrong sound. Built-in voice
         # (schwa-stripped and sustained) is the safer fallback.
         self.used["generated"] += 1
-        return self.kokoro.phoneme(ipa)
+        return loud(self.kokoro.phoneme(ipa))
 
     def blend(self, ipas) -> np.ndarray:
         """A partial syllable like /sæ/ - the halfway step between a letter
@@ -201,9 +203,9 @@ class VoiceSource:
         key = "".join(ipas)
         a = self._recorded("blends", key)
         if a is not None:
-            return a
+            return loud(a)
         self.used["generated"] += 1
-        return tidy_word(self.kokoro.say(key, phonemes=True))
+        return loud(tidy_word(self.kokoro.say(key, phonemes=True)))
 
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
         # Her own read of the whole line, if there is one.
@@ -216,18 +218,18 @@ class VoiceSource:
         # slow down a real person.
         a = self._recorded("sentences", sentence_key(text))
         if a is not None:
-            return a
+            return loud(a)
 
         if self.clone_profile is not None:
             try:
                 from gen import clone
 
                 self.used["cloned"] += 1
-                return slower(clone.synthesize(text, self.clone_profile), tempo)
+                return loud(slower(clone.synthesize(text, self.clone_profile), tempo))
             except Exception:
                 pass
         self.used["generated"] += 1
-        return slower(self.kokoro.say(text), tempo)
+        return loud(slower(self.kokoro.say(text), tempo))
 
     def summary(self) -> str:
         u = self.used
