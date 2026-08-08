@@ -1083,3 +1083,16 @@ body.script-open { overflow: hidden; }
 .make-block { margin-top: 1.6rem; max-width: 68ch; }
 .make-block .summary { margin: 0 0 1rem; font-weight: 600; }
 .clone-state { margin-top: 1rem; }
+.pack-group {
+  margin: .9rem 0 .1rem; font-size: .8rem; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft);
+}
+.clips-panel { margin-top: .8rem; border-top: 1px solid var(--line); padding-top: .4rem; }
+.clip-line {
+  display: flex; align-items: center; gap: .8rem;
+  padding: .3rem 0; border-bottom: 1px dashed var(--line);
+}
+.clip-line:last-child { border-bottom: 0; }
+.clip-name { font-weight: 600; min-width: 9ch; }
+.clip-state { color: var(--ink-soft); font-size: .9rem; flex: 1; }
+.btn-small { padding: .25rem .7rem; font-size: .88rem; }

@@ -322,6 +322,12 @@ def m_sentences_remove(params):
     return {"sentences": sentences.status()}
 
 
+def m_sentences_clips(params):
+    from gen import sentences
+
+    return {"clips": sentences.clips(params["key"])}
+
+
 def m_packs_list(_params):
     from gen import sentences
 
@@ -345,6 +351,15 @@ def m_studio_plan(params):
         from gen import sentences
 
         items = sentences.walkthrough_items(params["key"])
+        # `only` narrows the walk-through to one item - the redo path from
+        # the listen-back panel. Recorded-or-not, it starts at the top.
+        only = params.get("only")
+        if only is not None:
+            items = [i for i in items if i.key == only]
+            dicts = [i.as_dict() for i in items]
+            return {"part": "sentence", "takes": 1, "items": dicts,
+                    "done": 0, "total": len(dicts), "resumeAt": 0,
+                    "redo": True}
         dicts = [i.as_dict() for i in items]
         done = sum(1 for d in dicts if d["done"])
         resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
@@ -592,6 +607,7 @@ METHODS = {
     "sentences.list": m_sentences_list,
     "sentences.add": m_sentences_add,
     "sentences.remove": m_sentences_remove,
+    "sentences.clips": m_sentences_clips,
     "packs.list": m_packs_list,
     "packs.add": m_packs_add,
     "plan": m_plan,

@@ -134,17 +134,31 @@ def test_packs_add_ordinary_entries(library, monkeypatch):
 
 def test_packs_report_what_is_already_added(library, monkeypatch):
     monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
-    S.add("sat")
-    pack = next(p for p in S.packs() if p["id"] == "first-words")
-    assert pack["added"] == 1 and pack["count"] == len(levels.CVC_REAL)
+    S.add("vam")
+    pack = next(p for p in S.packs() if p["id"] == "nonsense")
+    assert pack["added"] == 1 and pack["count"] == len(levels.CVC_NONSENSE)
 
 
 def test_adding_a_pack_twice_adds_nothing_new(library, monkeypatch):
     monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
-    S.add_pack("first-words")
+    S.add_pack("nonsense")
     n = len(S.load())
-    S.add_pack("first-words")
+    S.add_pack("nonsense")
     assert len(S.load()) == n
+
+
+def test_themed_packs_are_sentences(library, monkeypatch):
+    """A pack about Paw Patrol is lines a fan wants read, not an exercise
+    dressed up as one - every themed entry must be a real sentence."""
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
+    for pid in ("paw-patrol", "veggie-tales", "gods-world", "family-day"):
+        S.add_pack(pid)
+    assert all(s["kind"] == "sentence" for s in S.status())
+
+
+def test_every_pack_declares_a_group(library, monkeypatch):
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
+    assert all(p["group"] in ("favourites", "skills") for p in S.packs())
 
 
 def test_the_ladder_pack_keeps_curriculum_order(library, monkeypatch):

@@ -143,10 +143,12 @@ down
   ]
 
   const mockPacks = [
-    { id: 'own-words', name: 'Your word list', description: 'Everything from your old word list.', count: 44, added: 1 },
-    { id: 'letters', name: 'Letter sounds', description: 'One letter at a time, in phonics order.', count: 19, added: 1 },
-    { id: 'first-words', name: 'First little words', description: 'Three-sound words to sound out: sat, pin, man.', count: 10, added: 0 },
-    { id: 'ladder', name: 'Building up', description: 'The whole journey in order, ending in sentences.', count: 22, added: 22 }
+    { id: 'own-words', group: 'favourites', name: 'Your word list', description: 'Everything from your old word list.', count: 44, added: 1 },
+    { id: 'paw-patrol', group: 'favourites', name: 'Paw Patrol', description: 'The pups and their lines.', count: 10, added: 0 },
+    { id: 'veggie-tales', group: 'favourites', name: 'VeggieTales', description: 'Bob, Larry, and the song at the end of the show.', count: 5, added: 0 },
+    { id: 'gods-world', group: 'favourites', name: "God's world", description: 'Short lines of faith and thanks.', count: 8, added: 0 },
+    { id: 'letters', group: 'skills', name: 'Letter sounds', description: 'One letter at a time, in phonics order.', count: 19, added: 1 },
+    { id: 'ladder', group: 'skills', name: 'Building up', description: 'The whole journey in order, ending in sentences.', count: 22, added: 22 }
   ]
 
   const listeners = { progress: [], done: [], error: [], install: [] }
@@ -251,6 +253,24 @@ down
       const i = mockSentences.findIndex((s) => s.key === key)
       if (i >= 0) mockSentences.splice(i, 1)
       return { sentences: JSON.parse(JSON.stringify(mockSentences)) }
+    },
+    async sentencesClips (key) {
+      await wait(80)
+      const s = mockSentences.find((x) => x.key === key)
+      const words = s ? s.text.replace(/[.!?]/g, '').split(/\s+/) : []
+      const clips = words.map((w) => ({
+        key: w.toLowerCase(),
+        kind: 'word',
+        display: w,
+        path: (s.missing || []).includes(w.replace(/[^\w]/g, '')) ? null : '/mock/' + w + '.wav',
+        seconds: 0.4,
+        silent: false
+      }))
+      if (s && s.kind === 'sentence') {
+        clips.push({ key: key, kind: 'sentence', display: s.text,
+          path: s.lineRecorded ? '/mock/' + key + '.wav' : null, seconds: 2.1, silent: false })
+      }
+      return { clips }
     },
     async packsList () {
       await wait(80)

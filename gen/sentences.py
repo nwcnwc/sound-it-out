@@ -199,9 +199,38 @@ def status() -> list:
             "kind": kind,
             "words": len(words),
             "missing": missing,
+            # How many of this entry's words the shared bank already covers.
+            # The bank makes recording quietly cheap, and quiet reads as
+            # broken: "it only asked me one of the five words" is a bug
+            # report unless the screen says where the other four came from.
+            "recordedWords": len(words) - len(missing),
             "lineRecorded": line_done,
             "ready": ready,
         })
+    return out
+
+
+def clips(key: str) -> list:
+    """Every clip behind one entry, for listening back: each word, then the
+    line. Entries without a recording yet carry no path - the UI shows them
+    as still to do rather than hiding them."""
+    import numpy as np
+    import soundfile as sf
+
+    out = []
+    for it in walkthrough_items(key):
+        entry = {"key": it.key, "kind": it.kind, "display": it.display,
+                 "path": None, "seconds": 0.0, "silent": True}
+        p = it.path()
+        if p.exists():
+            try:
+                a, sr = sf.read(str(p), dtype="float32")
+                peak = float(np.abs(a).max()) if a.size else 0.0
+                entry.update(path=str(p), seconds=round(len(a) / sr, 2),
+                             silent=peak < 0.01)
+            except Exception:
+                pass  # unreadable file reads as unrecorded, which is honest
+        out.append(entry)
     return out
 
 
@@ -237,6 +266,11 @@ def walkthrough_items(key: str) -> list:
 # with one tap. Nothing about the pedagogy changed - only where it lives.
 
 
+# Themed packs are SENTENCES, because the library is sentences: a pack about
+# Paw Patrol is lines a Paw Patrol fan wants read, not an exercise dressed up
+# as one. Two skill packs are the deliberate exception - letter sounds and
+# nonsense sounding-out practice cannot be sentences by nature, and they are
+# the mechanics the research says to drill - so they sit in their own group.
 def _pack_defs() -> list:
     from gen import levels, wordlists
 
@@ -250,37 +284,79 @@ def _pack_defs() -> list:
         ladder += ch["words"] + [ch["sentence"]]
 
     return [
-        {"id": "own-words", "name": "Your word list",
+        # ---- stories and favourites: themed sentences -------------------
+        {"id": "own-words", "group": "favourites", "name": "Your word list",
          "description": "Everything from your old word list - names, "
                         "favourites, first words. The words a child already "
                         "cares about are the ones learned first.",
          "items": own_words},
-        {"id": "letters", "name": "Letter sounds",
+        {"id": "paw-patrol", "group": "favourites", "name": "Paw Patrol",
+         "description": "The pups and their lines.",
+         "items": [
+             "Chase is on the case.",
+             "Skye is up in the sky.",
+             "Marshall is all fired up.",
+             "Rubble on the double.",
+             "Rocky can fix it.",
+             "Zuma is in the water.",
+             "Ryder needs us.",
+             "The pups save the day.",
+             "No job is too big.",
+             "No pup is too small.",
+         ]},
+        {"id": "veggie-tales", "group": "favourites", "name": "VeggieTales",
+         "description": "Bob, Larry, and the song at the end of the show.",
+         "items": [
+             "Bob is a tomato.",
+             "Larry is a cucumber.",
+             "It is time for silly songs.",
+             "God made you special.",
+             "He loves you very much.",
+         ]},
+        {"id": "gods-world", "group": "favourites", "name": "God's world",
+         "description": "Short lines of faith and thanks.",
+         "items": [
+             "God made the sun.",
+             "God made the sea.",
+             "God made the dog.",
+             "God made me.",
+             "God loves me.",
+             "Jesus loves me.",
+             "Give thanks to the Lord.",
+             "The Lord is my shepherd.",
+         ]},
+        {"id": "family-day", "group": "favourites", "name": "Around home",
+         "description": "The lines of an ordinary day.",
+         "items": [
+             "I love you.",
+             "Time for bed.",
+             "The dog wants to play.",
+             "We can go to the park.",
+             "What is for dinner?",
+             "Come and see this.",
+         ]},
+
+        # ---- learning to sound out: the skills --------------------------
+        {"id": "letters", "group": "skills", "name": "Letter sounds",
          "description": "One letter at a time, in phonics order - s a t p "
                         "i n first. Nothing to record: these use the sounds "
                         "from Setup.",
          "items": [l for l, _ in
                    levels.SATPIN + levels.SET2 + levels.SET3]},
-        {"id": "first-words", "name": "First little words",
-         "description": "Three-sound words to sound out: sat, pin, man.",
-         "items": list(levels.CVC_REAL)},
-        {"id": "nonsense", "name": "Sounding-out practice",
-         "description": "Made-up words like vam and zib. They cannot be "
-                        "memorised as shapes, so reading one proves the "
-                        "sounding-out is real.",
-         "items": list(levels.CVC_NONSENSE)},
-        {"id": "ladder", "name": "Building up",
+        {"id": "ladder", "group": "skills", "name": "Building up",
          "description": "The whole journey in order: at, am, Sam, sat... "
                         "ending in whole sentences, each built only from "
                         "letters already met.",
          "items": ladder},
-        {"id": "letter-teams", "name": "Letter teams",
+        {"id": "nonsense", "group": "skills", "name": "Sounding-out practice",
+         "description": "Made-up words like vam and zib. They cannot be "
+                        "memorised as shapes, so reading one proves the "
+                        "sounding-out is real.",
+         "items": list(levels.CVC_NONSENSE)},
+        {"id": "letter-teams", "group": "skills", "name": "Letter teams",
          "description": "sh, ch, th, ck as one sound: ship, chat, duck.",
          "items": list(levels.DIGRAPH_WORDS)},
-        {"id": "harder-words", "name": "Harder words",
-         "description": "Two sounds that stay two sounds: stop, black, hand.",
-         "items": list(levels.CLUSTER_WORDS)},
-        {"id": "first-sentences", "name": "First sentences",
+        {"id": "first-sentences", "group": "skills", "name": "First sentences",
          "description": "Short decodable lines: A duck sat on the rock.",
          "items": list(levels.SENTENCES)},
     ]
@@ -293,7 +369,7 @@ def packs() -> list:
     for p in _pack_defs():
         keys = [sentence_key(i) for i in p["items"]]
         out.append({
-            "id": p["id"], "name": p["name"],
+            "id": p["id"], "name": p["name"], "group": p["group"],
             "description": p["description"],
             "count": len(p["items"]),
             "added": sum(1 for k in keys if k in have),

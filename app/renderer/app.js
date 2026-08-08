@@ -143,8 +143,21 @@ async function refreshPacks () {
     console.error(err)
   }
   host.textContent = ''
+  const GROUPS = [
+    ['favourites', 'Stories and favourites'],
+    ['skills', 'Learning to sound out']
+  ]
+  let lastGroup = null
   for (const p of packs) {
     if (!p.count) continue
+    if (p.group !== lastGroup) {
+      lastGroup = p.group
+      const g = GROUPS.find(([id]) => id === p.group)
+      const h = document.createElement('p')
+      h.className = 'pack-group'
+      h.textContent = g ? g[1] : ''
+      if (h.textContent) host.appendChild(h)
+    }
     const row = document.createElement('div')
     row.className = 'pack-row'
 
@@ -196,10 +209,17 @@ function statusLine (s) {
       : 'Uses its letter sound — record the sounds in Setup to make it yours.'
   }
   if (s.ready) return 'Recorded, in your own voice.'
+  // The shared word bank makes recording quietly cheap, and quiet reads as
+  // broken: "it only asked me one of the five words" is a bug report unless
+  // this line says where the other four came from.
+  const have = s.recordedWords || 0
+  const already = have && s.kind === 'sentence'
+    ? `${have} of its ${s.words} words are already in your recordings. `
+    : ''
   const bits = []
   if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
-  if (!s.lineRecorded) bits.push('the whole line')
-  return 'Still to record: ' + bits.join(', and ') +
+  if (!s.lineRecorded && s.kind === 'sentence') bits.push('the whole line')
+  return already + 'Still to record: ' + bits.join(', and ') +
     '. Works now — the built-in voice fills the gaps.'
 }
 
@@ -263,6 +283,38 @@ function renderSentenceLib () {
         })
       })
       bar.appendChild(rec)
+
+      const listen = document.createElement('button')
+      listen.type = 'button'
+      listen.className = 'btn btn-quiet'
+      listen.textContent = 'Listen'
+      listen.addEventListener('click', () => toggleClips(s, row, listen))
+      bar.appendChild(listen)
+
+      const edit = document.createElement('button')
+      edit.type = 'button'
+      edit.className = 'btn btn-quiet'
+      edit.textContent = 'Edit'
+      edit.addEventListener('click', async () => {
+        // Editing is remove-and-re-add through the box at the top: the
+        // recordings are keyed by word, so the unchanged words keep their
+        // clips, and there is exactly one way text enters the list.
+        const box = $('sentence-input')
+        box.value = s.text
+        try {
+          const r = await api.sentencesRemove(s.key)
+          sentenceLib = (r && r.sentences) || []
+        } catch (err) {
+          alert('Could not open it for editing: ' + (err.message || err))
+          return
+        }
+        renderSentenceLib()
+        refreshPacks()
+        updateSummary()
+        box.focus()
+        box.scrollIntoView({ block: 'center' })
+      })
+      bar.appendChild(edit)
     }
 
     const del = document.createElement('button')
@@ -291,6 +343,86 @@ function renderSentenceLib () {
     row.append(label, body)
     host.appendChild(row)
   }
+}
+
+/* ------------------------------------------------- listen back, per entry */
+
+let clipAudio = null
+
+function playClipFile (path, btn) {
+  // One player at a time; pressing the same button again stops it.
+  if (clipAudio) {
+    clipAudio.pause()
+    if (clipAudio._btn) clipAudio._btn.textContent = 'Play'
+    const same = clipAudio._path === path
+    clipAudio = null
+    if (same) return
+  }
+  clipAudio = new Audio('file://' + encodeURI(path).replace(/#/g, '%23'))
+  clipAudio._btn = btn
+  clipAudio._path = path
+  btn.textContent = 'Stop'
+  const done = () => { if (clipAudio && clipAudio._path === path) clipAudio = null; btn.textContent = 'Play' }
+  clipAudio.addEventListener('ended', done)
+  clipAudio.addEventListener('error', done)
+  clipAudio.play().catch(done)
+}
+
+async function toggleClips (s, row, btn) {
+  const open = row.querySelector('.clips-panel')
+  if (open) { open.remove(); btn.textContent = 'Listen'; return }
+
+  let clips = []
+  try {
+    const r = await api.sentencesClips(s.key)
+    clips = (r && r.clips) || []
+  } catch (err) {
+    alert('Could not read the recordings: ' + (err.message || err))
+    return
+  }
+  btn.textContent = 'Close'
+
+  const panel = document.createElement('div')
+  panel.className = 'clips-panel'
+  for (const c of clips) {
+    const line = document.createElement('div')
+    line.className = 'clip-line'
+
+    const name = document.createElement('span')
+    name.className = 'clip-name'
+    name.textContent = c.kind === 'sentence' ? 'The whole line' : c.display
+
+    const state = document.createElement('span')
+    state.className = 'clip-state'
+    state.textContent = !c.path ? 'not recorded yet'
+      : c.silent ? 'recorded, but silent — worth redoing'
+        : c.seconds + 's'
+
+    const actions = document.createElement('span')
+    actions.className = 'clip-actions'
+    if (c.path) {
+      const play = document.createElement('button')
+      play.type = 'button'
+      play.className = 'btn btn-quiet btn-small'
+      play.textContent = 'Play'
+      play.addEventListener('click', () => playClipFile(c.path, play))
+      actions.appendChild(play)
+    }
+    const redo = document.createElement('button')
+    redo.type = 'button'
+    redo.className = 'btn btn-quiet btn-small'
+    redo.textContent = c.path ? 'Redo' : 'Record'
+    redo.addEventListener('click', () => {
+      openStudio('sentence', { key: s.key, only: c.key }).catch((err) => {
+        alert('Could not start recording: ' + (err.message || err))
+      })
+    })
+    actions.appendChild(redo)
+
+    line.append(name, state, actions)
+    panel.appendChild(line)
+  }
+  row.querySelector('.sentence-body').appendChild(panel)
 }
 
 function initSentences () {
@@ -1024,7 +1156,7 @@ async function openStudio (part, extra) {
   // so it survives quitting, updating, or a week between sittings.
   studio.i = Math.min(plan.resumeAt || 0, Math.max(0, studio.items.length - 1))
   studio.doneCount = plan.done || 0
-  if ((plan.done || 0) >= studio.items.length) {
+  if (!plan.redo && (plan.done || 0) >= studio.items.length) {
     const again = confirm(
       `All ${studio.items.length} are already recorded.\n\n` +
       'Start again from the beginning?')
