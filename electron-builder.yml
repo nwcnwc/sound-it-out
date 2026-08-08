@@ -45,8 +45,17 @@ extraResources:
 
   # User-editable. Shipping them unpacked is the point - a parent can open
   # sight-words.txt in TextEdit and add a cousin's name.
+  #
+  # ONLY the .default.txt files. When the app runs from source, wordlists/ is
+  # also where the running app SAVES the family's real list - their child's
+  # name, their parents, their pets. Copying the directory wholesale put that
+  # file inside every installer, and those installers were published. The
+  # filter is what stops a developer's own family ending up in a public
+  # release; the app seeds the real list from the default on first run.
   - from: wordlists
     to: wordlists
+    filter:
+      - "*.default.txt"
 
   # Hand-checked recorded phoneme clips (Wikimedia Commons sources).
   - from: assets/commons
