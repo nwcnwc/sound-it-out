@@ -24,8 +24,18 @@ from gen.soundout import SR  # noqa: E402
 
 @pytest.fixture
 def voice_dir(tmp_path, monkeypatch):
-    monkeypatch.setattr(V, "VOICE_DIR", tmp_path)
-    return tmp_path
+    monkeypatch.setattr(V, "VOICE_DIR", tmp_path / "family")
+    # Point the starter voice somewhere empty too: these tests are about the
+    # family lookup, and the real starter bank answering a phoneme request
+    # would make a broken lookup pass.
+    monkeypatch.setattr(V, "STARTER_VOICE", tmp_path / "starter")
+    return tmp_path / "family"
+
+
+@pytest.fixture
+def starter_dir(tmp_path, monkeypatch):
+    monkeypatch.setattr(V, "STARTER_VOICE", tmp_path / "starter")
+    return tmp_path / "starter"
 
 
 def put(dirpath, name, seconds=0.5):
@@ -77,6 +87,72 @@ def test_unrelated_sounds_are_not_aliased(voice_dir):
     """/s/ must never be answered with a recording of something else."""
     put(voice_dir / "phonemes", "z")
     assert V.VoiceSource()._recorded("phonemes", "s") is None
+
+
+# --------------------------------------------------------- starter voice
+
+
+def test_the_starter_voice_answers_an_unrecorded_phoneme(voice_dir, starter_dir):
+    """A fresh install has no family recordings, and the whole point of
+    shipping the starter clips is that /s/ is still a human /s/."""
+    put(starter_dir / "phonemes", "s")
+    v = V.VoiceSource()
+    assert v.phoneme("s") is not None
+    assert v.used["starter"] == 1 and v.used["generated"] == 0
+
+
+def test_a_family_recording_always_beats_the_starter_voice(voice_dir, starter_dir):
+    """"Until the user replaces them": the moment she records a sound, the
+    shipped clip must never be heard again."""
+    put(voice_dir / "phonemes", "s", seconds=0.9)
+    put(starter_dir / "phonemes", "s", seconds=0.3)
+    v = V.VoiceSource()
+    out = v.phoneme("s")
+    assert len(out) / SR == pytest.approx(0.9, abs=0.01)
+    assert v.used["recorded"] == 1 and v.used["starter"] == 0
+
+
+def test_the_starter_voice_understands_both_transcriptions(voice_dir, starter_dir):
+    """The /a/ vs /ae/ alias applies to the starter bank the same as to the
+    family's own - the shipped clips are named the way the recording table
+    spells sounds, and levels.py asks the way espeak spells them."""
+    put(starter_dir / "phonemes", "a")
+    v = V.VoiceSource()
+    v.phoneme("æ")
+    assert v.used["starter"] == 1
+
+
+def test_starter_clips_are_not_counted_as_genuinely_theirs(voice_dir, starter_dir):
+    """The summary exists to be honest about whose voice a video is in, and
+    the developer's phonemes are human but not hers."""
+    put(starter_dir / "phonemes", "s")
+    v = V.VoiceSource()
+    v.phoneme("s")
+    assert "0% genuinely their" in v.summary()
+
+
+def test_the_shipped_bank_actually_resolves(monkeypatch):
+    """The real assets/starter-voice, as shipped: every phoneme the shipped
+    curriculum actually asks for must resolve without touching the
+    synthesiser. Derived from the level content rather than the full grapheme
+    table - the table also maps "qu" to /kw/, which is two sounds, has no
+    single clip, and appears in no shipped word."""
+    from gen import levels
+
+    words = (levels.CVC_REAL + levels.CVC_NONSENSE + levels.DIGRAPH_WORDS
+             + levels.CLUSTER_WORDS)
+    for ch in levels.LADDER:
+        words += ch["words"] + ch["sentence"].replace(".", "").split()
+    for s in levels.SENTENCES:
+        words += s.strip(".").split()
+    asked = {p for w in words for _, p in levels.split_graphemes(w)}
+    asked |= {p for pair in levels.BLENDS_2 for _, p in pair}
+    asked |= {p for _, p in levels.SATPIN + levels.SET2 + levels.SET3}
+
+    v = V.VoiceSource()
+    missing = [p for p in sorted(asked)
+               if v._lookup(V.STARTER_VOICE, "phonemes", p) is None]
+    assert not missing, f"starter bank cannot say {missing}"
 
 
 # ------------------------------------------------------------- sentences

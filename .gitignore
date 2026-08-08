@@ -45,3 +45,13 @@ assets/voice-*/
 # What ships is sight-words.default.txt, with placeholder names. This file is
 # seeded from it on first run and belongs to the family, not to git.
 wordlists/sight-words.txt
+
+# The starter voice DOES ship and IS tracked, unlike everything else under
+# assets/ that holds audio. These are the developer's own 42 phoneme clips,
+# shipped deliberately so a fresh install teaches with a human voice; a
+# family's recordings (assets/voice/) still never leave their machine.
+!assets/starter-voice/**/*.wav
+
+# The family's own sentence library, like the live word list above: written
+# by the app, holds their real sentences, never for git.
+wordlists/sentences.txt

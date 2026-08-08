@@ -55,6 +55,12 @@ AUDIO_CACHE = BUILD / "audio"
 # that assumed the directory held only test data - 42 recorded phonemes,
 # unrecoverable, because the folder is gitignored and rm does not use Trash.
 VOICE_DIR = Path(os.environ.get("SIO_VOICE_DIR") or (DATA / "assets" / "voice"))
+# The starter voice: recorded phoneme clips that ship with the app, spoken by
+# the developer. Used for any sound the family has not recorded themselves
+# yet, so a fresh install teaches with a human voice rather than a synthesised
+# one. Read-only and shipped, unlike VOICE_DIR - a family's own recordings
+# always win, at which point these are simply never read.
+STARTER_VOICE = RESOURCES / "assets" / "starter-voice"
 WORDLISTS = DATA / "wordlists"
 
 

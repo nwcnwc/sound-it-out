@@ -61,6 +61,13 @@ extraResources:
   - from: assets/commons
     to: assets/commons
 
+  # The starter voice: the developer's own 42 phoneme recordings, used for
+  # any sound the family has not recorded yet (gen/voice.py). Shipped
+  # deliberately - unlike assets/voice, which is a family's private
+  # recordings and must never appear in an installer.
+  - from: assets/starter-voice
+    to: assets/starter-voice
+
   # The frozen Python sidecar. Globbed rather than named exactly so the same
   # line covers soundout-sidecar and soundout-sidecar.exe.
   - from: dist/sidecar
