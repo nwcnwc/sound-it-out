@@ -184,10 +184,19 @@ def m_cloning_info(_params):
 def m_install_cloning(params):
     from gen import clone
 
+    # clone.install calls back with (fraction, message) - a float 0..1 and a
+    # line of text. The adapter here used to declare (done, total, msg), so the
+    # message was bound to `total` and the renderer computed done/total as
+    # 0.02 / "Creating the voice-model environment" = NaN. The progress bar got
+    # `width: NaN%` and the status line never moved off "Downloading...", which
+    # made a working 3 GB download look like a hung one for its entire run.
     return clone.install(
-        progress_cb=lambda d, t, msg="": _emit(
-            {"event": "installProgress", "done": d, "total": t, "message": msg}
-        )
+        progress_cb=lambda frac, msg="": _emit({
+            "event": "installProgress",
+            "done": round(max(0.0, min(1.0, float(frac))) * 100),
+            "total": 100,
+            "message": str(msg),
+        })
     )
 
 
