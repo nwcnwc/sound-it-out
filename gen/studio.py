@@ -388,6 +388,13 @@ def find(part: str, key: str, order="rows"):
 
 def clip_path(part: str, key: str, order="rows"):
     """Where a recorded clip lives, or None if it has not been recorded."""
+    # The passage is one file rather than an item in a list, so it has no key
+    # to look up. It was therefore the one recording with no way to hear it
+    # back - six minutes of reading, saved, with nothing to confirm it worked.
+    if part == "passage":
+        p = VOICE_DIR / "passage.wav"
+        return str(p) if p.exists() else None
+
     it = find(part, key, order)
     if it is None:
         return None

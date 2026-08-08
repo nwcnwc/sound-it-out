@@ -877,6 +877,7 @@ async function voiceCounts (caps) {
 
   showPartProgress('phonemes', p, totals.phonemes)
   showPartProgress('words', w, totals.words)
+  showPassageState()
   for (const [part, n] of [['phonemes', p], ['words', w]]) {
     const b = document.querySelector(`.vpart-review[data-part="${part}"]`)
     if (b) b.hidden = n === 0
@@ -892,6 +893,76 @@ async function voiceCounts (caps) {
       ? 'All recorded. Everything in the early levels is your own voice.'
       : `${done} of ${total} recorded. You can stop and carry on whenever \u2014 ` +
         'it picks up where you left off.'
+}
+
+/* The passage had no state on screen at all - no length, no level, no way to
+ * hear it. Six minutes of reading went in and the app said nothing back, so
+ * there was no way to tell a good recording from six minutes of silence until
+ * the cloned voice came out wrong.
+ *
+ * It is one file rather than a list, so it gets its own small readout instead
+ * of a progress bar. */
+let passageAudio = null
+
+async function showPassageState () {
+  const btn = $('play-passage')
+  try {
+    const r = await api.studioClip({ part: 'passage' })
+    if (!r || !r.path) {
+      setText('count-passage', '')
+      if (btn) btn.hidden = true
+      return
+    }
+    const clock = (s) => Math.floor(s / 60) + ':' +
+      String(Math.round(s % 60)).padStart(2, '0')
+    setText('count-passage', r.silent
+      ? '— recorded, but silent'
+      : r.short
+        // Stopping early is invisible otherwise: the file is real and plays
+        // fine, it is just not the whole script, and the only symptom is a
+        // cloned voice that never sounds quite right.
+        ? `— only ${clock(r.seconds)} recorded, and the whole passage takes ` +
+          `about ${clock(r.expectedSeconds)}. It looks like it stopped early.`
+        : `— ${clock(r.seconds)} recorded`)
+    if (btn) btn.hidden = false
+  } catch {
+    if (btn) btn.hidden = true
+  }
+}
+
+async function playPassage () {
+  const btn = $('play-passage')
+  if (!btn) return
+
+  // Second press stops it. Six minutes is far too long to sit through with no
+  // way out, and there is nowhere obvious to put a separate Stop button.
+  if (passageAudio) {
+    passageAudio.pause()
+    passageAudio = null
+    btn.textContent = 'Listen back'
+    return
+  }
+  try {
+    const r = await api.studioClip({ part: 'passage' })
+    if (!r || !r.path) return
+    if (r.silent) {
+      setText('count-passage', '— recorded, but silent - record it again')
+      return
+    }
+    passageAudio = new Audio('file://' + encodeURI(r.path).replace(/#/g, '%23'))
+    btn.textContent = 'Stop'
+    const done = () => { passageAudio = null; btn.textContent = 'Listen back' }
+    passageAudio.addEventListener('ended', done)
+    passageAudio.addEventListener('error', () => {
+      done()
+      setText('count-passage', '— could not play it here; the file itself is fine')
+    })
+    await passageAudio.play()
+  } catch (err) {
+    passageAudio = null
+    btn.textContent = 'Listen back'
+    setText('count-passage', '— could not play: ' + (err.message || err))
+  }
 }
 
 function showPartProgress (part, done, total) {
@@ -1744,6 +1815,7 @@ function closeReader () {
 function initReader () {
   const on = (id, fn) => { const e = $(id); if (e) e.addEventListener('click', fn) }
   on('read-passage', openReader)
+  on('play-passage', playPassage)
   on('reader-go', startReading)
   on('reader-pause', toggleReaderPause)
   on('reader-done', finishReading)

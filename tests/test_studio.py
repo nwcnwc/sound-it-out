@@ -174,3 +174,27 @@ def test_three_takes_still_say_which_one_was_kept():
 def test_wording_matches_take_count_for_clean_audio():
     assert studio.choose([voiced()], WORD)["reason"] == "Got it."
     assert studio.choose([voiced(), voiced()], WORD)["reason"] == "Clean take."
+
+
+# ---------------------------------------------------------------- passage
+
+
+def test_the_passage_can_be_found_without_a_key(tmp_path, monkeypatch):
+    """The passage is one file, not an item in a list.
+
+    It had no key, so clip_path could not look it up, so nothing in the app
+    could offer to play it back - the one recording you could not hear.
+    """
+    import soundfile as sf
+    monkeypatch.setattr(studio, "VOICE_DIR", tmp_path)
+
+    assert studio.clip_path("passage", "") is None, "absent means absent"
+
+    sf.write(tmp_path / "passage.wav", voiced(seconds=1.0), SR)
+    found = studio.clip_path("passage", "")
+    assert found and found.endswith("passage.wav")
+
+
+def test_asking_for_the_passage_does_not_need_a_matching_item():
+    """A key of "" must not be mistaken for a real item and return one."""
+    assert studio.clip_path("passage", "chase") == studio.clip_path("passage", "")

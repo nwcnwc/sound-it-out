@@ -375,7 +375,8 @@ def m_studio_clip(params):
     import soundfile as sf
     from gen import studio
 
-    path = studio.clip_path(params.get("part", "phonemes"), params["key"],
+    # The passage has no key - it is a single file, not one of a list.
+    path = studio.clip_path(params.get("part", "phonemes"), params.get("key", ""),
                             params.get("order", "rows"))
     out = {"path": path, "peak": 0.0, "seconds": 0.0, "silent": True}
     if path:
@@ -384,7 +385,35 @@ def m_studio_clip(params):
         out["seconds"] = round(len(a) / sr, 2)
         # Below this nothing is audible on a laptop speaker.
         out["silent"] = out["peak"] < 0.01
+
+        # The passage is the voice-cloning reference, and the only recording
+        # whose *length* can be wrong without anything looking wrong. Stopping
+        # early saves a valid, audible wav that happens to be a fraction of the
+        # script - which surfaces much later as a poor cloned voice, with
+        # nothing pointing back at the cause.
+        if params.get("part") == "passage":
+            want = expected_passage_seconds()
+            out["expectedSeconds"] = round(want)
+            out["short"] = out["seconds"] < want * 0.5
     return out
+
+
+def expected_passage_seconds() -> float:
+    """Roughly how long the passage takes to read aloud.
+
+    150 words a minute is unhurried reading. Only used to tell "she read the
+    whole thing" apart from "she stopped after a paragraph", so it does not
+    need to be better than roughly right.
+    """
+    from gen.paths import RESOURCES
+
+    try:
+        raw = (RESOURCES / "PASSAGE.md").read_text(encoding="utf-8")
+    except OSError:
+        return 240.0
+    body = raw.split("## One", 1)[-1]
+    words = sum(1 for w in body.split() if any(c.isalpha() for c in w))
+    return max(60.0, words / 150.0 * 60.0)
 
 
 def m_studio_remove(params):
