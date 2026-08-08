@@ -377,6 +377,22 @@ def m_studio_plan(params):
         return {"part": "sentence", "takes": 1, "items": dicts,
                 "done": done, "total": len(dicts), "resumeAt": resume}
 
+    # Everything the packs still need, as ONE session: each missing word,
+    # then each unread line, auto-advancing and resumable. Recording them
+    # sentence by sentence works too, but is thirty-nine open-and-close
+    # cycles; this is one sitting.
+    if params.get("part") == "starter":
+        from gen import sentences, starter
+
+        words, lines = starter.needed()
+        items = [sentences._word_item(w) for w in words]
+        items += [sentences._line_item(t) for t in lines]
+        dicts = [i.as_dict() for i in items]
+        done = sum(1 for d in dicts if d["done"])
+        resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
+        return {"part": "starter", "takes": 1, "items": dicts,
+                "done": done, "total": len(dicts), "resumeAt": resume}
+
     # The word bank: what is actually on disk, for listening back and
     # re-recording. `keys` narrows to a chosen few - the redo path - and a
     # redo never trips the "all recorded, start again?" question.
