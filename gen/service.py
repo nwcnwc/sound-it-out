@@ -387,11 +387,12 @@ def m_studio_plan(params):
         words, lines = starter.needed()
         items = [sentences._word_item(w) for w in words]
         items += [sentences._line_item(t) for t in lines]
-        dicts = [i.as_dict() for i in items]
-        done = sum(1 for d in dicts if d["done"])
-        resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
+        # Gaps only: recorded items are interleaved through the pack order,
+        # and a gap-filling session that asks for them again is not faster
+        # than anything.
+        dicts = [i.as_dict() for i in items if not i.done()]
         return {"part": "starter", "takes": 1, "items": dicts,
-                "done": done, "total": len(dicts), "resumeAt": resume}
+                "done": 0, "total": len(dicts), "resumeAt": 0}
 
     # The word bank: what is actually on disk, for listening back and
     # re-recording. `keys` narrows to a chosen few - the redo path - and a
