@@ -174,6 +174,12 @@ def _letter_recorded(ch: str) -> bool:
             is not None)
 
 
+def _starter_has(sub: str, key: str) -> bool:
+    from gen import voice
+
+    return voice.VoiceSource._lookup(voice.STARTER_VOICE, sub, key) is not None
+
+
 def status() -> list:
     """Every entry, with what is recorded and what is still to do."""
     out = []
@@ -193,12 +199,20 @@ def status() -> list:
             missing = [w for w in words if not _word_item(w).done()]
             line_done = _line_item(text).done()
             ready = not missing and line_done
+        # Whether the shipped starter voice fills every gap - the difference
+        # between "a human reads this today" and "a synthesiser does", which
+        # the row should say honestly.
+        starter = bool(missing or not line_done) and all(
+            _starter_has("words", w.lower()) for w in missing
+        ) and (line_done or kind != "sentence"
+               or _starter_has("sentences", sentence_key(text)))
         out.append({
             "key": sentence_key(text),
             "text": text,
             "kind": kind,
             "words": len(words),
             "missing": missing,
+            "starterCovered": starter,
             # How many of this entry's words the shared bank already covers.
             # The bank makes recording quietly cheap, and quiet reads as
             # broken: "it only asked me one of the five words" is a bug

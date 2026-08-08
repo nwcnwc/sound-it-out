@@ -231,3 +231,23 @@ def test_the_lookup_levels_what_it_returns(voice_dir):
     v = V.VoiceSource()
     out = v.phoneme("s")
     assert float(np.sqrt(np.mean(out ** 2))) > 0.06
+
+
+def test_starter_words_and_lines_answer_before_synthesis(voice_dir, starter_dir):
+    """The packs ship with the developer's words and line reads, so a fresh
+    install reads them with a human voice throughout."""
+    put(starter_dir / "words", "chase")
+    put(starter_dir / "sentences", V.sentence_key("Chase is on the case."), seconds=2.0)
+    v = V.VoiceSource()
+    v.word("Chase")
+    v.sentence("Chase is on the case.")
+    assert v.used["starter"] == 2 and v.used["generated"] == 0
+
+
+def test_family_words_still_beat_starter_words(voice_dir, starter_dir):
+    put(voice_dir / "words", "chase", seconds=0.9)
+    put(starter_dir / "words", "chase", seconds=0.3)
+    v = V.VoiceSource()
+    out = v.word("Chase")
+    assert len(out) / SR == pytest.approx(0.9, abs=0.01)
+    assert v.used["recorded"] == 1 and v.used["starter"] == 0

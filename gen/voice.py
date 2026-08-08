@@ -2,23 +2,23 @@
 
 Resolution order, per item:
 
-    1. Mum's recording, if it exists          -> used verbatim, untouched
-    2. Phonemes only: the starter voice       -> shipped human recordings
+    1. Mum's recording, if it exists          -> used verbatim, levelled
+    2. The starter voice, if shipped          -> the developer's recordings
     3. Their cloned voice, if installed       -> generated
-    4. The built-in Kokoro voice              -> generated
+    4. The built-in Kokoro voice              -> generated, last resort
 
 This is the whole point of the design: (1) covers levels 1-5, which is where
 a new reader stays for a long time, and nothing there is synthesised. The fallbacks
 exist so the app is useful on day one, before any recording has happened, and
 so a single missing clip degrades one word rather than breaking a level.
 
-The starter voice (2) is the 42 phoneme clips recorded by the developer and
-shipped with the app. Isolated sounds are what synthesis is worst at - the
-schwa-stripping in gen/soundout.py is damage control, not a fix - and they are
-also the sounds a child hears most, so a fresh install starts from a real
-human /s/ rather than a shaped synthetic one. It covers phonemes and nothing
-else: words and sentences in a stranger's voice would miss the point of the
-app, but an isolated speech sound carries almost no identity.
+The starter voice (2) is recorded by the developer and shipped with the app:
+the 42 phonemes, plus every word and line the starter packs contain (built
+by gen/starter.py from the developer's own bank). A fresh install therefore
+reads the packs with a human voice throughout, and the family's recordings
+replace it clip by clip. Kokoro (4) remains the last resort for content
+nobody has recorded - a sentence typed in five minutes ago on a machine
+with no voice pack - because a silent video is worse than a synthetic one.
 """
 
 from __future__ import annotations
@@ -162,6 +162,14 @@ class VoiceSource:
         a = self._recorded("words", text.lower())
         if a is not None:
             return loud(slower(a, 0.80) if slow else a)
+        # The starter voice covers the shipped packs' words too, so a fresh
+        # install reads "Chase is on the case." with a human throughout -
+        # replaced word by word as the family records their own.
+        if self.prefer_recordings:
+            a = self._lookup(STARTER_VOICE, "words", text.lower())
+            if a is not None:
+                self.used["starter"] += 1
+                return loud(slower(a, 0.80) if slow else a)
         if self.clone_profile is not None:
             try:
                 from gen import clone
@@ -219,6 +227,13 @@ class VoiceSource:
         a = self._recorded("sentences", sentence_key(text))
         if a is not None:
             return loud(a)
+        # Starter line reads ship for the pack sentences, same as words:
+        # a human read-along on day one, hers the moment she records it.
+        if self.prefer_recordings:
+            a = self._lookup(STARTER_VOICE, "sentences", sentence_key(text))
+            if a is not None:
+                self.used["starter"] += 1
+                return loud(a)
 
         if self.clone_profile is not None:
             try:

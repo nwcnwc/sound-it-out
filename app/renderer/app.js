@@ -214,7 +214,9 @@ function statusLine (s) {
   if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
   if (!s.lineRecorded && s.kind === 'sentence') bits.push('the whole line')
   return already + 'Still to record: ' + bits.join(', and ') +
-    '. Works now — the built-in voice fills the gaps.'
+    (s.starterCovered
+      ? '. Works now — the starter voice covers it until then.'
+      : '. Works now — the built-in voice fills the gaps.')
 }
 
 function renderSentenceLib () {
