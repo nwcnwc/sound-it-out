@@ -323,14 +323,25 @@ def choose(takes: list, item: Item) -> dict:
     # better attempt, so if it went wrong the app has to be the one to say so.
     advice = [ADVICE[n] for n in (best["score"].notes if best else []) if n in ADVICE]
 
+    # "Best of the takes" is a lie when there was only one of them, and it
+    # reads as though the app is comparing against attempts she never made.
+    # The wording has to follow the number of takes, not assume three.
+    notes = best["score"].notes if best else []
+    single = len(scored) == 1
+    if not best:
+        reason = ""
+    elif not notes:
+        reason = "Got it." if single else "Clean take."
+    else:
+        reason = (("Got it, though it is " if single else
+                   "Best of the takes, though it is ")
+                  + " and ".join(notes) + ".")
+
     return {
         "best": best["index"] if best else None,
         "takes": [{"index": t["index"], **t["score"].as_dict()} for t in scored],
         "audio": best["audio"] if best else None,
-        "reason": ("" if not best else
-                   "Clean take." if not best["score"].notes else
-                   "Best of the takes, though it is " +
-                   " and ".join(best["score"].notes) + "."),
+        "reason": reason,
         "allFailed": best is None,
         # Kept, but worth offering another go at.
         "weak": bool(advice),

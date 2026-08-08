@@ -1300,8 +1300,11 @@ function showTakeResult (r) {
   }
 
   box.className = 'studio-result is-good'
+  // The wording of r.reason already follows the number of takes, so do not
+  // prepend anything here - "Got it. Best of the takes..." was the result of
+  // saying it in two places at once.
   box.textContent = studio.takes < 2
-    ? 'Got it. ' + (r.reason || '')
+    ? (r.reason || 'Got it.')
     : 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
   // Move on by itself - stopping after every item would double the session.
   clearTimeout(studio.advanceTimer)

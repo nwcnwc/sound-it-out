@@ -143,3 +143,34 @@ def test_a_genuinely_quiet_but_real_take_still_gets_through():
     r = studio.choose([voiced(amp=0.03)], WORD)
     assert not r["allFailed"], "a real, quiet take is not a dead microphone"
     assert r["weak"] and r["audio"] is not None
+
+
+# ----------------------------------------------------------- what it says
+
+
+def test_a_single_take_is_never_described_as_the_best_of_several():
+    """It read "Best of the takes" after one take.
+
+    That is not just clumsy - it tells her the app compared this against
+    attempts she never made, which makes the feedback untrustworthy.
+    """
+    # A little quiet: enough to be worth mentioning, not enough to interrupt
+    # for, which is exactly the case that produces a qualified sentence.
+    r = studio.choose([voiced(amp=0.10)], WORD)
+    assert r["takes"][0]["notes"], "this case is meant to produce a comment"
+    assert not r["weak"], "and it is meant to be a comment, not a flag"
+    assert "though" in r["reason"], r["reason"]
+    assert "Best of the takes" not in r["reason"], r["reason"]
+    assert "takes" not in r["reason"].lower(), r["reason"]
+
+
+def test_three_takes_still_say_which_one_was_kept():
+    r = studio.choose([voiced(seconds=0.9), voiced(), voiced(amp=0.03)], WORD)
+    assert r["best"] is not None
+    # With a genuinely clean take among them, nothing needs qualifying.
+    assert r["reason"] == "Clean take."
+
+
+def test_wording_matches_take_count_for_clean_audio():
+    assert studio.choose([voiced()], WORD)["reason"] == "Got it."
+    assert studio.choose([voiced(), voiced()], WORD)["reason"] == "Clean take."
