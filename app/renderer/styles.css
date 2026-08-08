@@ -889,6 +889,9 @@ body.studio-open { overflow: hidden; }
 }
 .studio-result.is-good { border-color: var(--accent-wash); background: var(--accent-wash); }
 .studio-result.is-bad  { border-color: var(--bad); background: var(--bad-wash); }
+/* Kept, but flagged. Deliberately amber and not red: the clip was saved and
+   nothing is lost, so this is an offer to redo, not a failure. */
+.studio-result.is-warn { border-color: var(--warm-line); background: var(--warm-wash); }
 
 @media (max-width: 720px) {
   .studio-cta { grid-template-columns: 1fr; }

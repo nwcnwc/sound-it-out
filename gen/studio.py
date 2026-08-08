@@ -54,6 +54,36 @@ LENGTH_TARGET = {
 
 TAKES_DEFAULT = 3
 
+# How many attempts to record per item, by part.
+#
+# Three takes earn their keep on the phonemes: there are only ~40 of them, an
+# isolated /t/ is genuinely hard to say without an "uh" on the end, and picking
+# the best of three is what keeps a schwa out of the library.
+#
+# Words are a different job. There are well over a hundred, saying one is
+# something the speaker does correctly by reflex, and three takes of "dog"
+# turns a manageable sitting into an hour of repeating herself. One take, and
+# the scorer speaks up when it actually went wrong.
+TAKES = {"phonemes": 3, "words": 1}
+
+
+def takes_for(part: str) -> int:
+    return TAKES.get(part, TAKES_DEFAULT)
+
+
+# Faults worth stopping her for, and what to do about each.
+#
+# The test is not "is this take imperfect" but "can she do something about
+# it". A word a shade longer than ideal is fine and saying so is nagging; a
+# word too quiet to hear is worth ten seconds of moving the laptop closer.
+# Only what is listed here interrupts - everything else is kept quietly.
+ADVICE = {
+    "very quiet": "it came out very quiet - try sitting a bit closer",
+    "noisy room": "there is a fair bit of background noise",
+    "shorter than it should be": "it got cut off - leave a beat before and after",
+    "wavering rather than held steady": "try to hold it steady",
+}
+
 
 @dataclass
 class Item:
@@ -180,6 +210,25 @@ class Score:
 
 def score_take(audio: np.ndarray, item: Item) -> Score:
     s = Score()
+
+    # Silence has to be caught here, on the untrimmed audio, and it has to be
+    # fatal.
+    #
+    # _trim gives up and returns the buffer unchanged when nothing crosses its
+    # threshold - which is exactly what a dead microphone produces. That buffer
+    # is then long enough to satisfy the length guard below, so a recording of
+    # pure digital silence used to score around 47, pick up a "very quiet"
+    # note, and be SAVED. A parent could complete a whole session and end up
+    # with a library of empty files, discovering it only on playback.
+    #
+    # That is not hypothetical: ChromeOS hands Linux a microphone that looks
+    # healthy and delivers exact zeros, and it happened.
+    raw_peak = float(np.abs(audio).max()) if audio.size else 0.0
+    if raw_peak < 0.002:
+        s.fatal = ("Nothing came through - check the microphone is on and is "
+                   "the one the computer is listening to.")
+        return s
+
     a = _trim(audio)
     if a.size < int(SR * 0.03):
         s.fatal = "Nothing was recorded."
@@ -268,6 +317,12 @@ def choose(takes: list, item: Item) -> dict:
     usable = [t for t in scored if not t["score"].fatal]
     best = max(usable, key=lambda t: t["score"].value) if usable else None
 
+    # Anything she could actually fix by having another go. With three takes
+    # this rarely fires, because the best of three is usually clean. With one
+    # take it is the whole safety net: nobody is comparing this against a
+    # better attempt, so if it went wrong the app has to be the one to say so.
+    advice = [ADVICE[n] for n in (best["score"].notes if best else []) if n in ADVICE]
+
     return {
         "best": best["index"] if best else None,
         "takes": [{"index": t["index"], **t["score"].as_dict()} for t in scored],
@@ -277,6 +332,9 @@ def choose(takes: list, item: Item) -> dict:
                    "Best of the takes, though it is " +
                    " and ".join(best["score"].notes) + "."),
         "allFailed": best is None,
+        # Kept, but worth offering another go at.
+        "weak": bool(advice),
+        "advice": advice,
     }
 
 

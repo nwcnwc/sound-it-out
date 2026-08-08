@@ -244,7 +244,7 @@ def m_studio_plan(params):
     # than something to go looking for.
     resume = next((n for n, d in enumerate(dicts) if not d["done"]), len(dicts))
     return {"part": params.get("part", "phonemes"),
-            "takes": studio.TAKES_DEFAULT,
+            "takes": studio.takes_for(params.get("part", "phonemes")),
             "items": dicts, "done": done, "total": len(dicts), "resumeAt": resume}
 
 
@@ -267,6 +267,7 @@ def m_studio_submit(params):
         saved = studio.save(item, result["audio"])
     return {"key": item.key, "best": result["best"], "takes": result["takes"],
             "reason": result["reason"], "allFailed": result["allFailed"],
+            "weak": result["weak"], "advice": result["advice"],
             "saved": saved}
 
 

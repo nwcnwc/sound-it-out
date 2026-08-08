@@ -1024,6 +1024,12 @@ const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md
  * Deliberately automatic: she is reading aloud, often holding a child, and
  * pressing a button between every one of ~40 sounds x 3 takes would be the
  * thing that makes her stop. Press once, and it runs the takes itself.
+ *
+ * How many takes comes from the plan, not from here - gen/studio.py asks for
+ * three on the phonemes and one on the words. Three attempts at an isolated
+ * /t/ is worth it; three attempts at "dog" is just a longer afternoon. The
+ * safety net on a single take is the scorer, which flags anything she could
+ * fix and stops rather than sliding on to the next word.
  */
 
 const studio = {
@@ -1140,8 +1146,12 @@ function showItem () {
   sEl('studio-state').textContent = ''
   sEl('studio-result').hidden = true
   sEl('studio-redo').hidden = true
+  sEl('studio-redo').textContent = 'Do that one again'
   sEl('studio-go').hidden = false
   sEl('studio-go').disabled = false
+  // Clear the "Carry on" role a flagged take may have left on this button,
+  // or the next press would skip an item instead of recording it.
+  delete sEl('studio-go').dataset.next
   sEl('studio-go').textContent = studio.i === 0 ? 'Start recording' : 'Record this one'
   sEl('studio-pause').hidden = true
   sEl('studio-skip').hidden = false
@@ -1154,6 +1164,9 @@ function showItem () {
 function renderTakeDots (done) {
   const host = sEl('studio-takes')
   host.innerHTML = ''
+  // One take needs no progress dots - a single dot says nothing that the
+  // recording indicator does not already say.
+  if (studio.takes < 2) return
   for (let i = 0; i < studio.takes; i++) {
     const d = document.createElement('span')
     d.className = 'take-dot' + (i < done ? ' is-done' : '')
@@ -1164,7 +1177,8 @@ function renderTakeDots (done) {
 const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
 /* Pausing has to be possible mid-item, not only between items: a child
- * interrupts on their own schedule, and 42 sounds x 3 takes is a long sit.
+ * interrupts on their own schedule, and 42 sounds x 3 takes is a long sit,
+ * with over a hundred words after it.
  * Every delay in the sequence goes through here, so Pause takes effect at the
  * next step instead of after the whole item. A take interrupted part-way is
  * discarded and redone on resume - half a sound is worse than none. */
@@ -1262,10 +1276,33 @@ function showTakeResult (r) {
     sEl('studio-go').hidden = true
     return
   }
-  box.className = 'studio-result is-good'
-  box.textContent = 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
   if (studio.items[studio.i]) studio.items[studio.i].done = true
   sEl('studio-redo').hidden = false
+
+  // Kept, but something is off that she could fix. Say what, and let her
+  // decide - the clip is already saved, so carrying on costs nothing and
+  // having another go costs one word.
+  //
+  // This must NOT auto-advance. On a single take there is no better attempt
+  // to fall back on, so a warning that scrolls past on a timer is the same as
+  // no warning at all.
+  if (r.weak) {
+    box.className = 'studio-result is-warn'
+    box.textContent = 'Saved, but ' + (r.advice || []).join(', and ') +
+      '. Have another go, or carry on.'
+    sEl('studio-go').hidden = false
+    sEl('studio-go').disabled = false
+    sEl('studio-go').textContent = 'Carry on'
+    sEl('studio-go').dataset.next = '1'
+    sEl('studio-redo').textContent = 'Try that one again'
+    clearTimeout(studio.advanceTimer)
+    return
+  }
+
+  box.className = 'studio-result is-good'
+  box.textContent = studio.takes < 2
+    ? 'Got it. ' + (r.reason || '')
+    : 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
   // Move on by itself - stopping after every item would double the session.
   clearTimeout(studio.advanceTimer)
   studio.advanceTimer = setTimeout(async () => {
@@ -1333,7 +1370,16 @@ function initStudio () {
   on('mic-skip', endMicCheck)
   on('studio-close', closeStudio)
   on('studio-pause', () => setPaused(!studio.paused))
-  on('studio-go', recordItem)
+  on('studio-go', () => {
+    // After a flagged take this button means "carry on", not "record".
+    if (sEl('studio-go').dataset.next === '1') {
+      studio.i += 1
+      showItem()
+      if (studio.items[studio.i]) recordItem()
+      return
+    }
+    recordItem()
+  })
   on('studio-skip', () => { studio.i += 1; showItem() })
   on('studio-redo', () => { sEl('studio-result').hidden = true; recordItem() })
   document.addEventListener('keydown', (e) => {
