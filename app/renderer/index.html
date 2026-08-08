@@ -171,14 +171,31 @@
         </div>
       </li>
 
-      <li class="vpart" data-part="passage">
+      <li class="vpart" data-part="bank">
         <div class="vpart-num">2</div>
         <div class="vpart-body">
-          <h2>Stories in your voice <span class="vpart-count" id="count-passage"></span></h2>
-          <p><b>Optional.</b> Anything on the list you have not recorded is read by the
-             built-in voice. With this, it is read in <b>your</b> voice instead: read the
-             passage below once (about six minutes), download the voice pack, and every
-             unrecorded word or line sounds like you.</p>
+          <h2>Your recorded words <span class="vpart-count" id="count-bank"></span></h2>
+          <p>Every word you have recorded &mdash; from your sentences, and from before.
+             The bank is shared: record &ldquo;dog&rdquo; once and every sentence with
+             &ldquo;dog&rdquo; in it uses that recording. It grows as you record on the
+             Sentences page; this is where to listen back and redo any word.</p>
+          <div class="rowbar">
+            <button class="btn btn-second vpart-review" type="button" data-part="bank">
+              Listen back &amp; redo
+            </button>
+          </div>
+        </div>
+      </li>
+
+      <li class="vpart" data-part="passage">
+        <div class="vpart-num">3</div>
+        <div class="vpart-body">
+          <h2>The reading passage <span class="vpart-count" id="count-passage"></span></h2>
+          <p><b>Optional, in six short parts.</b> Anything on the list you have not
+             recorded is read by the built-in voice. With this, it is read in
+             <b>your</b> voice instead: read the passage's six sections (about six
+             minutes all told, stop and resume whenever), download the voice pack, and
+             every unrecorded word or line sounds like you.</p>
           <div class="rowbar">
             <button class="btn btn-primary" id="read-passage" type="button">Read the passage here</button>
             <button class="btn btn-second" id="play-passage" type="button" hidden>

@@ -979,10 +979,11 @@ boot()
  * terminal. This is the way in.
  */
 
-const PART_NAMES = { phonemes: 'sounds', passage: 'reading passage' }
+const PART_NAMES = { phonemes: 'sounds', bank: 'words', passage: 'reading passage' }
 
 async function voiceCounts (caps) {
   const p = (caps && caps.recorded_phonemes) || 0
+  const w = (caps && caps.recorded_words) || 0
 
   let total = 42
   try {
@@ -991,6 +992,9 @@ async function voiceCounts (caps) {
   } catch { /* fall back to the number everyone knows */ }
 
   showPartProgress('phonemes', p, total)
+  setText('count-bank', w ? `— ${w} word${w === 1 ? '' : 's'} so far` : '— none yet')
+  const bankBtn = document.querySelector('.vpart-review[data-part="bank"]')
+  if (bankBtn) bankBtn.hidden = w === 0
   showPassageState()
   const b = document.querySelector('.vpart-review[data-part="phonemes"]')
   if (b) b.hidden = p === 0
@@ -1016,24 +1020,35 @@ let passageAudio = null
 
 async function showPassageState () {
   const btn = $('play-passage')
+
+  // Sections first: "4 of 6 parts read" is the state she acts on, and it is
+  // real even while the assembled whole does not exist yet.
+  let parts = ''
+  try {
+    const pp = await api.passagePlan()
+    if (pp && pp.total) {
+      parts = `— ${pp.done} of ${pp.total} parts read`
+    }
+  } catch { /* the seconds readout below still carries the state */ }
+
   try {
     const r = await api.studioClip({ part: 'passage' })
     if (!r || !r.path) {
-      setText('count-passage', '')
+      setText('count-passage', parts)
       if (btn) btn.hidden = true
       return
     }
     const clock = (s) => Math.floor(s / 60) + ':' +
       String(Math.round(s % 60)).padStart(2, '0')
     setText('count-passage', r.silent
-      ? '— recorded, but silent'
+      ? (parts + ' — recorded, but silent').trim()
       : r.short
         // Stopping early is invisible otherwise: the file is real and plays
         // fine, it is just not the whole script, and the only symptom is a
         // cloned voice that never sounds quite right.
         ? `— only ${clock(r.seconds)} recorded, and the whole passage takes ` +
           `about ${clock(r.expectedSeconds)}. It looks like it stopped early.`
-        : `— ${clock(r.seconds)} recorded`)
+        : (parts || `— ${clock(r.seconds)} recorded`))
     if (btn) btn.hidden = false
   } catch {
     if (btn) btn.hidden = true
@@ -1666,10 +1681,12 @@ async function openReview (part) {
   }
   review.items = plan.items || []
   $('review-title').textContent =
-    part === 'phonemes' ? 'Listen back - the sounds' : 'Listen back - the words'
-  $('review-hint').textContent =
-    `${plan.done} of ${plan.total} recorded. Press a word to hear it. ` +
-    'Tick any you want to do again, then Re-record selected.'
+    part === 'phonemes' ? 'Listen back - the sounds' : 'Listen back - your words'
+  $('review-hint').textContent = part === 'bank'
+    ? `${plan.total} word${plan.total === 1 ? '' : 's'} in your bank. Press one ` +
+      'to hear it. Tick any you want to do again, then Re-record selected.'
+    : `${plan.done} of ${plan.total} recorded. Press a word to hear it. ` +
+      'Tick any you want to do again, then Re-record selected.'
   renderReview()
   $('review').hidden = false
   document.body.classList.add('script-open')
@@ -1752,6 +1769,14 @@ async function playClip (it, btn) {
 async function redoSelected () {
   const keys = [...review.chosen]
   if (!keys.length) return
+  // The bank is redone in place, NOT deleted first: its items exist only as
+  // files, so deleting one removes it from the catalog rather than queueing
+  // it - and a new take overwrites with a backup kept anyway.
+  if (review.part === 'bank') {
+    closeReview()
+    openStudio('bank', { keys })
+    return
+  }
   await api.studioRemove({ part: review.part, keys })
   closeReview()
   openStudio(review.part)

@@ -286,3 +286,27 @@ def test_irregular_words_are_never_sounded_out(library, monkeypatch):
             lit = [p for p, on in s.parts if on]
             assert shown.lower() == "the" or not lit, \
                 f"'The' was sounded out: {s.parts}"
+
+
+# ------------------------------------------------------------ the word bank
+
+
+def test_the_bank_catalog_is_what_is_on_disk(library, monkeypatch):
+    """bank_plan lists the files, not any curriculum list - words recorded
+    through sentences appear even though no list anywhere names them."""
+    import soundfile as sf
+
+    d = library / "voice" / "words"
+    d.mkdir(parents=True)
+    for w in ("zorble", "case"):
+        sf.write(d / f"{w}.wav", np.full(SR // 2, 0.2, dtype="float32"), SR)
+    (d / "case.previous.wav").write_bytes((d / "case.wav").read_bytes())
+
+    items = studio.bank_plan()
+    assert [i.display for i in items] == ["case", "zorble"]
+    assert all(i.done() for i in items)
+
+
+def test_bank_display_decodes_safe_names(library):
+    assert studio._undo_safe("dogu0027s") == "dog's"
+    assert studio._undo_safe("sun") == "sun"

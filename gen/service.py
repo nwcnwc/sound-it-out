@@ -366,6 +366,21 @@ def m_studio_plan(params):
         return {"part": "sentence", "takes": 1, "items": dicts,
                 "done": done, "total": len(dicts), "resumeAt": resume}
 
+    # The word bank: what is actually on disk, for listening back and
+    # re-recording. `keys` narrows to a chosen few - the redo path - and a
+    # redo never trips the "all recorded, start again?" question.
+    if params.get("part") == "bank":
+        items = studio.bank_plan()
+        keys = params.get("keys")
+        if keys is not None:
+            want = set(keys)
+            items = [i for i in items if i.key in want]
+        dicts = [i.as_dict() for i in items]
+        return {"part": "bank", "takes": 1, "items": dicts,
+                "done": sum(1 for d in dicts if d["done"]),
+                "total": len(dicts), "resumeAt": 0,
+                "redo": keys is not None}
+
     items = studio.plan(params.get("part", "phonemes"), params.get("order", "rows"))
     dicts = [i.as_dict() for i in items]
     done = sum(1 for d in dicts if d["done"])

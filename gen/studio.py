@@ -400,6 +400,36 @@ def save(item: Item, audio: np.ndarray) -> str:
     return str(path)
 
 
+def _undo_safe(stem: str) -> str:
+    """Best-effort reverse of _safe(), for display only. The uXXXX escapes
+    only ever encode non-alphanumerics, so a real word is untouched and an
+    encoded one comes back readable. Lookups keep using the stem itself."""
+    import re
+
+    return re.sub(r"u([0-9a-f]{4})", lambda m: chr(int(m.group(1), 16)), stem)
+
+
+def bank_plan() -> list:
+    """Every word actually in the shared bank, read straight from disk.
+
+    Unlike plan("words"), which lists what the old curriculum wanted
+    recorded, this is the catalog of what EXISTS - including words recorded
+    through sentences that appear on no other list. The files ARE the
+    catalog, the same way they are the progress record everywhere else.
+    """
+    d = VOICE_DIR / "words"
+    items = []
+    if d.exists():
+        for f in sorted(d.glob("*.wav")):
+            if f.name.endswith(".previous.wav"):
+                continue
+            items.append(Item(key=f.stem, kind="word",
+                              display=_undo_safe(f.stem), length="free",
+                              say="Say it normally, the way you would in a "
+                                  "sentence."))
+    return items
+
+
 def find(part: str, key: str, order="rows"):
     """One item by key, so a single clip can be replayed or replaced."""
     for it in plan(part, order):
@@ -417,6 +447,12 @@ def clip_path(part: str, key: str, order="rows"):
         p = VOICE_DIR / "passage.wav"
         return str(p) if p.exists() else None
 
+    # Bank keys ARE the on-disk stems, so no lookup table is needed - and
+    # none would work, since the bank holds words no list knows about.
+    if part == "bank":
+        p = VOICE_DIR / "words" / f"{key}.wav"
+        return str(p) if p.exists() else None
+
     it = find(part, key, order)
     if it is None:
         return None
@@ -432,7 +468,8 @@ def remove(part: str, keys=None, order="rows") -> int:
     back in the queue and leaves everything else untouched.
     """
     n = 0
-    for it in plan(part, order):
+    items = bank_plan() if part == "bank" else plan(part, order)
+    for it in items:
         if keys is not None and it.key not in keys:
             continue
         p = it.path()
