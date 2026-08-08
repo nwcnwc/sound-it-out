@@ -27,21 +27,13 @@ const MINUTES = [
   { value: 20, label: '20 min' },
   { value: 30, label: '30 min' }
 ]
-const REPS = [
-  { value: 2, label: 'Twice' },
-  { value: 3, label: '3 times' },
-  { value: 4, label: '4 times' }
-]
 const PAUSES = [
   { value: 1, label: 'Short' },
   { value: 1.5, label: 'Just right' },
   { value: 2.5, label: 'Long' }
 ]
 
-const PLACEHOLDER_NAMES = ['alex', 'mum', 'dad', 'nana', 'grandad']
-
 let state = null
-let savedText = ''
 let currentJob = null
 let currentMode = 'export'
 let jobRunning = false
@@ -52,6 +44,14 @@ async function boot () {
   // Lets the standalone preview be screenshotted in both appearances.
   const forced = new URLSearchParams(location.search).get('appearance')
   if (forced) document.documentElement.setAttribute('data-appearance', forced)
+
+  // Paint FIRST, fetch after. The shell - tabs, the add box, the list's
+  // skeleton - needs nothing from the Python side, and the Python side can
+  // take seconds to wake (it once took fifteen, probing a voice model on
+  // every launch). A parent opening the app should see the app, not a
+  // blank window doing invisible work.
+  setUpTabs()
+  initSentences()
 
   try {
     state = await api.getState()
@@ -64,15 +64,12 @@ async function boot () {
     return
   }
 
-  setUpTabs()
   initVoice()
   initStudio()
   initScript()
   initReview()
   initReader()
   initVoiceSettings()
-  setUpWords()
-  initSentences()
   setUpMake()
   setUpSettings()
   setUpJobEvents()
@@ -101,10 +98,10 @@ function devPreview () {
     $('btn-open-folder').hidden = false
     progressView('prog-done')
   } else if (demo === 'install') {
-    window.showScreen('settings')
+    window.showScreen('setup')
     $('install-clone').click()
   } else if (demo === 'job') {
-    window.showScreen('make')
+    window.showScreen('sentences')
     startJob('export')
   } else if (demo === 'error') {
     showJobError(
@@ -116,9 +113,9 @@ function devPreview () {
 
 /* ------------------------------------------------------------- sentences */
 
-/* The sentence library. One list drives two places: the Sentences tab (add,
- * record, remove) and the picker on the Make screen (which ones go in the
- * video). Both re-render from the same fetch so they can never disagree. */
+/* The library IS the app: one list holding letters, single words and whole
+ * sentences. Each row carries its own tick (include it in the video), its
+ * recording state, and its Record button. */
 
 let sentenceLib = []
 
@@ -131,8 +128,79 @@ async function refreshSentences () {
     console.error(err)
   }
   renderSentenceLib()
-  renderSentencePicker()
+  refreshPacks()
   updateSummary()
+}
+
+async function refreshPacks () {
+  const host = $('packs')
+  if (!host || !api.packsList) return
+  let packs = []
+  try {
+    const r = await api.packsList()
+    packs = (r && r.packs) || []
+  } catch (err) {
+    console.error(err)
+  }
+  host.textContent = ''
+  for (const p of packs) {
+    if (!p.count) continue
+    const row = document.createElement('div')
+    row.className = 'pack-row'
+
+    const text = document.createElement('div')
+    text.className = 'pack-text'
+    const name = document.createElement('b')
+    name.textContent = p.name
+    const desc = document.createElement('span')
+    desc.className = 'pack-desc'
+    desc.textContent = ' — ' + p.description
+    text.append(name, desc)
+
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    const allIn = p.added >= p.count
+    btn.className = 'btn ' + (allIn ? 'btn-quiet' : 'btn-second')
+    btn.disabled = allIn
+    btn.textContent = allIn ? 'Added'
+      : p.added ? `Add the rest (${p.count - p.added})` : `Add all ${p.count}`
+    btn.addEventListener('click', async () => {
+      btn.disabled = true
+      try {
+        const r = await api.packsAdd(p.id)
+        sentenceLib = (r && r.sentences) || sentenceLib
+      } catch (err) {
+        alert('Could not add that pack: ' + (err.message || err))
+      }
+      renderSentenceLib()
+      refreshPacks()
+      updateSummary()
+    })
+
+    row.append(text, btn)
+    host.appendChild(row)
+  }
+}
+
+/* Every row keeps its tick across re-renders; new rows arrive ticked. */
+const unticked = new Set()
+
+function pickedSentences () {
+  return sentenceLib.filter((s) => !unticked.has(s.key)).map((s) => s.key)
+}
+
+function statusLine (s) {
+  if (s.kind === 'letter') {
+    return s.ready
+      ? 'Uses the sound recorded in Setup.'
+      : 'Uses its letter sound — record the sounds in Setup to make it yours.'
+  }
+  if (s.ready) return 'Recorded, in your own voice.'
+  const bits = []
+  if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
+  if (!s.lineRecorded) bits.push('the whole line')
+  return 'Still to record: ' + bits.join(', and ') +
+    '. Works now — the built-in voice fills the gaps.'
 }
 
 function renderSentenceLib () {
@@ -143,14 +211,35 @@ function renderSentenceLib () {
   if (!sentenceLib.length) {
     const p = document.createElement('p')
     p.className = 'hint'
-    p.textContent = 'Nothing here yet. Add a sentence above — anything you would like read.'
+    p.textContent =
+      'Nothing here yet. Add anything above — a name, a word, a sentence — ' +
+      'or open a starter pack.'
     host.appendChild(p)
     return
   }
 
   for (const s of sentenceLib) {
     const row = document.createElement('div')
-    row.className = 'sentence-row'
+    row.className = 'sentence-row' + (unticked.has(s.key) ? ' is-out' : '')
+
+    const label = document.createElement('label')
+    label.className = 'sentence-tick'
+    const tick = document.createElement('input')
+    tick.type = 'checkbox'
+    tick.name = 'sentence'
+    tick.value = s.key
+    tick.checked = !unticked.has(s.key)
+    tick.setAttribute('aria-label', 'Include "' + s.text + '" in the video')
+    tick.addEventListener('change', () => {
+      if (tick.checked) unticked.delete(s.key)
+      else unticked.add(s.key)
+      row.classList.toggle('is-out', !tick.checked)
+      updateSummary()
+    })
+    label.appendChild(tick)
+
+    const body = document.createElement('div')
+    body.className = 'sentence-body'
 
     const text = document.createElement('div')
     text.className = 'sentence-text'
@@ -158,28 +247,23 @@ function renderSentenceLib () {
 
     const stat = document.createElement('p')
     stat.className = 'sentence-status' + (s.ready ? ' is-ready' : '')
-    if (s.ready) {
-      stat.textContent = 'Recorded, in your own voice. Ready to use.'
-    } else {
-      const bits = []
-      if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
-      if (!s.lineRecorded) bits.push('the whole line')
-      stat.textContent = 'Still to record: ' + bits.join(', and ') +
-        '. It can be used now — the built-in voice fills the gaps.'
-    }
+    stat.textContent = statusLine(s)
 
     const bar = document.createElement('div')
     bar.className = 'rowbar'
 
-    const rec = document.createElement('button')
-    rec.type = 'button'
-    rec.className = s.ready ? 'btn btn-second' : 'btn btn-primary'
-    rec.textContent = s.ready ? 'Record it again' : 'Record it'
-    rec.addEventListener('click', () => {
-      openStudio('sentence', { key: s.key }).catch((err) => {
-        alert('Could not start recording: ' + (err.message || err))
+    if (s.kind !== 'letter') {
+      const rec = document.createElement('button')
+      rec.type = 'button'
+      rec.className = s.ready ? 'btn btn-quiet' : 'btn btn-primary'
+      rec.textContent = s.ready ? 'Record it again' : 'Record it'
+      rec.addEventListener('click', () => {
+        openStudio('sentence', { key: s.key }).catch((err) => {
+          alert('Could not start recording: ' + (err.message || err))
+        })
       })
-    })
+      bar.appendChild(rec)
+    }
 
     const del = document.createElement('button')
     del.type = 'button'
@@ -187,9 +271,9 @@ function renderSentenceLib () {
     del.textContent = 'Remove'
     del.addEventListener('click', async () => {
       const sure = confirm(
-        'Take this sentence off the list?\n\n' +
+        'Take this off the list?\n\n' +
         'Its recordings are kept — the words serve your other sentences, and ' +
-        'the line comes straight back if you ever re-add it.')
+        'they come straight back if you ever re-add it.')
       if (!sure) return
       try {
         const r = await api.sentencesRemove(s.key)
@@ -198,12 +282,13 @@ function renderSentenceLib () {
         alert('Could not remove it: ' + (err.message || err))
       }
       renderSentenceLib()
-      renderSentencePicker()
+      refreshPacks()
       updateSummary()
     })
+    bar.appendChild(del)
 
-    bar.append(rec, del)
-    row.append(text, stat, bar)
+    body.append(text, stat, bar)
+    row.append(label, body)
     host.appendChild(row)
   }
 }
@@ -229,66 +314,10 @@ function initSentences () {
     box.value = ''
     sentenceLib = (r && r.sentences) || sentenceLib
     renderSentenceLib()
-    renderSentencePicker()
+    refreshPacks()
     updateSummary()
   })
   refreshSentences()
-}
-
-/* The picker on the Make screen: same library, as tickboxes. */
-
-function renderSentencePicker () {
-  const host = $('level-sentences')
-  if (!host) return
-  const before = new Set(pickedSentences())
-  const hadAny = host.querySelector('input') !== null
-  host.textContent = ''
-
-  if (!sentenceLib.length) {
-    const p = document.createElement('p')
-    p.className = 'hint'
-    p.textContent = 'Add sentences on the Sentences tab first.'
-    host.appendChild(p)
-    return
-  }
-
-  for (const s of sentenceLib) {
-    const label = document.createElement('label')
-    label.className = 'choice'
-
-    const input = document.createElement('input')
-    input.type = 'checkbox'
-    input.name = 'sentence'
-    input.value = s.key
-    // Everything ticked by default; after that, keep whatever she set.
-    input.checked = hadAny ? before.has(s.key) : true
-
-    const tick = document.createElement('span')
-    tick.className = 'tick'
-    tick.setAttribute('aria-hidden', 'true')
-
-    const text = document.createElement('span')
-    text.className = 'choice-text'
-    const title = document.createElement('span')
-    title.className = 'choice-title'
-    title.textContent = s.text
-    text.appendChild(title)
-    if (!s.ready) {
-      const d = document.createElement('span')
-      d.className = 'choice-desc'
-      d.textContent = 'Not fully recorded yet — the built-in voice fills the gaps.'
-      text.appendChild(document.createElement('br'))
-      text.appendChild(d)
-    }
-
-    label.append(input, tick, text)
-    host.appendChild(label)
-  }
-}
-
-function pickedSentences () {
-  return Array.from(document.querySelectorAll('input[name="sentence"]:checked'))
-    .map((i) => i.value)
 }
 
 /* ------------------------------------------------------------------ tabs */
@@ -324,286 +353,38 @@ function setUpTabs () {
   window.showScreen = (name) => show(name, false)
 }
 
-/* ----------------------------------------------------------------- words */
-
-function parseWordlist (text) {
-  const groups = []
-  let cur = null
-  for (const raw of String(text).split(/\r?\n/)) {
-    const line = raw.trim()
-    if (!line || line.startsWith('#')) continue
-
-    const heading = line.match(/^\[(.+)\]$/)
-    if (heading) {
-      cur = { name: heading[1].trim(), words: [] }
-      groups.push(cur)
-      continue
-    }
-    const coloured = line.match(/^(.*?)\s+(#[0-9a-fA-F]{6})$/)
-    const word = coloured ? coloured[1].trim() : line
-    if (!word) continue
-    if (!cur) { cur = { name: 'Words', words: [] }; groups.push(cur) }
-    cur.words.push({ word, color: coloured ? coloured[2].toLowerCase() : null })
-  }
-  return groups
-}
-
-function setUpWords () {
-  const box = $('wordlist')
-  box.value = state.wordlistText || ''
-  savedText = box.value
-
-  box.addEventListener('input', () => {
-    renderGroups(parseWordlist(box.value))
-    setDirty(box.value !== savedText)
-    $('words-error').hidden = true
-  })
-
-  $('save-words').addEventListener('click', saveWords)
-
-  $('revert-words').addEventListener('click', () => {
-    box.value = savedText
-    renderGroups(parseWordlist(box.value))
-    setDirty(false)
-    $('words-error').hidden = true
-    say('save-state', '')
-    box.focus()
-  })
-
-  $('jump-people').addEventListener('click', () => selectPeopleGroup(box))
-
-  // Cmd/Ctrl-S is what anyone who has ever used a Mac will reach for.
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault()
-      if (!$('screen-words').hidden) saveWords()
-    }
-  })
-
-  renderGroups(parseWordlist(box.value))
-  setDirty(false)
-}
-
-function setDirty (isDirty) {
-  $('dirty-dot').hidden = !isDirty
-  if (isDirty) say('save-state', '')
-}
-
-async function saveWords () {
-  const box = $('wordlist')
-  const btn = $('save-words')
-  const err = $('words-error')
-
-  btn.disabled = true
-  say('save-state', 'Saving…')
-  try {
-    const res = await api.saveWordlist(box.value)
-    if (!res || !res.ok) {
-      err.textContent = (res && res.error) ||
-        "Your words couldn't be saved. Check the folder still exists, then try again."
-      err.hidden = false
-      say('save-state', '')
-      return false
-    }
-    err.hidden = true
-    savedText = box.value
-    state.wordlistText = box.value
-    setDirty(false)
-    renderGroups(res.groups && res.groups.length ? res.groups : parseWordlist(box.value))
-    say('save-state', 'Saved ✓')
-    updateSummary()
-    return true
-  } catch (e) {
-    console.error(e)
-    err.textContent = "Your words couldn't be saved just now. Try again in a moment."
-    err.hidden = false
-    say('save-state', '')
-    return false
-  } finally {
-    btn.disabled = false
-  }
-}
-
-function renderGroups (groups) {
-  const host = $('groups')
-  host.textContent = ''
-
-  const total = groups.reduce((n, g) => n + g.words.length, 0)
-  $('word-count').textContent = total === 0
-    ? 'No words yet'
-    : total + (total === 1 ? ' word' : ' words') +
-      (total < 50 ? ' — around 50 is the point where sounding out starts to make sense' : '')
-
-  if (!groups.length) {
-    const p = document.createElement('p')
-    p.className = 'empty-note'
-    p.textContent = 'Type a word on a line of its own and it will show up here.'
-    host.appendChild(p)
-  }
-
-  for (const g of groups) {
-    const wrap = document.createElement('div')
-    wrap.className = 'group'
-
-    const h = document.createElement('h3')
-    h.className = 'group-name'
-    h.textContent = g.name
-    const n = document.createElement('span')
-    n.textContent = g.words.length + (g.words.length === 1 ? ' word' : ' words')
-    h.appendChild(n)
-    wrap.appendChild(h)
-
-    const chips = document.createElement('div')
-    chips.className = 'chips'
-    for (const w of g.words) {
-      const c = document.createElement('span')
-      c.className = 'chip' + (w.color ? ' coloured' : '')
-      c.textContent = w.word
-      if (w.color) c.style.color = w.color
-      chips.appendChild(c)
-    }
-    wrap.appendChild(chips)
-    host.appendChild(wrap)
-  }
-
-  updatePeopleNudge(groups)
-  updateSummary(total)
-}
-
-function updatePeopleNudge (groups) {
-  const people = groups.find((g) => /people|family/i.test(g.name))
-  const nudge = $('people-nudge')
-
-  if (!people || !people.words.length) { nudge.hidden = true; return }
-  const left = people.words.filter((w) => PLACEHOLDER_NAMES.includes(w.word.toLowerCase()))
-  const untouched = left.length === people.words.length
-
-  nudge.hidden = !untouched
-  if (untouched) {
-    $('people-nudge-text').innerHTML =
-      'The <b>' + escapeHtml(people.name) + '</b> group still has only the example names in it — ' +
-      left.map((w) => escapeHtml(w.word)).join(', ') + '.'
-  }
-}
-
-function selectPeopleGroup (box) {
-  const lines = box.value.split('\n')
-  let start = -1
-  let end = lines.length
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].trim().match(/^\[(.+)\]$/)
-    if (!m) continue
-    if (start === -1 && /people|family/i.test(m[1])) { start = i; continue }
-    if (start !== -1) { end = i; break }
-  }
-  if (start === -1) { box.focus(); return }
-
-  const offset = (n) => lines.slice(0, n).join('\n').length + (n ? 1 : 0)
-  box.focus()
-  box.setSelectionRange(offset(start), offset(end))
-  // setSelectionRange does not reliably scroll, so aim the scroll by hand.
-  const lineHeight = box.scrollHeight / Math.max(lines.length, 1)
-  box.scrollTop = Math.max(0, (start - 2) * lineHeight)
-}
-
-/* ------------------------------------------------------------- make video */
+/* ------------------------------------------------------------- make video
+ *
+ * No levels any more. The library rows carry their own ticks; this block is
+ * just the options that shape the video - length, look, pace - and the two
+ * buttons. The video itself is always the same journey: sounds close into
+ * words, words grow into sentences, ending in her own read-along.
+ */
 
 function setUpMake () {
   const chosen = Object.assign(
-    { level: null, theme: null, reps: 3, pauseSeconds: 1.5, minutes: 20 },
+    { theme: null, pauseSeconds: 1.5, minutes: 20 },
     state.settings || {}
   )
 
-  renderLevels(chosen.level)
   renderThemes(chosen.theme)
-  renderSegmented($('minutes'), 'minutes', MINUTES, chosen.minutes)
-  renderSegmented($('reps'), 'reps', REPS, chosen.reps)
-  renderSegmented($('pause'), 'pause', PAUSES, chosen.pauseSeconds)
-  renderSegmented($('stage'), 'stage', STAGES, chosen.stage || 2)
+  renderSegmented($('minutes'), 'minutes', MINUTES, Number(chosen.minutes) || 20)
+  renderSegmented($('pause'), 'pause', PAUSES, Number(chosen.pauseSeconds) || 1.5)
 
-  // Delegated, because renderLevels() and renderSegmented() replace their
-  // inputs - a listener bound to the elements that exist right now would stop
-  // firing the moment the level list is re-rendered, which it is every time
-  // recordings change.
-  $('screen-make').addEventListener('change', (e) => {
+  // Delegated: renderSegmented() replaces its inputs on re-render, and the
+  // library ticks re-render with the list.
+  $('screen-sentences').addEventListener('change', (e) => {
     if (e.target && (e.target.type === 'radio' || e.target.type === 'checkbox')) {
-      showLevelExtras()
       updateSummary()
       persistChoices()
     }
   })
-
-  const box = $('level-text')
-  if (box) {
-    box.value = chosen.text || ''
-    box.addEventListener('input', () => {
-      updateTextCount()
-      updateSummary()
-      persistChoices()
-    })
-  }
-  showLevelExtras()
 
   $('btn-play').addEventListener('click', () => startJob('play'))
   $('btn-export').addEventListener('click', () => startJob('export'))
 
   updateSummary()
   updateExportDest()
-}
-
-function renderLevels (selected) {
-  const host = $('levels')
-  host.textContent = ''
-  const levels = state.levels || []
-  const firstAvailable = levels.find((l) => l.available)
-  if (!levels.some((l) => l.available && String(l.id) === String(selected))) {
-    selected = firstAvailable ? firstAvailable.id : null
-  }
-
-  for (const lvl of levels) {
-    const label = document.createElement('label')
-    label.className = 'choice' + (lvl.available ? '' : ' is-off')
-
-    const input = document.createElement('input')
-    input.type = 'radio'
-    input.name = 'level'
-    input.value = lvl.id
-    input.disabled = !lvl.available
-    input.checked = lvl.available && String(lvl.id) === String(selected)
-
-    const tick = document.createElement('span')
-    tick.className = 'tick'
-    tick.setAttribute('aria-hidden', 'true')
-
-    const text = document.createElement('span')
-    text.className = 'choice-text'
-
-    const title = document.createElement('span')
-    title.className = 'choice-title'
-    title.textContent = lvl.name
-    text.appendChild(title)
-
-    if (lvl.description) {
-      const d = document.createElement('span')
-      d.className = 'choice-desc'
-      d.textContent = lvl.description
-      text.appendChild(document.createElement('br'))
-      text.appendChild(d)
-    }
-    if (!lvl.available) {
-      const r = document.createElement('span')
-      r.className = 'reason'
-      r.textContent = lvl.reason || 'Not ready yet'
-      text.appendChild(document.createElement('br'))
-      text.appendChild(r)
-    }
-
-    label.append(input, tick, text)
-    host.appendChild(label)
-  }
-  // The list is rebuilt whenever recordings change, which can move the
-  // selection - the extras have to follow it.
-  if (typeof showLevelExtras === 'function') showLevelExtras()
 }
 
 function renderThemes (selected) {
@@ -665,68 +446,17 @@ function picked (name) {
   return el ? el.value : null
 }
 
-const STAGES = [
-  { value: 1, label: 'Just the first few' },
-  { value: 2, label: 'A good number' },
-  { value: 3, label: 'Most of them' }
-]
-
 function currentOptions () {
-  const o = {
-    level: picked('level'),
+  return {
+    // The library video is the only kind there is now. The number is the
+    // pipeline's name for it, not something a user ever sees.
+    level: '13',
     theme: picked('theme'),
-    reps: Number(picked('reps')),
-    pauseSeconds: Number(picked('pause')),
-    minutes: Number(picked('minutes')),
-    // Only meaningful to the open-ended levels; harmless everywhere else.
-    text: ($('level-text') && $('level-text').value) || '',
-    stage: Number(picked('stage')) || 2
+    reps: 3,
+    pauseSeconds: Number(picked('pause')) || 1.5,
+    minutes: Number(picked('minutes')) || 20,
+    sentences: pickedSentences()
   }
-  // Which library sentences to read. Only for level 13: an empty list must
-  // mean "none ticked" there, and nothing at all everywhere else.
-  if (String(o.level) === '13') o.sentences = pickedSentences()
-  return o
-}
-
-/* The open-ended levels need something the fixed ones do not - text to read,
- * or how far the child has got. Showing those controls all the time would put
- * a big empty textarea in front of someone making a Paw Patrol video, so they
- * appear only for the level they belong to. */
-function showLevelExtras () {
-  const id = String(picked('level'))
-  const lvl = (state.levels || []).find((l) => String(l.id) === id)
-  const textWrap = $('level-text-wrap')
-  const stageWrap = $('level-stage-wrap')
-  const sentWrap = $('level-sentences-wrap')
-  if (textWrap) textWrap.hidden = !(lvl && lvl.needsText)
-  if (stageWrap) stageWrap.hidden = id !== '12'
-  if (sentWrap) sentWrap.hidden = !(lvl && lvl.needsSentences)
-  updateTextCount()
-  updateStageNote()
-}
-
-function updateTextCount () {
-  const box = $('level-text')
-  const out = $('level-text-count')
-  if (!box || !out) return
-  const words = box.value.trim().split(/\s+/).filter(Boolean).length
-  const lines = box.value.trim()
-    ? box.value.trim().split(/(?<=[.!?])\s+/).filter(Boolean).length : 0
-  out.textContent = words
-    ? `${words} words, about ${lines} line${lines === 1 ? '' : 's'} to read.`
-    : 'Nothing pasted in yet.'
-}
-
-function updateStageNote () {
-  const note = $('stage-note')
-  if (!note) return
-  const n = Number(picked('stage')) || 2
-  note.textContent = [
-    '',
-    'The story stays very short - only s, a, t, p, i, n.',
-    'Sam, the cat and the dog appear.',
-    'Nearly the whole story, including "the".'
-  ][n] || ''
 }
 
 let persistTimer = null
@@ -737,20 +467,16 @@ function persistChoices () {
   }, 400)
 }
 
-function updateSummary (knownTotal) {
+function updateSummary () {
   const el = $('make-summary')
   if (!el) return
   const o = currentOptions()
-  const level = (state.levels || []).find((l) => String(l.id) === String(o.level))
-  const total = typeof knownTotal === 'number'
-    ? knownTotal
-    : parseWordlist($('wordlist').value).reduce((n, g) => n + g.words.length, 0)
+  const n = (o.sentences || []).length
 
-  if (!level) {
-    const any = (state.levels || []).some((l) => l.available)
-    el.textContent = any
-      ? 'Pick a level to start.'
-      : 'None of the levels are ready yet — Settings explains what each one needs.'
+  if (!n) {
+    el.textContent = sentenceLib.length
+      ? 'Tick at least one thing on the list to read.'
+      : 'Add something to the list first - anything you would like read.'
     $('btn-play').disabled = true
     $('btn-export').disabled = true
     return
@@ -758,68 +484,30 @@ function updateSummary (knownTotal) {
   $('btn-play').disabled = false
   $('btn-export').disabled = false
 
-  const id = String(o.level)
-  const usesWords = id === '1' || id === '2'
-  let words = usesWords ? ', drawn from the ' + total + ' words on your list' : ''
+  const ready = sentenceLib.filter((s) => !unticked.has(s.key) && s.ready).length
+  const voice = ready === n
+    ? 'all of it in your own voice'
+    : ready === 0
+      ? 'in the built-in voice until you record them'
+      : `${ready} of them fully in your voice`
+  el.textContent = `${o.minutes} minutes, reading ${n} thing${n === 1 ? '' : 's'} from your list - ${voice} - then it loops.`
 
-  // The open-ended levels are worth describing differently: what makes them
-  // interesting is where the content comes from, and that is the thing a
-  // parent cannot see by reading the level name.
-  if (id === '13') {
-    const n = (o.sentences || []).length
-    if (!n) {
-      el.textContent = sentenceLib.length
-        ? 'Tick at least one sentence to read.'
-        : 'Add a sentence or two on the Sentences tab first.'
-      $('btn-play').disabled = true
-      $('btn-export').disabled = true
-      return
-    }
-    words = ', building up ' + n + ' of your own sentence' + (n === 1 ? '' : 's')
-  } else if (id === '10') {
-    const n = (o.text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean).length
-    words = n ? ', reading the ' + n + ' line' + (n === 1 ? '' : 's') + ' you pasted in' : ''
-  } else if (id === '11') {
-    words = ', built from the names and things on your own list'
-  } else if (id === '12') {
-    words = ', using only the letters they have learned so far'
-  }
-
-  el.textContent = o.minutes + ' minutes of ' + level.name + words +
-    ', each one shown ' + o.reps + ' times, then it loops.'
-
-  // These are the levels the cloned voice exists for. Say so once, here,
-  // where the choice is being made - not on a settings screen they may never
-  // open.
-  if (level.kind === 'open' && level.reason) {
-    el.textContent += ' ' + level.reason
-  }
-
-  // And if it IS installed, say what it will cost in time.
-  //
-  // Making speech in her voice runs far slower than realtime on an ordinary
-  // laptop - measured at about 128 seconds of computing per second of speech.
-  // A page of pasted text is therefore an hours-long job the first time, which
-  // is survivable if you know before you start and infuriating if you find out
-  // afterwards. Every clip is cached, so this is a one-off per sentence.
+  // The slow warning: unrecorded lines said in her cloned voice are made at
+  // far slower than realtime the first time. Worth a heads-up, not a wall.
   const warn = $('make-slow')
   if (warn) {
-    const rate = (state.cloneInfo && state.cloneInfo.seconds_per_second) || 0
-    const lines = id === '10'
-      ? (o.text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean).length
-      : id === '11' ? 20 : 25
-    const usingClone = level.kind === 'open' &&
-      state.capabilities && state.capabilities.cloning
-    if (usingClone && rate && lines) {
-      // ~1.6s of speech per line, from the measured samples.
-      const mins = Math.round(lines * 1.6 * rate / 60)
+    const rate = (state && state.cloneInfo && state.cloneInfo.seconds_per_second) || 0
+    const cloning = state && state.capabilities && state.capabilities.cloning
+    const unrecorded = sentenceLib.filter((s) =>
+      !unticked.has(s.key) && s.kind === 'sentence' && !s.lineRecorded).length
+    if (cloning && rate && unrecorded) {
+      const mins = Math.round(unrecorded * 1.6 * rate / 60)
       warn.hidden = false
       warn.textContent = mins < 5
-        ? `The first time, this takes a few minutes to say in your voice. After that it is instant.`
-        : `Heads up: making this in your voice takes roughly ${
+        ? 'The first time, this takes a few extra minutes to say the unrecorded lines in your voice. After that it is instant.'
+        : `Heads up: ${unrecorded} unrecorded line${unrecorded === 1 ? '' : 's'} will be said in your voice, which takes roughly ${
             mins < 90 ? mins + ' minutes' : (mins / 60).toFixed(1) + ' hours'
-          } the first time, because your computer has to generate every line. ` +
-          `You can leave it running. Once made, each line is kept and is instant afterwards.`
+          } the first time. Recording them yourself is instant - or leave this running.`
     } else {
       warn.hidden = true
     }
@@ -828,7 +516,7 @@ function updateSummary (knownTotal) {
 
 function updateExportDest () {
   $('export-dest').textContent = state.outputDir
-    ? 'Saved videos go to ' + state.outputDir + '. You can change that in Settings.'
+    ? 'Saved videos go to ' + state.outputDir + '. You can change that in Setup.'
     : ''
 }
 
@@ -884,29 +572,13 @@ function closeProgress () {
 async function startJob (mode) {
   currentMode = mode
 
-  // Catch the empty-textarea case here rather than letting the sidecar raise
+  // Catch the nothing-ticked case here rather than letting the sidecar raise
   // it. The backend message is correct but arrives after the progress screen
   // has taken over, which reads as a crash rather than as something missing.
-  const lvl = (state.levels || []).find((l) => String(l.id) === String(picked('level')))
-  if (lvl && lvl.needsText && !($('level-text').value || '').trim()) {
-    const box = $('level-text')
-    $('level-text-wrap').hidden = false
-    box.focus()
-    box.scrollIntoView({ block: 'center' })
-    setText('level-text-count',
-      'Paste something in first - this level reads whatever you give it.')
+  if (!pickedSentences().length) {
+    updateSummary()
+    $('make-summary').scrollIntoView({ block: 'center' })
     return
-  }
-
-  // Saving the words first is what the user would expect; asking would just be a
-  // dialog in the way.
-  if ($('wordlist').value !== savedText) {
-    const ok = await saveWords()
-    if (!ok) {
-      window.showScreen('words')
-      $('words-error').scrollIntoView({ block: 'center' })
-      return
-    }
   }
 
   $('progress-title').textContent = mode === 'play' ? 'Getting it ready to play' : 'Making your video'
@@ -997,7 +669,7 @@ function setUpJobEvents () {
     $('btn-cancel').textContent = 'Stopping…'
     try { await api.cancelJob(currentJob) } catch (e) { console.error(e) }
     closeProgress()
-    window.showScreen('make')
+    window.showScreen('sentences')
     $('btn-export').focus()
   })
 
@@ -1074,51 +746,7 @@ function setUpSettings () {
     if (file && file.path) { e.preventDefault(); input.value = file.path }
   })
 
-  renderCapabilities()
   setUpCloning()
-}
-
-function renderCapabilities () {
-  const caps = state.capabilities || {}
-  const rows = [
-    {
-      on: !!caps.recordings,
-      what: 'Your recordings',
-      yes: 'Ready. Levels 1 to 5 are your own voice, exactly as you said the words.',
-      no: 'Not added yet. Until they are, a stand-in voice is used.'
-    },
-    {
-      on: !!caps.kokoro,
-      what: 'The built-in voice',
-      yes: 'Ready. Used wherever there is no recording of yours.',
-      no: 'Missing. Reinstalling the app should put it back.'
-    },
-    {
-      on: !!caps.cloning,
-      what: 'The extra voice for later levels',
-      yes: 'Installed.',
-      no: "Not installed. You don't need it to start."
-    }
-  ]
-
-  const host = $('capabilities')
-  host.textContent = ''
-  for (const r of rows) {
-    const li = document.createElement('li')
-    const dot = document.createElement('span')
-    dot.className = 'dot' + (r.on ? '' : ' off')
-    dot.setAttribute('aria-hidden', 'true')
-    const text = document.createElement('span')
-    const what = document.createElement('b')
-    what.className = 'ready-what'
-    what.textContent = r.what + ' — '
-    const note = document.createElement('span')
-    note.className = 'ready-note'
-    note.textContent = r.on ? r.yes : r.no
-    text.append(what, note)
-    li.append(dot, text)
-    host.appendChild(li)
-  }
 }
 
 function setUpCloning () {
@@ -1132,7 +760,8 @@ function setUpCloning () {
   // Say up front what this needs and whether the computer has it. The space
   // check is instant, and finding out you are short only after committing to a
   // 3 GB download is a bad way to learn it.
-  api.cloningInfo().then((info) => {
+  Promise.resolve(api.cloningInfo ? api.cloningInfo() : null).then((info) => {
+    if (!info) return
     // Kept for the time estimate on the open-ended levels, which is the one
     // number that decides whether a parent starts a render or walks away.
     if (info && info.ok !== false) { state.cloneInfo = info; updateSummary() }
@@ -1174,8 +803,6 @@ function setUpCloning () {
       // button that could only fail again.
       if (res && res.ok === false) throw new Error(res.error || 'The download did not finish.')
       state = await api.getState()
-      renderCapabilities()
-      renderLevels(picked('level'))
       updateSummary()
       showInstalled()
     } catch (e) {
@@ -1220,44 +847,29 @@ boot()
  * terminal. This is the way in.
  */
 
-const PART_NAMES = {
-  phonemes: 'sounds', words: 'words', sentences: 'sentences', passage: 'reading passage'
-}
+const PART_NAMES = { phonemes: 'sounds', passage: 'reading passage' }
 
 async function voiceCounts (caps) {
   const p = (caps && caps.recorded_phonemes) || 0
-  const w = (caps && caps.recorded_words) || 0
-  const sn = (caps && caps.recorded_sentences) || 0
 
-  // Totals come from the plan so the denominator is always the real list -
-  // adding a word to the word list changes what "finished" means.
-  let totals = { phonemes: 42, words: w, sentences: sn }
+  let total = 42
   try {
-    const [ps, ws, ss] = await Promise.all([
-      api.studioPlan({ part: 'phonemes' }), api.studioPlan({ part: 'words' }),
-      api.studioPlan({ part: 'sentences' })
-    ])
-    totals = { phonemes: ps.total, words: ws.total, sentences: ss.total }
-  } catch { /* fall back to what we know */ }
+    const ps = await api.studioPlan({ part: 'phonemes' })
+    total = ps.total || 42
+  } catch { /* fall back to the number everyone knows */ }
 
-  showPartProgress('phonemes', p, totals.phonemes)
-  showPartProgress('words', w, totals.words)
-  showPartProgress('sentences', sn, totals.sentences)
+  showPartProgress('phonemes', p, total)
   showPassageState()
-  for (const [part, n] of [['phonemes', p], ['words', w], ['sentences', sn]]) {
-    const b = document.querySelector(`.vpart-review[data-part="${part}"]`)
-    if (b) b.hidden = n === 0
-  }
+  const b = document.querySelector('.vpart-review[data-part="phonemes"]')
+  if (b) b.hidden = p === 0
 
   const foot = $('voice-foot')
   if (!foot) return
-  const total = totals.phonemes + totals.words + totals.sentences
-  const done = p + w + sn
-  foot.textContent = done === 0
-    ? 'Nothing recorded yet \u2014 the computer voice is being used for now.'
-    : done >= total
-      ? 'All recorded. Everything in the early levels is your own voice.'
-      : `${done} of ${total} recorded. You can stop and carry on whenever \u2014 ` +
+  foot.textContent = p === 0
+    ? 'Nothing recorded yet \u2014 the starter voice is being used for now.'
+    : p >= total
+      ? 'All ' + total + ' recorded. Every sound is your own voice.'
+      : `${p} of ${total} recorded. You can stop and carry on whenever \u2014 ` +
         'it picks up where you left off.'
 }
 
@@ -1345,100 +957,7 @@ function showPartProgress (part, done, total) {
 
 function setText (id, txt) { const el = $(id); if (el) el.textContent = txt }
 
-function renderImportResult (part, r) {
-  const box = $('result-' + part)
-  if (!box) return
-  box.hidden = false
-  box.innerHTML = ''
-
-  if (!r.ok) {
-    box.className = 'vpart-result is-bad'
-    box.textContent = r.error || 'That recording could not be read.'
-    return
-  }
-
-  const fails = (r.issues || []).filter((i) => i.severity === 'fail')
-  const checks = (r.issues || []).filter((i) => i.severity !== 'fail')
-  box.className = 'vpart-result ' + (fails.length ? 'is-warn' : 'is-good')
-
-  const head = document.createElement('p')
-  head.className = 'vres-head'
-  if (part === 'passage') {
-    head.textContent = fails.length
-      ? 'That recording needs another go.'
-      : 'Saved. That is everything needed for the later levels.'
-  } else {
-    head.textContent = `Found ${r.found} of ${r.expected} ${PART_NAMES[part]}` +
-      (r.saved ? `, and saved ${r.saved}.` : '.')
-  }
-  box.appendChild(head)
-
-  if (r.found != null && r.expected != null && r.found !== r.expected) {
-    const m = document.createElement('p')
-    m.className = 'vres-note'
-    m.textContent = r.found < r.expected
-      ? 'Fewer than expected. Usually that means two items ran together, or one was skipped \u2014 the names after that point may be wrong, so it is worth checking.'
-      : 'More than expected, which usually means a retake. The last version of each was kept.'
-    box.appendChild(m)
-  }
-
-  for (const [title, list, cls] of [
-    ['Worth re-recording', fails, 'bad'],
-    ['Worth a listen', checks, 'warn']
-  ]) {
-    if (!list.length) continue
-    const h = document.createElement('p')
-    h.className = 'vres-subhead'
-    h.textContent = `${title} (${list.length})`
-    box.appendChild(h)
-    const ul = document.createElement('ul')
-    ul.className = 'vres-list vres-' + cls
-    for (const i of list.slice(0, 40)) {
-      const li = document.createElement('li')
-      li.textContent = i.message
-      ul.appendChild(li)
-    }
-    box.appendChild(ul)
-  }
-
-  if (!fails.length && !checks.length && part !== 'passage') {
-    const ok = document.createElement('p')
-    ok.className = 'vres-note'
-    ok.textContent = 'Nothing sounded wrong. That is a good take.'
-    box.appendChild(ok)
-  }
-}
-
-async function importPart (part) {
-  const btn = document.querySelector(`.vpart-pick[data-part="${part}"]`)
-  const chosen = await window.soundout.chooseRecording()
-  if (!chosen || !chosen.ok) return
-
-  setText('file-' + part, chosen.path.split(/[\\/]/).pop())
-  if (btn) { btn.disabled = true; btn.textContent = 'Working on it\u2026' }
-  const box = $('result-' + part)
-  if (box) { box.hidden = false; box.className = 'vpart-result'; box.textContent = 'Splitting the recording up\u2026 this takes a moment.' }
-
-  try {
-    const r = await window.soundout.importRecording({ path: chosen.path, part })
-    renderImportResult(part, r)
-    // levels and counts depend on what is now recorded
-    const st = await window.soundout.getState()
-    state.capabilities = st.capabilities
-    state.levels = st.levels
-    voiceCounts(st.capabilities)
-    if (typeof renderLevels === 'function') renderLevels()
-  } catch (err) {
-    renderImportResult(part, { ok: false, error: String(err && err.message || err) })
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Choose the recording\u2026' }
-  }
-}
-
 function initVoice () {
-  for (const b of document.querySelectorAll('.vpart-pick')) {
-    b.addEventListener('click', () => importPart(b.dataset.part))
-  }
   const g = $('open-guide')
   if (g) {
     g.addEventListener('click', (e) => {
@@ -1801,7 +1320,6 @@ async function refreshVoiceState () {
     state.capabilities = st.capabilities
     state.levels = st.levels
     voiceCounts(st.capabilities)
-    if (typeof renderLevels === 'function') renderLevels()
   } catch { /* the screen is still usable without a refresh */ }
 }
 

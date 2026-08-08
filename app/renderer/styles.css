@@ -1059,3 +1059,27 @@ body.script-open { overflow: hidden; }
   background: var(--surface); border: 1px solid var(--line-firm);
   border-radius: 10px; resize: vertical;
 }
+
+/* The library rows carry their own include-tick, big enough for a thumb. */
+.sentence-row { display: flex; gap: .9rem; align-items: flex-start; }
+.sentence-tick { padding-top: .2rem; }
+.sentence-tick input { width: 1.35rem; height: 1.35rem; accent-color: var(--accent); }
+.sentence-body { flex: 1; min-width: 0; }
+.sentence-row.is-out .sentence-body { opacity: .45; }
+
+/* Starter packs: a name, what it is, one button. */
+.packs { display: flex; flex-direction: column; gap: .6rem; }
+.pack-row {
+  display: flex; gap: 1rem; align-items: center; justify-content: space-between;
+  padding: .6rem .2rem; border-bottom: 1px solid var(--line);
+}
+.pack-row:last-child { border-bottom: 0; }
+.pack-text { max-width: 60ch; }
+.pack-desc { color: var(--ink-soft); }
+.pack-row .btn { flex-shrink: 0; }
+.packs-box { margin: 1.2rem 0 0; max-width: 68ch; }
+
+/* The make block sits under the list, full width of the content column. */
+.make-block { margin-top: 1.6rem; max-width: 68ch; }
+.make-block .summary { margin: 0 0 1rem; font-weight: 600; }
+.clone-state { margin-top: 1rem; }

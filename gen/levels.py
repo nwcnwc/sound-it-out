@@ -544,18 +544,56 @@ def _sentences(voice, sentences, reps, pause):
     return segs
 
 
-def _library(voice, texts, reps, pause):
-    """The sentence library's video: every sentence built from its sounds.
+def _one_word(voice, word, reps, pause):
+    """A single word met on its own: sounded out with the gaps closing if
+    the grapheme table can honestly say it, shown and spoken whole if it
+    cannot (see decodable)."""
+    segs = []
+    if decodable(word):
+        segs += _approach(voice, split_graphemes(word), pause,
+                          passes=max(2, reps))
+        segs.append(whole(word, voice.word(word), pad=pause + 1.0))
+    else:
+        audio = voice.word(word)
+        n = max(2, reps - 1)
+        for i in range(n):
+            segs.append(whole(word, audio,
+                              pad=pause if i < n - 1 else pause + 1.0))
+    return segs
 
-    Per sentence: each word is met on its own - sounded out with the gaps
-    closing (see _approach) if the grapheme table can honestly say it,
-    shown and spoken whole if it cannot (see decodable) - then the sentence
-    is grown word by word, and finally read whole as a read-along, the
-    highlight moving with her voice.
+
+def _library(voice, texts, reps, pause):
+    """The library's video. An entry is a letter, a word, or a sentence,
+    and each gets exactly as much journey as it has:
+
+        letter    its sound, repeated - straight from the phoneme bank
+        word      sounded out (or shown whole - see decodable), no more
+        sentence  words on their own, grown into the line, then her own
+                  read with the highlight following her voice
     """
+    from gen import sentences as slib
+
     segs = []
     for text in texts:
+        kind = slib.entry_kind(text)
         words = text.split()
+
+        if kind == "letter":
+            letter = words[0].strip(".,!?;:‘’“”'\"")
+            audio = voice.phoneme(CVC_PHONEMES.get(letter.lower(),
+                                                   letter.lower()))
+            for i in range(reps):
+                segs.append(whole(letter, audio,
+                                  pad=pause if i < reps - 1 else pause + 0.6))
+            segs[-1].item_end = True
+            continue
+
+        if kind == "word":
+            segs += _one_word(voice, words[0].strip(".,!?;:‘’“”'\""),
+                              reps, pause)
+            segs[-1].item_end = True
+            continue
+
         word_clips = [voice.word(w.strip(".,!?;:‘’“”'\"")) for w in words]
 
         # 1. Each word on its own, first time it appears.
@@ -565,16 +603,7 @@ def _library(voice, texts, reps, pause):
             if not clean or clean.lower() in seen:
                 continue
             seen.add(clean.lower())
-            if decodable(clean):
-                segs += _approach(voice, split_graphemes(clean), pause,
-                                  passes=max(2, reps))
-                segs.append(whole(clean, voice.word(clean), pad=pause + 1.0))
-            else:
-                audio = voice.word(clean)
-                for i in range(max(2, reps - 1)):
-                    segs.append(whole(clean, audio,
-                                      pad=pause if i < max(2, reps - 1) - 1
-                                      else pause + 1.0))
+            segs += _one_word(voice, clean, reps, pause)
 
         # 2. Grow the sentence word by word.
         for i, w in enumerate(words):

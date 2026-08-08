@@ -322,6 +322,19 @@ def m_sentences_remove(params):
     return {"sentences": sentences.status()}
 
 
+def m_packs_list(_params):
+    from gen import sentences
+
+    return {"packs": sentences.packs()}
+
+
+def m_packs_add(params):
+    from gen import sentences
+
+    sentences.add_pack(params["id"])
+    return {"sentences": sentences.status(), "packs": sentences.packs()}
+
+
 def m_studio_plan(params):
     from gen import studio
 
@@ -579,6 +592,8 @@ METHODS = {
     "sentences.list": m_sentences_list,
     "sentences.add": m_sentences_add,
     "sentences.remove": m_sentences_remove,
+    "packs.list": m_packs_list,
+    "packs.add": m_packs_add,
     "plan": m_plan,
     "encode": m_encode,
     "render.chrome": m_render_chrome,

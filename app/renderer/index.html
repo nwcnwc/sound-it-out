@@ -23,136 +23,38 @@
   </div>
 
   <nav class="tabs" role="tablist" aria-label="Sections">
-    <button class="tab" role="tab" id="tab-words" aria-controls="screen-words"
-            aria-selected="true" data-screen="words">Words</button>
     <button class="tab" role="tab" id="tab-sentences" aria-controls="screen-sentences"
-            aria-selected="false" tabindex="-1" data-screen="sentences">Sentences</button>
-    <button class="tab" role="tab" id="tab-make" aria-controls="screen-make"
-            aria-selected="false" tabindex="-1" data-screen="make">Make a video</button>
-    <button class="tab" role="tab" id="tab-voice" aria-controls="screen-voice"
-            aria-selected="false" tabindex="-1" data-screen="voice">Your voice</button>
-    <button class="tab" role="tab" id="tab-settings" aria-controls="screen-settings"
-            aria-selected="false" tabindex="-1" data-screen="settings">Settings</button>
+            aria-selected="true" data-screen="sentences">Sentences</button>
+    <button class="tab" role="tab" id="tab-setup" aria-controls="screen-setup"
+            aria-selected="false" tabindex="-1" data-screen="setup">Setup</button>
   </nav>
 </header>
 
 <main id="main">
 
-  <!-- ============================================================ WORDS -->
-  <section class="screen" id="screen-words" role="tabpanel" aria-labelledby="tab-words" tabindex="-1">
+  <!-- ======================================================== SENTENCES
+       The whole app on one screen: what gets read, recording it, and making
+       the video. A library entry can be a sentence, a single word, or a
+       single letter - it is the ONLY list there is. -->
+  <section class="screen" id="screen-sentences" role="tabpanel" aria-labelledby="tab-sentences" tabindex="-1">
 
     <div class="page-head">
-      <h1>His words</h1>
+      <h1>What gets read</h1>
       <p class="lede">
-        This one list does two jobs: it's the list of words you'll be asked to record,
-        and it's what your child sees on the TV. Change it whenever you like.
-      </p>
-    </div>
-
-    <div class="notice notice-warm" id="people-nudge" hidden>
-      <div class="notice-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9.5" cy="7" r="4"/><path d="M22 20v-2a4 4 0 0 0-3-3.9"/>
-        </svg>
-      </div>
-      <div class="notice-body">
-        <h2>Start with your real names</h2>
-        <p id="people-nudge-text">
-          The <b>People</b> group still has the example names in it.
-        </p>
-        <p>
-          Some of those may already be right. Add the rest &mdash; their brothers and sisters, your
-          pets, anyone he sees every day. This group matters more than all the others put together:
-          the words a child already cares about are the ones he'll learn first, and by a long way.
-        </p>
-        <p class="notice-actions">
-          <button class="btn btn-second" id="jump-people" type="button">Take me to that bit</button>
-        </p>
-      </div>
-    </div>
-
-    <div class="cols">
-      <div class="col-main">
-        <div class="field">
-          <div class="field-head">
-            <label for="wordlist">Your word list</label>
-            <span class="dirty-dot" id="dirty-dot" hidden>Not saved yet</span>
-          </div>
-          <textarea id="wordlist" spellcheck="false" autocapitalize="off" autocomplete="off"
-                    aria-describedby="wordlist-help"></textarea>
-          <p class="hint" id="wordlist-help">
-            One word per line. Everything else is optional &mdash; see &ldquo;How to write the
-            list&rdquo; below if you want groups or colours.
-          </p>
-        </div>
-
-        <div class="rowbar">
-          <button class="btn btn-primary" id="save-words" type="button">Save my words</button>
-          <button class="btn btn-quiet" id="revert-words" type="button">Undo my changes</button>
-          <span class="save-state" id="save-state" role="status" aria-live="polite"></span>
-        </div>
-
-        <p class="error-line" id="words-error" role="alert" hidden></p>
-
-        <details class="explain">
-          <summary>How to write the list</summary>
-          <div class="explain-body">
-            <dl class="format">
-              <dt><code>ball</code></dt>
-              <dd>A word on its own line. That's all you need.</dd>
-
-              <dt><code># anything after a hash</code></dt>
-              <dd>A note to yourself. It's ignored.</dd>
-
-              <dt><code>[Bedtime]</code></dt>
-              <dd>Starts a new group. Groups just keep the list tidy.</dd>
-
-              <dt><code>Skye&nbsp;&nbsp;#ff8fc7</code></dt>
-              <dd>
-                Shows that one word in that colour on screen. Optional. If you don't know a
-                colour code, leave it off &mdash; the word uses the theme's normal colour.
-              </dd>
-            </dl>
-            <p class="hint">
-              Start small. Ten words they love beats fifty they don't. Around fifty confident
-              words is the point where sounding out begins to make sense.
-            </p>
-          </div>
-        </details>
-      </div>
-
-      <aside class="col-side" aria-label="Preview of your list">
-        <div class="panel">
-          <div class="panel-head">
-            <h2>What he'll see</h2>
-            <p class="count" id="word-count">&nbsp;</p>
-          </div>
-          <div id="groups" class="groups"></div>
-        </div>
-      </aside>
-    </div>
-  </section>
-
-  <!-- ======================================================== SENTENCES -->
-  <section class="screen" id="screen-sentences" role="tabpanel" aria-labelledby="tab-sentences" tabindex="-1" hidden>
-
-    <div class="page-head">
-      <h1>Sentences</h1>
-      <p class="lede">
-        Add any sentence, record it in a couple of minutes, and it becomes a video:
-        the sounds build into words, the words build into your sentence, and it ends
-        with your own read of it &mdash; the words lighting up as you say them.
+        Add anything &mdash; a name, a word, a whole sentence. Record it in a couple of
+        minutes, tick what to include, and make the video: the sounds build into words,
+        the words into sentences, ending with your own read &mdash; each word lighting
+        up as you say it.
       </p>
     </div>
 
     <div class="field">
-      <label for="sentence-input">A sentence to add</label>
+      <label for="sentence-input">Something to add</label>
       <textarea id="sentence-input" rows="2" spellcheck="false" autocapitalize="sentences"
                 placeholder="Alex went to the park with Nana."></textarea>
       <p class="hint">
-        Paste a few at once if you like &mdash; they are split up sentence by sentence.
+        A single word is fine. Paste a few sentences at once if you like &mdash; they are
+        split up sentence by sentence.
       </p>
     </div>
 
@@ -161,84 +63,23 @@
     </div>
     <p class="error-line" id="sentence-error" role="alert" hidden></p>
 
-    <div id="sentence-list" class="sentence-list" aria-live="polite"></div>
-
-    <details class="explain">
-      <summary>How the recording works</summary>
+    <details class="explain packs-box">
+      <summary>Add a starter pack &mdash; letters, first words, ready-made sentences</summary>
       <div class="explain-body">
-        <p>
-          Each sentence is recorded as its parts: every word on its own, then the whole
-          line read the way you would to your child. Words you have recorded before
-          &mdash; here or on the Words tab &mdash; are skipped automatically, so each new
-          sentence gets quicker than the last.
-        </p>
         <p class="hint">
-          Anything not recorded yet is filled in by the built-in voice, so a video can
-          always be made &mdash; it just gets better as you record.
+          These follow the reading research: personally meaningful words first, then
+          letter sounds, then sounding out, then sentences. Add a pack when they are
+          ready for it &mdash; each one is just entries on the list, remove any you like.
         </p>
+        <div id="packs" class="packs"></div>
       </div>
     </details>
-  </section>
 
-  <!-- ============================================================= MAKE -->
-  <section class="screen" id="screen-make" role="tabpanel" aria-labelledby="tab-make" tabindex="-1" hidden>
+    <div id="sentence-list" class="sentence-list" aria-live="polite"></div>
 
-    <div class="page-head">
-      <h1>Make a video</h1>
-      <p class="lede">
-        Play it straight onto the TV, or save it as a file you can put on a USB stick.
-      </p>
-    </div>
-
-    <fieldset class="block">
-      <legend><span class="step">1</span> Where he's up to</legend>
-      <p class="hint block-hint">
-        Each level builds on the one before. Stay on a level until it's easy &mdash; there's no
-        rush, and repeating is the point.
-      </p>
-      <div class="choice-list" id="levels"></div>
-
-      <!-- Only for the open-ended levels, and only when one is chosen. These
-           have no fixed content, so they need something from the parent that
-           the fixed levels do not. -->
-      <div class="level-extra" id="level-text-wrap" hidden>
-        <label class="setting-label" for="level-text">What would you like read?</label>
-        <p class="hint">
-          Paste anything &mdash; a page of a book, a message from a relative, what you
-          did today. It is read a word at a time, then the whole line.
-        </p>
-        <textarea id="level-text" rows="6" spellcheck="false"
-                  placeholder="Alex went to the park with Nana. They saw a big brown dog."></textarea>
-        <p class="hint" id="level-text-count"></p>
-      </div>
-
-      <!-- Only for the sentence-library level: which of her sentences to
-           include. Rendered from the same list the Sentences tab shows. -->
-      <div class="level-extra" id="level-sentences-wrap" hidden>
-        <span class="setting-label">Which sentences?</span>
-        <p class="hint">From your Sentences tab. Tick the ones to include.</p>
-        <div class="choice-list" id="level-sentences"></div>
-      </div>
-
-      <p class="notice notice-warm make-slow" id="make-slow" role="status" aria-live="polite" hidden></p>
-
-      <div class="level-extra" id="level-stage-wrap" hidden>
-        <span class="setting-label" id="lbl-stage">How many letters do they know?</span>
-        <div class="segmented" role="radiogroup" aria-labelledby="lbl-stage" id="stage"></div>
-        <p class="hint" id="stage-note"></p>
-      </div>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend><span class="step">2</span> How it looks</legend>
-      <p class="hint block-hint">
-        All three are easy to read from the sofa. Pick whichever he responds to.
-      </p>
-      <div class="theme-list" id="themes"></div>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend><span class="step">3</span> How it plays</legend>
+    <fieldset class="block make-block">
+      <legend>Make the video</legend>
+      <p class="summary" id="make-summary" role="status" aria-live="polite">&nbsp;</p>
 
       <div class="settings-grid">
         <div class="setting">
@@ -248,101 +89,75 @@
         </div>
 
         <div class="setting">
-          <span class="setting-label" id="lbl-reps">Each word shown</span>
-          <div class="segmented" role="radiogroup" aria-labelledby="lbl-reps" id="reps"></div>
-          <p class="hint">Repetition is how it sticks. Three is a good place to start.</p>
-        </div>
-
-        <div class="setting">
           <span class="setting-label" id="lbl-pause">Gap between words</span>
           <div class="segmented" role="radiogroup" aria-labelledby="lbl-pause" id="pause"></div>
-          <p class="hint">Long enough for him to have a go himself before the next one.</p>
+          <p class="hint">Long enough for them to have a go before the next one.</p>
         </div>
       </div>
-    </fieldset>
 
-    <div class="makebar">
-      <p class="summary" id="make-summary" role="status" aria-live="polite">&nbsp;</p>
-      <p class="hint honesty">
-        Either way it has to be made first, and that takes a few minutes. You can leave it
-        running and come back to it.
-      </p>
-      <div class="makebar-buttons">
-        <button class="btn btn-primary btn-big" id="btn-play" type="button">
-          <span class="btn-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
-          </span>
-          Play on this screen
-        </button>
-        <button class="btn btn-second btn-big" id="btn-export" type="button">
-          <span class="btn-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
-            </svg>
-          </span>
-          Save as a video file
-        </button>
+      <div class="setting">
+        <span class="setting-label" id="lbl-themes">How it looks</span>
+        <div class="theme-list" id="themes"></div>
       </div>
-      <p class="hint" id="export-dest"></p>
-    </div>
+
+      <p class="notice notice-warm make-slow" id="make-slow" role="status" aria-live="polite" hidden></p>
+
+      <div class="makebar">
+        <p class="hint honesty">
+          It has to be made first, and that takes a few minutes. You can leave it running.
+        </p>
+        <div class="makebar-buttons">
+          <button class="btn btn-primary btn-big" id="btn-play" type="button">
+            <span class="btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+            </span>
+            Play on this screen
+          </button>
+          <button class="btn btn-second btn-big" id="btn-export" type="button">
+            <span class="btn-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 19h16"/>
+              </svg>
+            </span>
+            Save as a video file
+          </button>
+        </div>
+        <p class="hint" id="export-dest"></p>
+      </div>
+    </fieldset>
   </section>
 
-  <!-- ========================================================= SETTINGS -->
-
-  <section class="screen" id="screen-voice" role="tabpanel" aria-labelledby="tab-voice" tabindex="-1" hidden>
+  <!-- ============================================================ SETUP
+       Everything done once: the 42 sounds, the optional story voice, where
+       videos go, and keeping the recordings safe. -->
+  <section class="screen" id="screen-setup" role="tabpanel" aria-labelledby="tab-setup" tabindex="-1" hidden>
 
     <div class="page-head">
-      <h1>Your voice</h1>
+      <h1>Setup</h1>
       <p class="lede">
-        Record yourself once, and your child hears you instead of the computer &mdash;
-        for everything in the early levels, exactly as you said it.
+        One recording session that matters, one optional extra, and where things are kept.
       </p>
     </div>
 
-    <div class="voice-intro">
-      <p>
-        There are four things to record, and they are not equally important. Read
-        <a href="#" id="open-guide" class="link">the recording guide</a> first &mdash;
-        it explains the one rule that really matters.
-      </p>
-      <p>
-        <b>The sounds are the part only you can do.</b> An isolated &ldquo;t&rdquo; is
-        exactly what a computer voice gets wrong, and a wrong sound teaches the wrong
-        thing. Forty-two of them, about ten minutes.
-      </p>
-      <p>
-        The words and sentences are worth recording if you have the time &mdash; a real
-        voice is always better. But if you install the extra voice, the app can say
-        those in your voice without you reading them all out. The reading passage is
-        what makes that possible.
-      </p>
-      <p class="hint">
-        Record each part as <b>one long recording</b> with a couple of seconds of silence
-        between items. Bring the file here and it gets split up automatically.
-      </p>
-    </div>
-
-    <p class="voice-lead">
-      For each part you can either <b>record it here</b>, one item at a time with the
-      app checking as you go, or record it on a phone and bring the file in. Recording
-      here is easier &mdash; it tells you straight away if something needs another go.
-    </p>
-
-
+    <ol class="voice-parts">
 
       <li class="vpart" data-part="phonemes">
         <div class="vpart-num">1</div>
         <div class="vpart-body">
-          <h2>The sounds <span class="vpart-count" id="count-phonemes"></span></h2>
-          <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. These are what
-             sounding-out is built from, so they matter most.</p>
+          <h2>Record the sounds <span class="vpart-count" id="count-phonemes"></span></h2>
+          <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. Everything is
+             built from these, and an isolated sound is exactly what a computer voice gets
+             wrong &mdash; so this ten-minute session is the one that matters. Until it is
+             done, a recorded human starter voice fills in. Read
+             <a href="#" id="open-guide" class="link">the recording guide</a> first &mdash;
+             it explains the one rule that really matters.</p>
           <div class="bar bar-slim vpart-bar" id="barwrap-phonemes" hidden>
             <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
           </div>
           <div class="rowbar">
             <button class="btn btn-primary vpart-record" type="button" data-part="phonemes">
-              Record these here
+              Record them here
             </button>
             <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
               Listen back &amp; redo
@@ -350,94 +165,84 @@
             <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
               Show what to say
             </button>
-            <button class="btn btn-quiet vpart-pick" type="button" data-part="phonemes">
-              Choose the recording&hellip;
-            </button>
-            <span class="vpart-file" id="file-phonemes"></span>
           </div>
           <div class="vpart-result" id="result-phonemes" hidden></div>
-        </div>
-      </li>
-
-      <li class="vpart" data-part="words">
-        <div class="vpart-num">2</div>
-        <div class="vpart-body">
-          <h2>The words <span class="vpart-count" id="count-words"></span></h2>
-          <p><b>Optional if you install the extra voice.</b> Your word list, read
-             normally. Worth doing if you have the time &mdash; your real voice beats a
-             generated one &mdash; but this is the part the app can do for you.</p>
-          <div class="bar bar-slim vpart-bar" id="barwrap-words" hidden>
-            <div class="bar-fill" id="bar-words" style="width:0%"></div>
-          </div>
-          <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="words">
-              Record these here
-            </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="words" hidden>
-              Listen back &amp; redo
-            </button>
-            <button class="btn btn-second vpart-script" type="button" data-part="words">
-              Show what to say
-            </button>
-            <button class="btn btn-quiet vpart-pick" type="button" data-part="words">
-              Choose the recording&hellip;
-            </button>
-            <span class="vpart-file" id="file-words"></span>
-          </div>
-          <div class="vpart-result" id="result-words" hidden></div>
-        </div>
-      </li>
-
-      <li class="vpart" data-part="sentences">
-        <div class="vpart-num">3</div>
-        <div class="vpart-body">
-          <h2>The sentences <span class="vpart-count" id="count-sentences"></span></h2>
-          <p><b>Worth the minute it takes.</b> Ten short lines, read the way you would
-             to your child. A sentence has stress and melody across the whole line, and
-             joined-up word clips have neither &mdash; so these cannot be built from the
-             single words, only recorded or generated.</p>
-          <div class="bar bar-slim vpart-bar" id="barwrap-sentences" hidden>
-            <div class="bar-fill" id="bar-sentences" style="width:0%"></div>
-          </div>
-          <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="sentences">
-              Record these here
-            </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="sentences" hidden>
-              Listen back &amp; redo
-            </button>
-            <button class="btn btn-second vpart-script" type="button" data-part="sentences">
-              Show what to say
-            </button>
-            <span class="vpart-file" id="file-sentences"></span>
-          </div>
-          <div class="vpart-result" id="result-sentences" hidden></div>
+          <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
         </div>
       </li>
 
       <li class="vpart" data-part="passage">
-        <div class="vpart-num">4</div>
+        <div class="vpart-num">2</div>
         <div class="vpart-body">
-          <h2>The reading passage <span class="vpart-count" id="count-passage"></span></h2>
-          <p>Six minutes of ordinary reading aloud. This one is never played to your child
-             &mdash; it is what lets the later levels sound like you.</p>
+          <h2>Stories in your voice <span class="vpart-count" id="count-passage"></span></h2>
+          <p><b>Optional.</b> Anything on the list you have not recorded is read by the
+             built-in voice. With this, it is read in <b>your</b> voice instead: read the
+             passage below once (about six minutes), download the voice pack, and every
+             unrecorded word or line sounds like you.</p>
           <div class="rowbar">
-            <button class="btn btn-primary" id="read-passage" type="button">Read it here</button>
+            <button class="btn btn-primary" id="read-passage" type="button">Read the passage here</button>
             <button class="btn btn-second" id="play-passage" type="button" hidden>
               Listen back
             </button>
-            <button class="btn btn-quiet vpart-pick" type="button" data-part="passage">
-              Choose the recording&hellip;
-            </button>
-            <span class="vpart-file" id="file-passage"></span>
           </div>
           <div class="vpart-result" id="result-passage" hidden></div>
+
+          <div class="clone-state" id="clone-state">
+            <button class="btn btn-second" id="install-clone" type="button">
+              Download the voice pack (2&ndash;4 GB)
+            </button>
+            <p class="install-status" id="install-status" role="status" aria-live="polite" hidden></p>
+            <div class="bar bar-slim" id="install-bar" hidden>
+              <div class="bar-fill" id="install-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <p class="hint">
+            One download, once. Everything stays on this computer &mdash; nothing is
+            uploaded and nothing leaves the house. It is slow to generate on a laptop,
+            which is one more reason recording yourself is better where you can.
+          </p>
         </div>
       </li>
 
     </ol>
 
-    <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
+    <fieldset class="block">
+      <legend>Where saved videos go</legend>
+      <p class="path-box" id="outdir-display">&nbsp;</p>
+      <div class="rowbar">
+        <button class="btn btn-second" id="open-outdir" type="button">Open this folder</button>
+        <button class="btn btn-quiet" id="change-outdir" type="button" aria-expanded="false"
+                aria-controls="outdir-editor">Use a different folder</button>
+      </div>
+      <div class="outdir-editor" id="outdir-editor" hidden>
+        <label for="outdir-input">Full path to the folder you'd like videos saved in</label>
+        <input type="text" id="outdir-input" spellcheck="false" autocomplete="off">
+        <p class="hint">
+          Tip: find the folder in Finder, then drag it onto this box to fill in the path.
+        </p>
+        <div class="rowbar">
+          <button class="btn btn-primary" id="save-outdir" type="button">Save this folder</button>
+          <button class="btn btn-quiet" id="cancel-outdir" type="button">Never mind</button>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="block">
+      <legend>Keep your recordings safe</legend>
+      <p id="voice-info" class="hint">&nbsp;</p>
+      <p class="path-box" id="voice-dir">&nbsp;</p>
+      <div class="rowbar">
+        <button class="btn btn-second" id="voice-open" type="button">Open this folder</button>
+        <button class="btn btn-primary" id="voice-backup" type="button">Save a backup&hellip;</button>
+        <button class="btn btn-second" id="voice-restore" type="button">Restore a backup&hellip;</button>
+      </div>
+      <p class="hint">
+        Recording takes real time and cannot be redone exactly, so it is the one thing
+        here worth keeping a copy of. The backup is a single file &mdash; put it on a
+        memory stick or in your cloud drive.
+      </p>
+      <p class="install-status" id="voice-status" role="status" aria-live="polite" hidden></p>
+    </fieldset>
   </section>
 
   <!-- The passage reader. One section at a time: each is 20-70 seconds of
@@ -533,95 +338,6 @@
       <p class="studio-result" id="studio-result" hidden></p>
     </div>
   </div>
-
-  <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
-
-    <div class="page-head">
-      <h1>Settings</h1>
-      <p class="lede">There isn't much here on purpose.</p>
-    </div>
-
-    <fieldset class="block">
-      <legend>Where saved videos go</legend>
-      <p class="path-box" id="outdir-display">&nbsp;</p>
-      <div class="rowbar">
-        <button class="btn btn-second" id="open-outdir" type="button">Open this folder</button>
-        <button class="btn btn-quiet" id="change-outdir" type="button" aria-expanded="false"
-                aria-controls="outdir-editor">Use a different folder</button>
-      </div>
-      <div class="outdir-editor" id="outdir-editor" hidden>
-        <label for="outdir-input">Full path to the folder you'd like videos saved in</label>
-        <input type="text" id="outdir-input" spellcheck="false" autocomplete="off">
-        <p class="hint">
-          Tip: find the folder in Finder, then drag it onto this box to fill in the path.
-        </p>
-        <div class="rowbar">
-          <button class="btn btn-primary" id="save-outdir" type="button">Save this folder</button>
-          <button class="btn btn-quiet" id="cancel-outdir" type="button">Never mind</button>
-        </div>
-      </div>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend>Your recordings</legend>
-      <p id="voice-info" class="hint">&nbsp;</p>
-      <p class="path-box" id="voice-dir">&nbsp;</p>
-      <div class="rowbar">
-        <button class="btn btn-second" id="voice-open" type="button">Open this folder</button>
-        <button class="btn btn-primary" id="voice-backup" type="button">Save a backup&hellip;</button>
-        <button class="btn btn-second" id="voice-restore" type="button">Restore a backup&hellip;</button>
-      </div>
-      <p class="hint">
-        Recording takes about forty minutes and cannot be redone exactly, so it is the
-        one thing here worth keeping a copy of. The backup is a single file &mdash; put it
-        on a memory stick or in your cloud drive.
-      </p>
-      <p class="install-status" id="voice-status" role="status" aria-live="polite" hidden></p>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend>The later levels</legend>
-      <div class="clone">
-        <div class="clone-body">
-          <p>
-            <b>You almost certainly do not need this.</b> If you record the sounds, the words and
-            the ten sentences, every level is already <b>your own voice, exactly as you said
-            it</b> &mdash; nothing made up by the computer.
-          </p>
-          <p>
-            What this is for is <b>words you add to your list later and have not recorded yet</b>.
-            Without it, those are read by the built-in voice; with it, they sound like you until
-            you get round to recording them.
-          </p>
-          <p>
-            It is not used for the individual sounds, and it never will be. An isolated
-            &ldquo;t&rdquo; is exactly what these models get wrong, and a wrong sound teaches the
-            wrong thing.
-          </p>
-          <p class="clone-cost">
-            <b>It's a 2&ndash;4 GB download</b>, it happens once, and it's all on this computer
-            &mdash; nothing is uploaded and nothing leaves the house. It is also slow to generate
-            on a laptop, which is another reason to prefer recording.
-          </p>
-        </div>
-
-        <div class="clone-state" id="clone-state">
-          <button class="btn btn-second" id="install-clone" type="button">
-            Download the extra voice (2&ndash;4 GB)
-          </button>
-          <p class="install-status" id="install-status" role="status" aria-live="polite" hidden></p>
-          <div class="bar bar-slim" id="install-bar" hidden>
-            <div class="bar-fill" id="install-bar-fill" style="width:0%"></div>
-          </div>
-        </div>
-      </div>
-    </fieldset>
-
-    <fieldset class="block">
-      <legend>What's ready</legend>
-      <ul class="ready-list" id="capabilities"></ul>
-    </fieldset>
-  </section>
 
   <!-- ========================================================= PROGRESS -->
   <section class="screen screen-takeover" id="screen-progress" aria-labelledby="progress-title" hidden>

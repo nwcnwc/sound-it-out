@@ -46,6 +46,28 @@ def _clean(word: str) -> str:
     return word.strip(".,!?;:‘’“”'\"")
 
 
+def entry_kind(text: str) -> str:
+    """What sort of thing one library entry is.
+
+    The library holds more than sentences, on purpose - it is the ONLY list
+    in the app, so a favourite name and a single letter live here too:
+
+        "s"                one letter  -> its sound, from the phoneme bank
+        "Chase"            one word    -> sight or sounded out, no line read
+        "Sam sat."         a sentence  -> the full journey
+
+    A one-word entry has no separate whole-line read - the word IS the line -
+    and a letter entry has nothing to record at all, because the 42 sounds
+    are recorded once in Setup and shared by everything.
+    """
+    words = [w for w in (_clean(w) for w in text.split()) if w]
+    if len(words) == 1 and len(words[0]) == 1 and words[0].isalpha():
+        return "letter"
+    if len(words) == 1:
+        return "word"
+    return "sentence"
+
+
 # ------------------------------------------------------------- the library
 
 
@@ -137,36 +159,163 @@ def _unique_words(text: str) -> list:
     return out
 
 
+def _letter_recorded(ch: str) -> bool:
+    """Whether a letter's sound exists in her bank or the shipped starter.
+
+    Reads the voice module's directory globals rather than importing paths
+    afresh, so this looks wherever gen/voice.py looks - including under
+    tests and overrides that repoint those globals.
+    """
+    from gen import levels, voice
+
+    ipa = levels.CVC_PHONEMES.get(ch.lower(), ch.lower())
+    return (voice.VoiceSource._lookup(voice.VOICE_DIR, "phonemes", ipa) is not None
+            or voice.VoiceSource._lookup(voice.STARTER_VOICE, "phonemes", ipa)
+            is not None)
+
+
 def status() -> list:
-    """Every sentence, with what is recorded and what is still to do."""
+    """Every entry, with what is recorded and what is still to do."""
     out = []
     for text in load():
+        kind = entry_kind(text)
         words = _unique_words(text)
-        missing = [w for w in words if not _word_item(w).done()]
-        line_done = _line_item(text).done()
+        if kind == "letter":
+            # Nothing per-entry to record: the sound comes from the 42
+            # recorded in Setup (or the shipped starter voice until then).
+            missing, line_done = [], True
+            ready = _letter_recorded(words[0])
+        elif kind == "word":
+            missing = [w for w in words if not _word_item(w).done()]
+            line_done = True  # the word IS the line
+            ready = not missing
+        else:
+            missing = [w for w in words if not _word_item(w).done()]
+            line_done = _line_item(text).done()
+            ready = not missing and line_done
         out.append({
             "key": sentence_key(text),
             "text": text,
+            "kind": kind,
             "words": len(words),
             "missing": missing,
             "lineRecorded": line_done,
-            "ready": not missing and line_done,
+            "ready": ready,
         })
     return out
 
 
 def walkthrough_items(key: str) -> list:
-    """What to record for one sentence: its words, then the whole line.
+    """What to record for one entry.
+
+    A sentence: its words, then the whole line - the line last, so the words
+    are fresh in her voice when she reads them joined up. A single word: just
+    the word. A letter: nothing - its sound is the phoneme bank's job, and
+    the caller should not be offering a record button at all.
 
     Words already in the shared bank show as done and the studio resumes
     past them - this is what makes the tenth sentence cheaper than the
-    first. The line comes last so the words are fresh in her voice when
-    she reads them joined up.
+    first.
     """
     for text in load():
         if sentence_key(text) == key:
-            return [_word_item(w) for w in _unique_words(text)] + [_line_item(text)]
+            kind = entry_kind(text)
+            if kind == "letter":
+                return []
+            items = [_word_item(w) for w in _unique_words(text)]
+            if kind == "sentence":
+                items.append(_line_item(text))
+            return items
     raise ValueError("That sentence is not in the library any more.")
+
+
+# ------------------------------------------------------------ starter packs
+#
+# The old levels, reborn as content. The research-backed progression (sight
+# words first, then sounds, then blending, then text - see the README) used
+# to be nine screens of UI; now it is sets of ordinary library entries added
+# with one tap. Nothing about the pedagogy changed - only where it lives.
+
+
+def _pack_defs() -> list:
+    from gen import levels, wordlists
+
+    try:
+        own_words = [w for w in wordlists.all_words()]
+    except Exception:
+        own_words = []
+
+    ladder = []
+    for ch in levels.LADDER:
+        ladder += ch["words"] + [ch["sentence"]]
+
+    return [
+        {"id": "own-words", "name": "Your word list",
+         "description": "Everything from your old word list - names, "
+                        "favourites, first words. The words a child already "
+                        "cares about are the ones learned first.",
+         "items": own_words},
+        {"id": "letters", "name": "Letter sounds",
+         "description": "One letter at a time, in phonics order - s a t p "
+                        "i n first. Nothing to record: these use the sounds "
+                        "from Setup.",
+         "items": [l for l, _ in
+                   levels.SATPIN + levels.SET2 + levels.SET3]},
+        {"id": "first-words", "name": "First little words",
+         "description": "Three-sound words to sound out: sat, pin, man.",
+         "items": list(levels.CVC_REAL)},
+        {"id": "nonsense", "name": "Sounding-out practice",
+         "description": "Made-up words like vam and zib. They cannot be "
+                        "memorised as shapes, so reading one proves the "
+                        "sounding-out is real.",
+         "items": list(levels.CVC_NONSENSE)},
+        {"id": "ladder", "name": "Building up",
+         "description": "The whole journey in order: at, am, Sam, sat... "
+                        "ending in whole sentences, each built only from "
+                        "letters already met.",
+         "items": ladder},
+        {"id": "letter-teams", "name": "Letter teams",
+         "description": "sh, ch, th, ck as one sound: ship, chat, duck.",
+         "items": list(levels.DIGRAPH_WORDS)},
+        {"id": "harder-words", "name": "Harder words",
+         "description": "Two sounds that stay two sounds: stop, black, hand.",
+         "items": list(levels.CLUSTER_WORDS)},
+        {"id": "first-sentences", "name": "First sentences",
+         "description": "Short decodable lines: A duck sat on the rock.",
+         "items": list(levels.SENTENCES)},
+    ]
+
+
+def packs() -> list:
+    """The packs, with how much of each is already in the library."""
+    have = {sentence_key(t) for t in load()}
+    out = []
+    for p in _pack_defs():
+        keys = [sentence_key(i) for i in p["items"]]
+        out.append({
+            "id": p["id"], "name": p["name"],
+            "description": p["description"],
+            "count": len(p["items"]),
+            "added": sum(1 for k in keys if k in have),
+        })
+    return out
+
+
+def add_pack(pack_id: str) -> list:
+    for p in _pack_defs():
+        if p["id"] == pack_id:
+            if not p["items"]:
+                raise ValueError("That pack has nothing in it yet.")
+            texts = load()
+            seen = {sentence_key(t) for t in texts}
+            for item in p["items"]:
+                k = sentence_key(item)
+                if k and k not in seen:
+                    seen.add(k)
+                    texts.append(item)
+            _save(texts)
+            return texts
+    raise ValueError("No such pack.")
 
 
 # ------------------------------------------------------- read-along timing

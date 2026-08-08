@@ -10,7 +10,26 @@ Built for early readers with Down syndrome, to play continuously on a large-scre
 
 ---
 
-## Two modes
+## The shape of the app (0.4.0)
+
+The UI is two screens:
+
+- **Sentences** — one list holding everything that gets read: single letters,
+  single words, whole sentences. Add anything, record it in a short
+  walk-through (each word once, then the line - already-recorded words are
+  skipped), tick what to include, pick length/look/pace, make the video.
+  Every video is the same journey: sounds close into words pass by pass,
+  words grow into sentences, ending in the parent's own read with the
+  highlight following her voice.
+- **Setup** — the one recording session that matters (the 42 sounds; a
+  shipped human starter voice fills in until then), the optional voice pack +
+  reading passage for stories, where videos go, and backup.
+
+The curriculum below survives as **starter packs** - one tap adds a level's
+content to the list as ordinary entries - and as the pipeline's internal
+generators. The research ordering did not change; only where it lives.
+
+## The curriculum (now starter packs)
 
 ### 1. Learn mode (primary)
 

@@ -81,6 +81,80 @@ def test_walkthrough_deduplicates_repeated_words(library):
     assert [i.display for i in items[:-1]] == ["A", "dog", "and", "cat"]
 
 
+# ------------------------------------------------------------ entry kinds
+
+
+def test_the_library_holds_letters_words_and_sentences():
+    assert S.entry_kind("s") == "letter"
+    assert S.entry_kind("Chase") == "word"
+    assert S.entry_kind("I") == "letter"
+    assert S.entry_kind("Sam sat.") == "sentence"
+    assert S.entry_kind("stop!") == "word"
+
+
+def test_a_word_entry_needs_no_line_read(library):
+    S.add("Chase")
+    items = S.walkthrough_items(S.status()[0]["key"])
+    assert [(i.kind, i.display) for i in items] == [("word", "Chase")]
+
+
+def test_a_letter_entry_needs_no_recording_at_all(library, monkeypatch):
+    from gen import voice as V
+
+    monkeypatch.setattr(V, "VOICE_DIR", library / "voice")
+    S.add("s")
+    assert S.walkthrough_items(S.status()[0]["key"]) == []
+    # ready comes from the phoneme bank (the starter voice ships /s/)
+    assert S.status()[0]["ready"]
+
+
+def test_letter_and_word_entries_build(library, monkeypatch):
+    S.add("s")
+    S.add("Chase")
+    S.add("sat")
+    monkeypatch.setattr(levels.wordlists, "load", lambda *a, **k: [])
+    segs = levels.build(13, StubVoice(),
+                        {"reps": 3, "pauseSeconds": 1.5, "sentences": None})
+    assert sum(1 for s in segs if s.item_end) == 3
+    # "Chase" is irregular: it must appear whole, never letter by letter
+    shown = {"".join(p for p, _ in s.parts) for s in segs}
+    assert "Chase" in shown and "Ch" not in shown and "C" not in shown
+
+
+# ---------------------------------------------------------------- packs
+
+
+def test_packs_add_ordinary_entries(library, monkeypatch):
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: ["Chase", "Skye"])
+    S.add_pack("letters")
+    kinds = {s["kind"] for s in S.status()}
+    assert kinds == {"letter"}
+    assert len(S.load()) == len(levels.SATPIN + levels.SET2 + levels.SET3)
+
+
+def test_packs_report_what_is_already_added(library, monkeypatch):
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
+    S.add("sat")
+    pack = next(p for p in S.packs() if p["id"] == "first-words")
+    assert pack["added"] == 1 and pack["count"] == len(levels.CVC_REAL)
+
+
+def test_adding_a_pack_twice_adds_nothing_new(library, monkeypatch):
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
+    S.add_pack("first-words")
+    n = len(S.load())
+    S.add_pack("first-words")
+    assert len(S.load()) == n
+
+
+def test_the_ladder_pack_keeps_curriculum_order(library, monkeypatch):
+    monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
+    S.add_pack("ladder")
+    texts = S.load()
+    assert texts[0] == "at" and "Sam sat." in texts
+    assert texts.index("at") < texts.index("Sam sat.")
+
+
 # ----------------------------------------------------------------- timing
 
 

@@ -105,8 +105,27 @@ down
 
   const mockSentences = [
     {
+      key: 'chase',
+      text: 'Chase',
+      kind: 'word',
+      words: 1,
+      missing: [],
+      lineRecorded: true,
+      ready: true
+    },
+    {
+      key: 's',
+      text: 's',
+      kind: 'letter',
+      words: 1,
+      missing: [],
+      lineRecorded: true,
+      ready: true
+    },
+    {
       key: 'sam_sat_on_a_mat',
       text: 'Sam sat on a mat.',
+      kind: 'sentence',
       words: 5,
       missing: [],
       lineRecorded: true,
@@ -115,11 +134,19 @@ down
     {
       key: 'the_dog_can_nap',
       text: 'The dog can nap.',
+      kind: 'sentence',
       words: 4,
       missing: ['nap'],
       lineRecorded: false,
       ready: false
     }
+  ]
+
+  const mockPacks = [
+    { id: 'own-words', name: 'Your word list', description: 'Everything from your old word list.', count: 44, added: 1 },
+    { id: 'letters', name: 'Letter sounds', description: 'One letter at a time, in phonics order.', count: 19, added: 1 },
+    { id: 'first-words', name: 'First little words', description: 'Three-sound words to sound out: sat, pin, man.', count: 10, added: 0 },
+    { id: 'ladder', name: 'Building up', description: 'The whole journey in order, ending in sentences.', count: 22, added: 22 }
   ]
 
   const listeners = { progress: [], done: [], error: [], install: [] }
@@ -205,10 +232,12 @@ down
       for (const t of lines) {
         const key = t.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
         if (!mockSentences.some((s) => s.key === key)) {
+          const n = t.split(/\s+/).length
           mockSentences.push({
             key,
             text: t,
-            words: t.split(/\s+/).length,
+            kind: n > 1 ? 'sentence' : t.replace(/[^\w]/g, '').length > 1 ? 'word' : 'letter',
+            words: n,
             missing: t.split(/\s+/).slice(0, 2).map((w) => w.replace(/[^\w]/g, '')),
             lineRecorded: false,
             ready: false
@@ -222,6 +251,19 @@ down
       const i = mockSentences.findIndex((s) => s.key === key)
       if (i >= 0) mockSentences.splice(i, 1)
       return { sentences: JSON.parse(JSON.stringify(mockSentences)) }
+    },
+    async packsList () {
+      await wait(80)
+      return { packs: JSON.parse(JSON.stringify(mockPacks)) }
+    },
+    async packsAdd (id) {
+      await wait(150)
+      const p = mockPacks.find((x) => x.id === id)
+      if (p) p.added = p.count
+      return {
+        sentences: JSON.parse(JSON.stringify(mockSentences)),
+        packs: JSON.parse(JSON.stringify(mockPacks))
+      }
     },
 
     async saveSettings (obj) {
