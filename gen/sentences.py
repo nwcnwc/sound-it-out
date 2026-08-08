@@ -394,6 +394,46 @@ def add_pack(pack_id: str) -> list:
     raise ValueError("No such pack.")
 
 
+# ---------------------------------------------------------------- estimate
+
+
+def estimate_seconds(keys=None, reps=3, pause=1.5) -> float:
+    """Roughly how long the library video will run, without building it.
+
+    Mirrors _library's structure with flat per-clip costs. "Pick 20 minutes"
+    was the wrong control for this video: the buildups mean nobody can know
+    what a length request costs in content, so the app now says what the
+    chosen content costs in time instead. Rough is fine - this is a label
+    on a button, not a contract - but it must track the options, or it
+    teaches people to ignore it.
+    """
+    from gen import levels
+
+    PH, WORD, LINE = 0.75, 0.55, 2.6
+    passes = max(2, reps)
+    gap = pause * 0.4  # mean of the shrinking approach gaps
+
+    def word_cost(w):
+        if levels.decodable(w):
+            n = len(levels.word_parts(w))
+            return passes * n * (PH + gap) + WORD + pause + 1.0
+        return max(2, reps - 1) * (WORD + pause) + 1.0
+
+    total = 1.0  # the loop pad
+    for text in texts_for(keys):
+        kind = entry_kind(text)
+        words = _unique_words(text)
+        if kind == "letter":
+            total += reps * (PH + pause) + 0.6
+        elif kind == "word":
+            total += word_cost(words[0])
+        else:
+            total += sum(word_cost(w) for w in words)
+            total += len(text.split()) * (WORD + pause)  # growing the line
+            total += LINE + pause + 1.6                  # the read-along
+    return total
+
+
 # ------------------------------------------------------- read-along timing
 
 

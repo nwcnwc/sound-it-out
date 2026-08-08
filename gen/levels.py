@@ -78,9 +78,37 @@ GRAPHEMES = {
 }
 
 
+# Magic-e, taught the onset-rime way: "case" is c + ase, said /k/ + /eɪs/.
+# The rime (vowel-consonant-e) stays one contiguous unit, which is both how
+# word families are taught (-ake, -ike, -ame) and what keeps the display
+# simple - the highlight sweeps left to right over whole chunks.
+#
+# The consonant class is deliberately narrow: no r (r-controlled vowels -
+# "care", "more" - are a different sound entirely), no v ("have", "give",
+# "live" keep their short vowel and would be taught WRONG as long ones).
+# Words like "nose" and "these", where the s voices to /z/, are listed as
+# irregular instead - "case" and "chase" keep /s/ and are the common case.
+MAGIC_E = re.compile(r"[aeiou][bcdfgklmnpstz]e$")
+LONG_VOWELS = {"a": "eɪ", "e": "iː", "i": "aɪ", "o": "əʊ", "u": "uː"}
+
+# Buildable exceptions the letter rules cannot produce: the s in these is
+# voiced. Small and explicit beats a clever rule that misfires.
+WORD_SOUNDS = {
+    "is": [("i", "ɪ"), ("s", "z")],
+    "his": [("h", "h"), ("i", "ɪ"), ("s", "z")],
+    "has": [("h", "h"), ("a", "æ"), ("s", "z")],
+    "as": [("a", "æ"), ("s", "z")],
+}
+
+
 def split_graphemes(word: str):
     """Split a word into (letters, sound) pairs, keeping digraphs whole."""
-    out, i, low = [], 0, word.lower()
+    low = word.lower()
+    if len(low) >= 3 and MAGIC_E.search(low):
+        head = split_graphemes(word[:-3]) if len(word) > 3 else []
+        rime = LONG_VOWELS[low[-3]] + CVC_PHONEMES.get(low[-2], low[-2])
+        return head + [(word[-3:], rime)]
+    out, i = [], 0
     while i < len(word):
         for n in (3, 2):
             chunk = low[i:i + n]
@@ -93,6 +121,18 @@ def split_graphemes(word: str):
             out.append((word[i], CVC_PHONEMES.get(ch, ch)))
             i += 1
     return out
+
+
+def word_parts(word: str):
+    """The (letters, sound) pairs a word is built up from, lexicon first."""
+    lex = WORD_SOUNDS.get(word.lower().strip(".,!?;:‘’“”'\""))
+    if lex:
+        out, i = [], 0
+        for g, p in lex:
+            out.append((word[i:i + len(g)], p))
+            i += len(g)
+        return out
+    return split_graphemes(word)
 
 
 def spell(word: str):
@@ -108,14 +148,18 @@ def spell(word: str):
 # worse than nothing, so these are always shown and spoken whole, the way
 # the sight-word levels treat every word.
 IRREGULAR_WORDS = {
-    "the", "a", "an", "i", "to", "of", "was", "is", "his", "has", "as",
+    "the", "a", "an", "i", "to", "of", "was",
     "said", "are", "were", "you", "your", "they", "their", "there", "one",
     "once", "two", "who", "what", "want", "we", "me", "be", "he", "she",
     "my", "by", "no", "go", "so", "do", "into", "some", "come", "love",
     "have", "give", "live", "does", "gone", "put", "pull", "push", "full",
     "oh", "mr", "mrs", "any", "many", "only", "very", "every", "again",
     "friend", "school", "people", "because", "could", "would", "should",
-    "here", "where", "were",
+    "here", "where", "little",
+    # magic-e in spelling but /z/ or odd vowels in the mouth - the rime rule
+    # would say them wrong, so they are read whole instead
+    "nose", "rose", "close", "those", "these", "chose", "whose", "use",
+    "wise", "cheese", "please",
 }
 
 
@@ -124,18 +168,22 @@ def decodable(word: str) -> bool:
 
     Conservative on purpose: the cost of a false no is a word taught whole
     (which is how half the curriculum teaches words anyway); the cost of a
-    false yes is a child shown "Chase" sounded out as c-h-a-s-e. So anything
-    the table is not sure of - irregular words, magic-e words, consonant+y
-    endings - is read whole.
+    false yes is a child taught wrong sounds. Magic-e words in the narrow
+    pattern the rime rule handles - "case", "like", "home" - ARE buildable
+    now; what stays whole is the genuinely tricky: "the", "said", "one",
+    r-controlled and v-e words, consonant+y endings.
     """
     w = word.lower().strip(".,!?;:‘’“”'\"")
+    if w in WORD_SOUNDS:
+        return True
     if not w or not w.isascii() or not w.isalpha():
         return False
     if w in IRREGULAR_WORDS:
         return False
-    # Magic-e: "like", "home", "chase" - the table has no way to say the
-    # long vowel or the silent e.
-    if re.search(r"[aeiou][b-df-hj-np-tv-z]+e$", w):
+    # Magic-e outside the safe rime pattern: "have", "care" - the rule
+    # cannot say these, so they are read whole. ("see" and friends are not
+    # magic-e at all - the ee digraph covers them - so they pass through.)
+    if re.search(r"[aeiou][b-df-hj-np-tv-z]+e$", w) and not MAGIC_E.search(w):
         return False
     # "happy", "pony": final y as a vowel sound the table does not model.
     if len(w) > 2 and re.search(r"[b-df-hj-np-tv-z]y$", w):
@@ -357,10 +405,11 @@ def _sounds(voice, letters, reps, pause):
     return segs
 
 
-# The gap never quite reaches zero: the sounds are separate clips, and 120ms
-# is about where they stop being heard as a list and start being heard as one
-# thing about to happen.
-APPROACH_FLOOR = 0.12
+# The gap never quite reaches zero: the sounds are separate clips, and a few
+# hundredths of a second keeps a seam from clicking. But by the final pass
+# the sounds should all but touch - the closer they land to the blended
+# word, the smaller the leap the child is asked to make.
+APPROACH_FLOOR = 0.05
 
 
 def _approach(voice, parts, pause, passes):
@@ -550,7 +599,7 @@ def _one_word(voice, word, reps, pause):
     cannot (see decodable)."""
     segs = []
     if decodable(word):
-        segs += _approach(voice, split_graphemes(word), pause,
+        segs += _approach(voice, word_parts(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))
     else:

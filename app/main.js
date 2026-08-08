@@ -288,6 +288,8 @@ function registerIpc () {
     sidecar.call('sentences.remove', { key }))
   ipcMain.handle('sentences:clips', async (_e, key) =>
     sidecar.call('sentences.clips', { key }))
+  ipcMain.handle('sentences:estimate', async (_e, opts) =>
+    sidecar.call('sentences.estimate', opts || {}))
   ipcMain.handle('packs:list', async () => sidecar.call('packs.list', {}))
   ipcMain.handle('packs:add', async (_e, id) => sidecar.call('packs.add', { id }))
 

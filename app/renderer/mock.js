@@ -272,6 +272,11 @@ down
       }
       return { clips }
     },
+    async sentencesEstimate (opts) {
+      await wait(60)
+      const n = (opts && opts.sentences && opts.sentences.length) || 0
+      return { seconds: n * 95 }
+    },
     async packsList () {
       await wait(80)
       return { packs: JSON.parse(JSON.stringify(mockPacks)) }

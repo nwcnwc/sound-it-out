@@ -322,6 +322,17 @@ def m_sentences_remove(params):
     return {"sentences": sentences.status()}
 
 
+def m_sentences_estimate(params):
+    from gen import sentences
+
+    s = sentences.estimate_seconds(
+        keys=params.get("sentences"),
+        reps=int(params.get("reps", 3)),
+        pause=float(params.get("pauseSeconds", 1.5)),
+    )
+    return {"seconds": round(s, 1)}
+
+
 def m_sentences_clips(params):
     from gen import sentences
 
@@ -623,6 +634,7 @@ METHODS = {
     "sentences.add": m_sentences_add,
     "sentences.remove": m_sentences_remove,
     "sentences.clips": m_sentences_clips,
+    "sentences.estimate": m_sentences_estimate,
     "packs.list": m_packs_list,
     "packs.add": m_packs_add,
     "plan": m_plan,

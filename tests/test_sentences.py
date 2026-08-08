@@ -110,15 +110,30 @@ def test_a_letter_entry_needs_no_recording_at_all(library, monkeypatch):
 
 def test_letter_and_word_entries_build(library, monkeypatch):
     S.add("s")
-    S.add("Chase")
+    S.add("the")
     S.add("sat")
     monkeypatch.setattr(levels.wordlists, "load", lambda *a, **k: [])
     segs = levels.build(13, StubVoice(),
                         {"reps": 3, "pauseSeconds": 1.5, "sentences": None})
     assert sum(1 for s in segs if s.item_end) == 3
-    # "Chase" is irregular: it must appear whole, never letter by letter
+    # "the" is a tricky word: it must appear whole, never letter by letter
     shown = {"".join(p for p, _ in s.parts) for s in segs}
-    assert "Chase" in shown and "Ch" not in shown and "C" not in shown
+    assert "the" in shown and "th" not in shown and "t" not in shown
+
+
+def test_spoken_wholes_are_highlighted_and_pads_go_neutral(library, monkeypatch):
+    """Colour means "being said right now". A spoken whole word is lit; the
+    silence after it shows the same text neutral (long pads only - flicking
+    the light at approach speed would be a strobe)."""
+    from gen.soundout import Theme, plan_job, whole
+
+    seg = whole("Chase", np.full(SR, 0.2, dtype="float32"), pad=1.0)
+    assert seg.parts == [("Chase", True)]
+
+    work = library / "job"
+    plan = plan_job([seg], Theme("t", "#000", "#fff", "#ff0", "#333"), work)
+    assert plan["frame_count"] == 2, "one lit frame, one neutral pad frame"
+    assert len(plan["timeline"]) == 3  # lit, neutral, loop pad
 
 
 # ---------------------------------------------------------------- packs
@@ -228,13 +243,31 @@ def test_readalong_audio_is_the_original_audio():
 
 
 def test_regular_words_are_decodable():
-    for w in ("sat", "dog", "ship", "stop", "hand"):
+    for w in ("sat", "dog", "ship", "stop", "hand", "see"):
         assert levels.decodable(w), w
 
 
+def test_magic_e_words_build_as_onset_and_rime():
+    """"case" is c + ase, said /k/ + /eɪs/ - the split-digraph pattern
+    phonics teaches as word families. One contiguous rime unit, so the
+    highlight still sweeps left to right."""
+    assert levels.decodable("case") and levels.decodable("Chase")
+    assert levels.word_parts("case") == [("c", "k"), ("ase", "eɪs")]
+    assert levels.word_parts("Chase") == [("Ch", "tʃ"), ("ase", "eɪs")]
+    assert levels.word_parts("like") == [("l", "l"), ("ike", "aɪk")]
+
+
+def test_voiced_s_words_come_from_the_lexicon():
+    """"is" is /ɪz/, not /ɪs/ - buildable, but only because the lexicon
+    says so explicitly."""
+    assert levels.decodable("is")
+    assert levels.word_parts("is") == [("i", "ɪ"), ("s", "z")]
+
+
 def test_treacherous_words_are_not():
-    """Words the table would sound out WRONG - not just unknown ones."""
-    for w in ("the", "said", "Chase", "like", "one", "happy", "I"):
+    """Words the rules would sound out WRONG - not just unknown ones:
+    tricky words, r-controlled and v-e magic-e lookalikes, voiced-s rimes."""
+    for w in ("the", "said", "one", "happy", "I", "have", "care", "nose"):
         assert not levels.decodable(w), w
 
 

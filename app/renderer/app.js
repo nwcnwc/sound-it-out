@@ -21,12 +21,6 @@ const THEME_COLOURS = {
 }
 const THEME_FALLBACK = { bg: '#333333', fg: '#ffffff', hl: '#ffd166' }
 
-const MINUTES = [
-  { value: 5, label: '5 min' },
-  { value: 10, label: '10 min' },
-  { value: 20, label: '20 min' },
-  { value: 30, label: '30 min' }
-]
 const PAUSES = [
   { value: 1, label: 'Short' },
   { value: 1.5, label: 'Just right' },
@@ -500,7 +494,6 @@ function setUpMake () {
   )
 
   renderThemes(chosen.theme)
-  renderSegmented($('minutes'), 'minutes', MINUTES, Number(chosen.minutes) || 20)
   renderSegmented($('pause'), 'pause', PAUSES, Number(chosen.pauseSeconds) || 1.5)
 
   // Delegated: renderSegmented() replaces its inputs on re-render, and the
@@ -586,7 +579,9 @@ function currentOptions () {
     theme: picked('theme'),
     reps: 3,
     pauseSeconds: Number(picked('pause')) || 1.5,
-    minutes: Number(picked('minutes')) || 20,
+    // No length request: the video is as long as the chosen content takes,
+    // and the summary SAYS how long that will be instead of asking.
+    minutes: 0,
     sentences: pickedSentences()
   }
 }
@@ -622,7 +617,24 @@ function updateSummary () {
     : ready === 0
       ? 'in the built-in voice until you record them'
       : `${ready} of them fully in your voice`
-  el.textContent = `${o.minutes} minutes, reading ${n} thing${n === 1 ? '' : 's'} from your list - ${voice} - then it loops.`
+  el.textContent = `Reading ${n} thing${n === 1 ? '' : 's'} from your list - ${voice} - then it starts again.`
+
+  // The length is REPORTED, not requested: nobody can guess what an entry
+  // costs in buildup time, so the app does the sums and says so, and the
+  // number follows every tick and option change.
+  if (api.sentencesEstimate) {
+    const token = ++updateSummary._token
+    api.sentencesEstimate({
+      sentences: o.sentences, reps: o.reps, pauseSeconds: o.pauseSeconds
+    }).then((r) => {
+      if (token !== updateSummary._token || !r || !r.seconds) return
+      const mins = r.seconds / 60
+      const about = mins < 1.5 ? 'about a minute'
+        : 'about ' + Math.round(mins) + ' minutes'
+      el.textContent = `${about.charAt(0).toUpperCase() + about.slice(1)} long, ` +
+        `reading ${n} thing${n === 1 ? '' : 's'} from your list - ${voice} - then it starts again.`
+    }).catch(() => { /* the text above already says everything but the number */ })
+  }
 
   // The slow warning: unrecorded lines said in her cloned voice are made at
   // far slower than realtime the first time. Worth a heads-up, not a wall.
@@ -645,6 +657,8 @@ function updateSummary () {
     }
   }
 }
+
+updateSummary._token = 0
 
 function updateExportDest () {
   $('export-dest').textContent = state.outputDir

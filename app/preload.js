@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld('soundout', {
   sentencesAdd: (text) => ipcRenderer.invoke('sentences:add', text),
   sentencesRemove: (key) => ipcRenderer.invoke('sentences:remove', key),
   sentencesClips: (key) => ipcRenderer.invoke('sentences:clips', key),
+  sentencesEstimate: (opts) => ipcRenderer.invoke('sentences:estimate', opts),
   packsList: () => ipcRenderer.invoke('packs:list'),
   packsAdd: (id) => ipcRenderer.invoke('packs:add', id),
   studioPlan: (opts) => ipcRenderer.invoke('studio:plan', opts),
