@@ -70,18 +70,33 @@ TAKES_DEFAULT = 3
 # the scorer speaks up when it actually went wrong.
 TAKES = {"phonemes": 3, "rimes": 2, "words": 1, "sentences": 1}
 
-# A real word carrying each rime, so the prompt can say "as in ...". Only
-# the ones with an everyday word; the rest fall back to the spelling alone.
+# A real word carrying each rime, so the prompt can say "as in ...". Not
+# every rime has an everyday word, so the prompt ALWAYS spells the sound
+# out too - "say 'ay' then 'b', run together" - because a prompt that
+# names a sound the reader cannot deduce is a prompt that stops the
+# session dead.
 RIME_EXAMPLES = {
     "abe": "babe", "ace": "face", "ade": "made", "afe": "safe",
     "age": "page", "ake": "cake", "ale": "tale", "ame": "name",
     "ane": "plane", "ape": "tape", "ase": "case", "ate": "gate",
-    "ete": "Pete", "ide": "ride", "ike": "like", "ile": "smile",
-    "ime": "time", "ine": "nine", "ipe": "pipe", "ite": "kite",
+    "aze": "maze", "eme": "theme", "ene": "gene", "ete": "Pete",
+    "ibe": "tribe", "ice": "nice", "ide": "ride", "ife": "life",
+    "ike": "like", "ile": "smile", "ime": "time", "ine": "nine",
+    "ipe": "pipe", "ite": "kite", "ize": "prize",
     "obe": "robe", "ode": "rode", "oke": "joke", "ole": "hole",
     "ome": "home", "one": "bone", "ope": "hope", "ote": "note",
-    "ube": "cube", "ude": "rude", "uke": "duke", "ule": "mule",
-    "une": "June", "ute": "flute",
+    "oze": "doze", "ube": "tube", "uce": "spruce", "ude": "rude",
+    "uke": "duke", "ule": "rule", "une": "June", "ute": "flute",
+}
+
+# How each half of a rime is said, in plain letters a non-linguist can
+# read aloud. The vowel says its NAME (that is what the magic e does);
+# c and g are their soft sounds inside a rime.
+RIME_VOWEL_HINT = {"a": "ay", "e": "ee", "i": "eye", "o": "oh", "u": "oo"}
+RIME_CONS_HINT = {
+    "b": "b", "c": "sss", "d": "d", "f": "fff", "g": "j", "k": "k",
+    "l": "lll", "m": "mmm", "n": "nnn", "p": "p", "s": "sss", "t": "t",
+    "z": "zzz",
 }
 
 
@@ -161,12 +176,14 @@ def plan(part="phonemes", order="rows") -> list:
 
         for spelling, ipa in all_rimes():
             ex = RIME_EXAMPLES.get(spelling)
+            how = (f"“{RIME_VOWEL_HINT[spelling[0]]}” then "
+                   f"“{RIME_CONS_HINT[spelling[1]]}”, run together")
             items.append(Item(
                 key=spelling, kind="phoneme", display=spelling, ipa=ipa,
                 length="free",
-                say=(f"Say the ending “{spelling}”"
-                     + (f", as in “{ex}”" if ex else "")
-                     + " — the two sounds run together, no word around them."),
+                say=(f"Say the ending “{spelling}”: {how}"
+                     + (f" — as in “{ex}”" if ex else "")
+                     + ". No word around it."),
             ))
     elif part == "sentences":
         # Every whole line any level reads out. There are about ten and they
