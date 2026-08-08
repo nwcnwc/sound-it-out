@@ -1036,11 +1036,56 @@ async function openStudio (part, extra) {
   try {
     await Recorder.init()
   } catch (err) {
-    sEl('studio-state').textContent =
-      'The microphone could not be used. Check that this app is allowed to use it, then try again.'
+    // Do NOT fall through to a live-looking studio. This used to print one
+    // quiet line and leave the Start button armed over an empty prompt: she
+    // pressed it, sat through the countdown, and recorded nothing, with no
+    // word on screen and no explanation. A dead microphone has to be a wall
+    // with directions on it, not a hidden pothole.
+    micTrouble(err)
     return
   }
   startMicCheck()
+}
+
+/* What to actually DO about a microphone that cannot be opened, by platform
+ * and by failure. "Check that this app is allowed to use it" is true and
+ * useless; the person reading this is standing in front of one specific
+ * computer and needs the path to the one switch that fixes it. */
+function micTroubleText (err) {
+  const name = (err && err.name) || ''
+  const plat = navigator.platform || ''
+  const how = /Mac/i.test(plat)
+    ? 'System Settings → Privacy & Security → Microphone, and switch on Sound It Out.'
+    : /Win/i.test(plat)
+      ? 'Settings → Privacy & security → Microphone, and switch on ' +
+        '“Let desktop apps access your microphone”.'
+      : 'On a Chromebook: ChromeOS Settings → search for “Linux” → switch on ' +
+        '“Allow Linux to access your microphone”, then close and reopen the app. ' +
+        'On other computers, check the sound settings show a microphone.'
+  if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+    return 'No microphone was found on this computer. ' + how
+  }
+  if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+    return 'The computer is blocking the microphone for this app. ' + how
+  }
+  return 'The microphone could not be started. ' + how
+}
+
+function micTrouble (err) {
+  clearInterval(studio.micTimer)
+  const check = $('miccheck')
+  const stage = $('studio-stage')
+  if (check) check.hidden = false
+  if (stage) stage.hidden = true
+  $('mic-meter').style.width = '0%'
+  $('mic-verdict').textContent = micTroubleText(err)
+  const ok = $('mic-ok')
+  ok.disabled = false
+  ok.textContent = 'Try again'
+  ok.dataset.retry = '1'
+  // Skipping the check is for a shy meter, not a dead device - recording 42
+  // items of silence is precisely the disaster the check exists to prevent.
+  $('mic-skip').hidden = true
 }
 
 /* Runs before the first item. Requires actually HEARING something before the
@@ -1052,6 +1097,12 @@ function startMicCheck () {
   if (!check || !stage) { showItem(); return }
   check.hidden = false
   stage.hidden = true
+  // Reset whatever a previous microphone-trouble state left behind.
+  const ok = $('mic-ok')
+  ok.textContent = 'Start recording'
+  ok.disabled = true
+  delete ok.dataset.retry
+  $('mic-skip').hidden = false
   let best = 0
   studio.micWaits = 0
   clearInterval(studio.micTimer)
@@ -1064,11 +1115,13 @@ function startMicCheck () {
       $('mic-ok').disabled = false
     } else {
       studio.micWaits = (studio.micWaits || 0) + 1
-      // After ~8 seconds of nothing, stop saying "waiting" and say what to do.
+      // After ~8 seconds of nothing, stop saying "waiting" and say what to
+      // do. A microphone can open cleanly and still deliver pure silence -
+      // ChromeOS does exactly this to Linux apps when its microphone toggle
+      // is off - so this case needs the same directions as a refusal.
       $('mic-verdict').textContent = studio.micWaits > 80
-        ? 'Still not hearing anything. The computer may be blocking microphone ' +
-          'access for this app - check your system sound settings, and that the ' +
-          'right microphone is selected.'
+        ? 'Still not hearing anything. ' + micTroubleText(null) +
+          ' Also check the right microphone is selected in the sound settings.'
         : 'Waiting to hear you\u2026'
     }
   }, 100)
@@ -1164,6 +1217,13 @@ function setPaused (on) {
 }
 
 async function recordItem () {
+  // A dead recorder must never reach the countdown: Recorder.start() would
+  // throw after "Ready… 3, 2, 1" and the session would just stop, silently,
+  // over an empty prompt. Send her to the trouble panel instead.
+  if (!Recorder.ready()) {
+    micTrouble()
+    return
+  }
   const it = studio.items[studio.i]
   studio.running = true
   studio.buf = []
@@ -1333,7 +1393,22 @@ function initStudio () {
       })
     })
   }
-  on('mic-ok', endMicCheck)
+  on('mic-ok', async () => {
+    // The same button doubles as "Try again" after microphone trouble - the
+    // retry re-opens the device, because the fix (flipping the OS switch)
+    // happens outside the app and deserves to work without a restart.
+    if ($('mic-ok').dataset.retry) {
+      try {
+        await Recorder.init()
+      } catch (err) {
+        micTrouble(err)
+        return
+      }
+      startMicCheck()
+      return
+    }
+    endMicCheck()
+  })
   on('mic-skip', endMicCheck)
   on('studio-close', closeStudio)
   on('studio-pause', () => setPaused(!studio.paused))
