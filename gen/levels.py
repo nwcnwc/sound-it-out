@@ -344,16 +344,16 @@ def level_status(capabilities: dict) -> list:
             continue
         if lv.voice == "recorded":
             ok = capabilities.get("recordings") or capabilities.get("fallback_voice")
-            reason = "" if ok else "Needs the voice recordings, or the built-in voice."
+            reason = "" if ok else "Needs the voice recordings, or the starter voice."
             if ok and not capabilities.get("recordings"):
-                reason = "Will use the built-in voice until the recordings are imported."
+                reason = "Will use the starter voice until the recordings are imported."
         elif lv.voice == "library":
-            # Recorded in the walk-through on its own tab, with the built-in
+            # Recorded in the walk-through on its own tab, with the starter
             # voice covering anything not yet recorded - so it is usable the
             # moment a sentence exists, and gets better as she records.
             ok = capabilities.get("recordings") or capabilities.get("fallback_voice")
             reason = ("" if ok else
-                      "Needs the voice recordings, or the built-in voice.")
+                      "Needs the voice recordings, or the starter voice.")
         elif lv.voice == "open":
             # Nothing here can be pre-recorded, so the voice question is real
             # rather than a fallback: without cloning these levels work, but

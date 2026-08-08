@@ -97,7 +97,7 @@ down
       { id: 'paper', name: 'Book page' },
       { id: 'contrast', name: 'High contrast' }
     ],
-    capabilities: { kokoro: true, recordings: true, cloning: false },
+    capabilities: { fallback_voice: true, recordings: true, cloning: false },
     wordlistText: WORDLIST,
     outputDir: '/Users/mum/Movies/Sound It Out',
     settings: { level: '1', theme: 'night', reps: 3, pauseSeconds: 1.5, minutes: 20 }

@@ -3,22 +3,21 @@
 Resolution order, per item:
 
     1. Mum's recording, if it exists          -> used verbatim, levelled
-    2. The starter voice, if shipped          -> the developer's recordings
+    2. The starter voice, shipped             -> the developer's recordings
     3. Their cloned voice, if installed       -> generated
-    4. The built-in Kokoro voice              -> generated, last resort
+
+There is no synthesiser at the end of the chain any more. Every voice in
+this app belongs to a person: the family's first, the developer's starter
+bank underneath (which covers every pack word, line, sound and rime), and
+the family's own clone for anything typed but not yet recorded. When none
+of those can say a thing, the app says SO - by name, with what to do -
+instead of handing the line to a machine.
 
 This is the whole point of the design: (1) covers levels 1-5, which is where
 a new reader stays for a long time, and nothing there is synthesised. The fallbacks
 exist so the app is useful on day one, before any recording has happened, and
 so a single missing clip degrades one word rather than breaking a level.
 
-The starter voice (2) is recorded by the developer and shipped with the app:
-the 42 phonemes, plus every word and line the starter packs contain (built
-by gen/starter.py from the developer's own bank). A fresh install therefore
-reads the packs with a human voice throughout, and the family's recordings
-replace it clip by clip. Kokoro (4) remains the last resort for content
-nobody has recorded - a sentence typed in five minutes ago on a machine
-with no voice pack - because a silent video is worse than a synthetic one.
 """
 
 from __future__ import annotations
@@ -26,8 +25,17 @@ from __future__ import annotations
 import numpy as np
 import soundfile as sf
 
-from gen.paths import MODELS, STARTER_VOICE, VOICE_DIR
-from gen.soundout import SR, Voice as KokoroVoice, loud, slower, tidy_word
+from gen.paths import STARTER_VOICE, VOICE_DIR
+from gen.soundout import SR, loud, slower, tidy_word
+
+
+class MissingVoice(ValueError):
+    """Nobody recorded this, and no human voice can be borrowed for it.
+
+    Raised with a sentence the UI can show as-is. This is deliberately an
+    error rather than a synthetic fallback: a robot reading to a child was
+    the thing this app was built to avoid.
+    """
 
 
 # The same sound written two ways, and a recording of one must satisfy a
@@ -78,9 +86,8 @@ class VoiceSource:
     def __init__(self, prefer_recordings=True, clone_profile=None):
         self.prefer_recordings = prefer_recordings
         self.clone_profile = clone_profile
-        self._kokoro = None
         self._clone = None
-        self.used = {"recorded": 0, "starter": 0, "cloned": 0, "generated": 0}
+        self.used = {"recorded": 0, "starter": 0, "cloned": 0}
 
     # -- availability -----------------------------------------------------
 
@@ -99,33 +106,22 @@ class VoiceSource:
             cloning = clone.is_available()
         except Exception:
             cloning = False  # optional module; absence is normal, not an error
-        built_in = (MODELS / "kokoro-v1.0.onnx").exists()
+        starter = (
+            len(list((STARTER_VOICE / "phonemes").glob("*.wav")))
+            if (STARTER_VOICE / "phonemes").exists() else 0
+        )
         return {
             "recordings": n_words > 0 or n_phon > 0,
             "recorded_words": n_words,
             "recorded_phonemes": n_phon,
             "recorded_sentences": n_sent,
-            # `kokoro` is the published name in the UI contract; `fallback_voice`
-            # is what levels.py reads. Same fact, both emitted - the UI reported
-            # the built-in voice as missing when only one of them existed.
-            "kokoro": built_in,
-            "fallback_voice": built_in,
-            "cloning": cloning,
-            # Shipped phoneme clips - present in any intact install, but say
+            # The shipped starter voice IS the fallback now - there is no
+            # synthesiser behind it. Present in any intact install, but say
             # so rather than assume, the same as everything else here.
-            "starter_phonemes": (
-                len(list((STARTER_VOICE / "phonemes").glob("*.wav")))
-                if (STARTER_VOICE / "phonemes").exists() else 0
-            ),
+            "fallback_voice": starter > 0,
+            "cloning": cloning,
+            "starter_phonemes": starter,
         }
-
-    # -- lazy backends ----------------------------------------------------
-
-    @property
-    def kokoro(self):
-        if self._kokoro is None:
-            self._kokoro = KokoroVoice(voice="af_heart", speed=0.9)
-        return self._kokoro
 
     # -- lookups ----------------------------------------------------------
 
@@ -171,17 +167,16 @@ class VoiceSource:
                 self.used["starter"] += 1
                 return loud(slower(a, 0.80) if slow else a)
         if self.clone_profile is not None:
-            try:
-                from gen import clone
+            from gen import clone
 
-                a = clone.synthesize(text, self.clone_profile)
-                self.used["cloned"] += 1
-                return loud(slower(a, 0.80) if slow else a)
-            except Exception:
-                pass  # fall through to the built-in voice rather than fail
-        self.used["generated"] += 1
-        a = tidy_word(self.kokoro.say(text))
-        return loud(slower(a, 0.80) if slow else a)
+            a = tidy_word(clone.synthesize(text, self.clone_profile))
+            self.used["cloned"] += 1
+            return loud(slower(a, 0.80) if slow else a)
+        raise MissingVoice(
+            f"Nobody has recorded “{text}” yet. Record it on the Sentences "
+            "page, or install the voice pack so new words can be said in "
+            "your voice."
+        )
 
     def phoneme(self, ipa: str) -> np.ndarray:
         a = self._recorded("phonemes", ipa)
@@ -195,10 +190,13 @@ class VoiceSource:
                 self.used["starter"] += 1
                 return loud(a)
         # Never cloned: isolated phonemes are exactly what cloning models are
-        # worst at, and a wrong phoneme teaches a wrong sound. Built-in voice
-        # (schwa-stripped and sustained) is the safer fallback.
-        self.used["generated"] += 1
-        return loud(self.kokoro.phoneme(ipa))
+        # worst at, and a wrong phoneme teaches a wrong sound. The starter
+        # bank ships every sound and rime the spelling rules can produce, so
+        # arriving here means something new was asked for by name.
+        raise MissingVoice(
+            f"The sound “{ipa}” has no recording. Record it in Setup under "
+            "the sounds or the word endings."
+        )
 
     def blend(self, ipas) -> np.ndarray:
         """A partial syllable like /sæ/ - the halfway step between a letter
@@ -212,8 +210,13 @@ class VoiceSource:
         a = self._recorded("blends", key)
         if a is not None:
             return loud(a)
-        self.used["generated"] += 1
-        return loud(tidy_word(self.kokoro.say(key, phonemes=True)))
+        # Only the legacy chapter builder asks for blends, and only when run
+        # from the command line. Nothing the app's own screens can reach
+        # arrives here.
+        raise MissingVoice(
+            f"The blend “{key}” has no recording, and blends cannot be "
+            "generated any more."
+        )
 
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
         # Her own read of the whole line, if there is one.
@@ -236,19 +239,18 @@ class VoiceSource:
                 return loud(a)
 
         if self.clone_profile is not None:
-            try:
-                from gen import clone
+            from gen import clone
 
-                self.used["cloned"] += 1
-                return loud(slower(clone.synthesize(text, self.clone_profile), tempo))
-            except Exception:
-                pass
-        self.used["generated"] += 1
-        return loud(slower(self.kokoro.say(text), tempo))
+            self.used["cloned"] += 1
+            return loud(slower(clone.synthesize(text, self.clone_profile), tempo))
+        raise MissingVoice(
+            f"Nobody has read “{text}” yet. Record it on the Sentences page, "
+            "or install the voice pack so new lines can be read in your voice."
+        )
 
     def summary(self) -> str:
         u = self.used
         total = sum(u.values()) or 1
         return (f"{u['recorded']} from recordings, {u['starter']} starter "
-                f"voice, {u['cloned']} cloned, {u['generated']} built-in "
-                f"voice ({u['recorded'] * 100 // total}% genuinely their)")
+                f"voice, {u['cloned']} cloned "
+                f"({u['recorded'] * 100 // total}% genuinely their)")

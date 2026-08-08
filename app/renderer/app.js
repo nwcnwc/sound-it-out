@@ -216,7 +216,7 @@ function statusLine (s) {
   return already + 'Still to record: ' + bits.join(', and ') +
     (s.starterCovered
       ? '. Works now — the starter voice covers it until then.'
-      : '. Works now — the built-in voice fills the gaps.')
+      : '. Record it, or install the voice pack, so it can be heard.')
 }
 
 function renderSentenceLib () {
@@ -617,7 +617,7 @@ function updateSummary () {
   const voice = ready === n
     ? 'all of it in your own voice'
     : ready === 0
-      ? 'in the built-in voice until you record them'
+      ? 'in the starter voice until you record them'
       : `${ready} of them fully in your voice`
   el.textContent = `Reading ${n} thing${n === 1 ? '' : 's'} from your list - ${voice} - then it starts again.`
 

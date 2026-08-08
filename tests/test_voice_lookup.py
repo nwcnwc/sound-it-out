@@ -98,7 +98,7 @@ def test_the_starter_voice_answers_an_unrecorded_phoneme(voice_dir, starter_dir)
     put(starter_dir / "phonemes", "s")
     v = V.VoiceSource()
     assert v.phoneme("s") is not None
-    assert v.used["starter"] == 1 and v.used["generated"] == 0
+    assert v.used["starter"] == 1 and v.used["cloned"] == 0
 
 
 def test_a_family_recording_always_beats_the_starter_voice(voice_dir, starter_dir):
@@ -167,7 +167,7 @@ def test_a_recorded_sentence_is_preferred_over_synthesis(voice_dir):
     put(voice_dir / "sentences", V.sentence_key("Sam sat on a mat."), seconds=2.0)
     v = V.VoiceSource()
     out = v.sentence("Sam sat on a mat.")
-    assert v.used["recorded"] == 1 and v.used["generated"] == 0
+    assert v.used["recorded"] == 1 and v.used["cloned"] == 0
     assert len(out) / SR == pytest.approx(2.0, abs=0.01), \
         "a real read is returned untouched, not slowed"
 
@@ -241,7 +241,7 @@ def test_starter_words_and_lines_answer_before_synthesis(voice_dir, starter_dir)
     v = V.VoiceSource()
     v.word("Chase")
     v.sentence("Chase is on the case.")
-    assert v.used["starter"] == 2 and v.used["generated"] == 0
+    assert v.used["starter"] == 2 and v.used["cloned"] == 0
 
 
 def test_family_words_still_beat_starter_words(voice_dir, starter_dir):
@@ -251,3 +251,25 @@ def test_family_words_still_beat_starter_words(voice_dir, starter_dir):
     out = v.word("Chase")
     assert len(out) / SR == pytest.approx(0.9, abs=0.01)
     assert v.used["recorded"] == 1 and v.used["starter"] == 0
+
+
+# ------------------------------------------------------- no machine voice
+
+
+def test_an_unrecorded_word_raises_with_directions(voice_dir, starter_dir):
+    """There is no synthesiser at the end of the chain: a word nobody
+    recorded is an error that says what to do, never a robot."""
+    v = V.VoiceSource()
+    with pytest.raises(V.MissingVoice, match="zorble"):
+        v.word("zorble")
+    with pytest.raises(V.MissingVoice, match="[Rr]ecord"):
+        v.sentence("A line nobody read.")
+    with pytest.raises(V.MissingVoice):
+        v.phoneme("ʘ")
+
+
+def test_capabilities_report_the_starter_bank_as_the_fallback(voice_dir, starter_dir):
+    put(starter_dir / "phonemes", "s")
+    caps = V.VoiceSource.capabilities()
+    assert caps["fallback_voice"] is True and caps["starter_phonemes"] == 1
+    assert "kokoro" not in caps

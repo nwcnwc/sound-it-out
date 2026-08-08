@@ -19,8 +19,10 @@
 #     different plan (a self-hosted Intel Mac, or PyInstaller under Rosetta on
 #     an Apple Silicon runner).
 #
-#  2. The Kokoro weights are 338MB and are not in git. Every job fetches them
-#     from the same release URLs setup.sh uses, and caches them.
+#  2. No voice model ships any more: the starter voice - real recordings in
+#     git - is the app's fallback voice, so there is nothing to fetch. The
+#     kokoro-onnx PACKAGE is still installed because build/sidecar.spec
+#     collects espeak-ng data files out of its dependency tree.
 #
 # The repo is private on a paid plan, so runner minutes are not a constraint -
 # correctness is preferred to cleverness throughout.
@@ -33,9 +35,7 @@ on:
     tags:
       - "v*"
 
-# Kokoro model files - keep in step with setup.sh.
 env:
-  KOKORO_BASE: https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
   NODE_VERSION: "22"
   PYTHON_VERSION: "3.11"
 
@@ -121,32 +121,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install kokoro-onnx soundfile numpy pyinstaller
 
-      # ------------------------------------------------------------- the models
-      #
-      # Cached by URL path, not by a lockfile hash, because these are immutable
-      # release assets - the key only changes if the model version does.
-      - name: Cache Kokoro models
-        id: cache-models
-        uses: actions/cache@v4
-        with:
-          path: models
-          key: kokoro-model-files-v1.0
-
-      - name: Download Kokoro models
-        if: steps.cache-models.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          mkdir -p models
-          curl -L --fail --retry 3 -o models/kokoro-v1.0.onnx "$KOKORO_BASE/kokoro-v1.0.onnx"
-          curl -L --fail --retry 3 -o models/voices-v1.0.bin  "$KOKORO_BASE/voices-v1.0.bin"
-
-      - name: Verify models are present
-        shell: bash
-        run: |
-          test -s models/kokoro-v1.0.onnx
-          test -s models/voices-v1.0.bin
-          ls -l models
-
       # --------------------------------------------------------- freeze sidecar
       #
       # --workpath is redirected because PyInstaller's default is ./build, which
@@ -186,26 +160,16 @@ jobs:
           grep -q '"id": 1' /tmp/sidecar-out.txt
           grep -q '"ok": true' /tmp/sidecar-out.txt
 
-      # The check above passes even when espeak-ng is missing from the bundle,
-      # because service.py imports the TTS stack lazily - nothing so far has
-      # touched phonemizer at all. This step is the one that would catch it:
-      # `plan` runs Kokoro, which runs phonemizer, which dlopen()s espeak-ng
-      # and reads its dictionaries by path.
+      # The check above passes even when the voice bank is missing from the
+      # layout, because capabilities only counts files. This one PLANS a real
+      # level: it proves the frozen sidecar can find the starter voice where
+      # a packaged install will look for it (RESOURCES = two levels up from
+      # the executable), read the clips, and assemble audio.
       #
-      # FATAL, not advisory. It used to be advisory, on the reasoning that a
-      # failure here might be app logic rather than packaging and should not
-      # block a build. What actually happened is that it failed on all four
-      # platforms for a genuine packaging reason - language_tags' JSON was not
-      # bundled, so the sidecar could not import Kokoro and the app could not
-      # speak - and the warning scrolled past in an otherwise green run. That
-      # build was released.
-      #
-      # An installer that cannot say a word is not worth shipping, so this now
-      # fails the build. If it breaks: "data path not exists" means the
-      # espeakng_loader entries in build/sidecar.spec are wrong, and a
-      # FileNotFoundError under site-packages means some dependency's data
-      # files need a collect_data_files line.
-      - name: Smoke-test the sidecar (speech path)
+      # FATAL, not advisory. The advisory version of this step once let four
+      # broken-speech builds ship in a green run. An installer that cannot
+      # say a word is not worth shipping.
+      - name: Smoke-test the sidecar (voice path)
         shell: bash
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
@@ -213,12 +177,16 @@ jobs:
           else
             SIDECAR=dist/sidecar/soundout-sidecar
           fi
+          # The frozen sidecar resolves RESOURCES two levels above itself -
+          # dist/ here - so give it the starter voice where an installed app
+          # would have it.
+          mkdir -p dist/assets
+          cp -r assets/starter-voice dist/assets/
           printf '%s\n' \
-            '{"id":1,"method":"plan","params":{"jobId":"ci-smoke","level":1,"theme":"night","options":{"minutes":0}}}' \
+            '{"id":1,"method":"plan","params":{"jobId":"ci-smoke","level":3,"theme":"night","options":{"minutes":0}}}' \
             '{"id":2,"method":"shutdown"}' \
             | "$SIDECAR" | tee /tmp/sidecar-plan.txt
-          grep -q '"id": 1, "ok": true' /tmp/sidecar-plan.txt \
-            || echo "::warning::sidecar could not complete a plan - the speech path (espeak-ng / model paths) is not proven by this build"
+          grep -q '"id": 1, "ok": true' /tmp/sidecar-plan.txt
 
       # ------------------------------------------------------------- Electron
       - name: Install Node dependencies

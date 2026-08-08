@@ -111,5 +111,5 @@ def describe() -> dict:
         "frozen": FROZEN,
         "resources": str(RESOURCES),
         "data": str(DATA),
-        "models_present": (MODELS / "kokoro-v1.0.onnx").exists(),
+        "starter_present": (STARTER_VOICE / "phonemes").exists(),
     }

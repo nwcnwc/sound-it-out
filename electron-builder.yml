@@ -1,9 +1,10 @@
 # electron-builder configuration for Sound It Out.
 #
 # Produces one installer per platform, each carrying everything the app needs:
-# the Electron shell, the frozen Python sidecar, the Kokoro weights, the Andika
-# fonts and the recorded phoneme clips. Nothing is downloaded on first run,
-# because the machine this ships to is not assumed to have internet at all.
+# the Electron shell, the frozen Python sidecar, the Andika fonts and the
+# starter voice (every recorded sound, rime, pack word and line). Nothing is
+# downloaded on first run, because the machine this ships to is not assumed
+# to have internet at all - and there is no synthesiser aboard at all.
 
 appId: com.nwcnwc.sounditout
 productName: Sound It Out
@@ -36,13 +37,6 @@ asarUnpack:
 # Landed next to the app as plain files (Resources/ on macOS and Linux,
 # resources/ on Windows) so both the sidecar and ffmpeg can open them by path.
 extraResources:
-  # ~338MB of Kokoro weights. Deliberately outside the PyInstaller bundle: a
-  # onefile executable re-unpacks its whole payload on every launch.
-  - from: models
-    to: models
-    filter:
-      - "**/*"
-
   # User-editable. Shipping them unpacked is the point - a parent can open
   # sight-words.txt in TextEdit and add a cousin's name.
   #
