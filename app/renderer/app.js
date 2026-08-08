@@ -341,10 +341,30 @@ function setUpMake () {
   renderSegmented($('minutes'), 'minutes', MINUTES, chosen.minutes)
   renderSegmented($('reps'), 'reps', REPS, chosen.reps)
   renderSegmented($('pause'), 'pause', PAUSES, chosen.pauseSeconds)
+  renderSegmented($('stage'), 'stage', STAGES, chosen.stage || 2)
 
-  document.querySelectorAll('#screen-make input[type=radio]').forEach((r) => {
-    r.addEventListener('change', () => { updateSummary(); persistChoices() })
+  // Delegated, because renderLevels() and renderSegmented() replace their
+  // inputs - a listener bound to the elements that exist right now would stop
+  // firing the moment the level list is re-rendered, which it is every time
+  // recordings change.
+  $('screen-make').addEventListener('change', (e) => {
+    if (e.target && e.target.type === 'radio') {
+      showLevelExtras()
+      updateSummary()
+      persistChoices()
+    }
   })
+
+  const box = $('level-text')
+  if (box) {
+    box.value = chosen.text || ''
+    box.addEventListener('input', () => {
+      updateTextCount()
+      updateSummary()
+      persistChoices()
+    })
+  }
+  showLevelExtras()
 
   $('btn-play').addEventListener('click', () => startJob('play'))
   $('btn-export').addEventListener('click', () => startJob('export'))
@@ -403,6 +423,9 @@ function renderLevels (selected) {
     label.append(input, tick, text)
     host.appendChild(label)
   }
+  // The list is rebuilt whenever recordings change, which can move the
+  // selection - the extras have to follow it.
+  if (typeof showLevelExtras === 'function') showLevelExtras()
 }
 
 function renderThemes (selected) {
@@ -464,14 +487,62 @@ function picked (name) {
   return el ? el.value : null
 }
 
+const STAGES = [
+  { value: 1, label: 'Just the first few' },
+  { value: 2, label: 'A good number' },
+  { value: 3, label: 'Most of them' }
+]
+
 function currentOptions () {
   return {
     level: picked('level'),
     theme: picked('theme'),
     reps: Number(picked('reps')),
     pauseSeconds: Number(picked('pause')),
-    minutes: Number(picked('minutes'))
+    minutes: Number(picked('minutes')),
+    // Only meaningful to the open-ended levels; harmless everywhere else.
+    text: ($('level-text') && $('level-text').value) || '',
+    stage: Number(picked('stage')) || 2
   }
+}
+
+/* The open-ended levels need something the fixed ones do not - text to read,
+ * or how far the child has got. Showing those controls all the time would put
+ * a big empty textarea in front of someone making a Paw Patrol video, so they
+ * appear only for the level they belong to. */
+function showLevelExtras () {
+  const id = String(picked('level'))
+  const lvl = (state.levels || []).find((l) => String(l.id) === id)
+  const textWrap = $('level-text-wrap')
+  const stageWrap = $('level-stage-wrap')
+  if (textWrap) textWrap.hidden = !(lvl && lvl.needsText)
+  if (stageWrap) stageWrap.hidden = id !== '12'
+  updateTextCount()
+  updateStageNote()
+}
+
+function updateTextCount () {
+  const box = $('level-text')
+  const out = $('level-text-count')
+  if (!box || !out) return
+  const words = box.value.trim().split(/\s+/).filter(Boolean).length
+  const lines = box.value.trim()
+    ? box.value.trim().split(/(?<=[.!?])\s+/).filter(Boolean).length : 0
+  out.textContent = words
+    ? `${words} words, about ${lines} line${lines === 1 ? '' : 's'} to read.`
+    : 'Nothing pasted in yet.'
+}
+
+function updateStageNote () {
+  const note = $('stage-note')
+  if (!note) return
+  const n = Number(picked('stage')) || 2
+  note.textContent = [
+    '',
+    'The story stays very short - only s, a, t, p, i, n.',
+    'Sam, the cat and the dog appear.',
+    'Nearly the whole story, including "the".'
+  ][n] || ''
 }
 
 let persistTimer = null
@@ -503,10 +574,31 @@ function updateSummary (knownTotal) {
   $('btn-play').disabled = false
   $('btn-export').disabled = false
 
-  const usesWords = String(o.level) === '1' || String(o.level) === '2'
-  const words = usesWords ? ', drawn from the ' + total + ' words on your list' : ''
+  const id = String(o.level)
+  const usesWords = id === '1' || id === '2'
+  let words = usesWords ? ', drawn from the ' + total + ' words on your list' : ''
+
+  // The open-ended levels are worth describing differently: what makes them
+  // interesting is where the content comes from, and that is the thing a
+  // parent cannot see by reading the level name.
+  if (id === '10') {
+    const n = (o.text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean).length
+    words = n ? ', reading the ' + n + ' line' + (n === 1 ? '' : 's') + ' you pasted in' : ''
+  } else if (id === '11') {
+    words = ', built from the names and things on your own list'
+  } else if (id === '12') {
+    words = ', using only the letters they have learned so far'
+  }
+
   el.textContent = o.minutes + ' minutes of ' + level.name + words +
     ', each one shown ' + o.reps + ' times, then it loops.'
+
+  // These are the levels the cloned voice exists for. Say so once, here,
+  // where the choice is being made - not on a settings screen they may never
+  // open.
+  if (level.kind === 'open' && level.reason) {
+    el.textContent += ' ' + level.reason
+  }
 }
 
 function updateExportDest () {
@@ -566,6 +658,20 @@ function closeProgress () {
 
 async function startJob (mode) {
   currentMode = mode
+
+  // Catch the empty-textarea case here rather than letting the sidecar raise
+  // it. The backend message is correct but arrives after the progress screen
+  // has taken over, which reads as a crash rather than as something missing.
+  const lvl = (state.levels || []).find((l) => String(l.id) === String(picked('level')))
+  if (lvl && lvl.needsText && !($('level-text').value || '').trim()) {
+    const box = $('level-text')
+    $('level-text-wrap').hidden = false
+    box.focus()
+    box.scrollIntoView({ block: 'center' })
+    setText('level-text-count',
+      'Paste something in first - this level reads whatever you give it.')
+    return
+  }
 
   // Saving the words first is what the user would expect; asking would just be a
   // dialog in the way.

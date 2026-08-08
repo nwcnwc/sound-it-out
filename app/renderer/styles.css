@@ -1008,3 +1008,16 @@ body.script-open { overflow: hidden; }
 .miccheck p { margin: 0; color: var(--ink-soft); max-width: 44ch; }
 .meter-big { width: min(520px, 80vw); height: 1.1rem; }
 .mic-verdict { min-height: 1.5rem; font-weight: 600; }
+
+/* Extra controls that belong to one level only. Indented under the level list
+   so it reads as part of that choice rather than as another global setting. */
+.level-extra {
+  margin: .9rem 0 0 2rem; padding: .9rem 1rem;
+  border-left: 3px solid var(--accent-wash); background: var(--surface);
+  border-radius: 0 10px 10px 0;
+}
+.level-extra textarea {
+  width: 100%; margin-top: .5rem; padding: .7rem .85rem; font: inherit;
+  line-height: 1.6; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line-firm); border-radius: 10px; resize: vertical;
+}

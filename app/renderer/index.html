@@ -150,6 +150,26 @@
         rush, and repeating is the point.
       </p>
       <div class="choice-list" id="levels"></div>
+
+      <!-- Only for the open-ended levels, and only when one is chosen. These
+           have no fixed content, so they need something from the parent that
+           the fixed levels do not. -->
+      <div class="level-extra" id="level-text-wrap" hidden>
+        <label class="setting-label" for="level-text">What would you like read?</label>
+        <p class="hint">
+          Paste anything &mdash; a page of a book, a message from a relative, what you
+          did today. It is read a word at a time, then the whole line.
+        </p>
+        <textarea id="level-text" rows="6" spellcheck="false"
+                  placeholder="Alex went to the park with Nana. They saw a big brown dog."></textarea>
+        <p class="hint" id="level-text-count"></p>
+      </div>
+
+      <div class="level-extra" id="level-stage-wrap" hidden>
+        <span class="setting-label" id="lbl-stage">How many letters do they know?</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="lbl-stage" id="stage"></div>
+        <p class="hint" id="stage-note"></p>
+      </div>
     </fieldset>
 
     <fieldset class="block">
@@ -225,10 +245,20 @@
 
     <div class="voice-intro">
       <p>
-        There are three things to record. Read
+        There are four things to record, and they are not equally important. Read
         <a href="#" id="open-guide" class="link">the recording guide</a> first &mdash;
-        it takes about 40 minutes with a phone, and the guide explains the one rule
-        that really matters.
+        it explains the one rule that really matters.
+      </p>
+      <p>
+        <b>The sounds are the part only you can do.</b> An isolated &ldquo;t&rdquo; is
+        exactly what a computer voice gets wrong, and a wrong sound teaches the wrong
+        thing. Forty-two of them, about ten minutes.
+      </p>
+      <p>
+        The words and sentences are worth recording if you have the time &mdash; a real
+        voice is always better. But if you install the extra voice, the app can say
+        those in your voice without you reading them all out. The reading passage is
+        what makes that possible.
       </p>
       <p class="hint">
         Record each part as <b>one long recording</b> with a couple of seconds of silence
@@ -276,8 +306,9 @@
         <div class="vpart-num">2</div>
         <div class="vpart-body">
           <h2>The words <span class="vpart-count" id="count-words"></span></h2>
-          <p>Your word list, read normally. Print your list from the
-             <b>Words</b> tab first so you know what to say.</p>
+          <p><b>Optional if you install the extra voice.</b> Your word list, read
+             normally. Worth doing if you have the time &mdash; your real voice beats a
+             generated one &mdash; but this is the part the app can do for you.</p>
           <div class="bar bar-slim vpart-bar" id="barwrap-words" hidden>
             <div class="bar-fill" id="bar-words" style="width:0%"></div>
           </div>
@@ -304,10 +335,10 @@
         <div class="vpart-num">3</div>
         <div class="vpart-body">
           <h2>The sentences <span class="vpart-count" id="count-sentences"></span></h2>
-          <p>Ten short lines, read the way you would to your child. About a minute.
-             These are the only part of a level that cannot be built from the single
-             words &mdash; a sentence has stress and melody across the whole line, and
-             joined-up word clips have neither.</p>
+          <p><b>Worth the minute it takes.</b> Ten short lines, read the way you would
+             to your child. A sentence has stress and melody across the whole line, and
+             joined-up word clips have neither &mdash; so these cannot be built from the
+             single words, only recorded or generated.</p>
           <div class="bar bar-slim vpart-bar" id="barwrap-sentences" hidden>
             <div class="bar-fill" id="bar-sentences" style="width:0%"></div>
           </div>

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from gen import wordlists
+from gen import openended, wordlists
 from gen.soundout import Segment, whole
 
 # ---------------------------------------------------------------- content
@@ -124,6 +124,20 @@ LEVELS = [
     Level(7, "Letter teams", "sh, ch, th, ck treated as one sound.", "generated"),
     Level(8, "Harder words", "Longer words with clusters: stop, black, hand.", "generated"),
     Level(9, "Sentences", "Whole sentences, read word by word then together.", "generated"),
+
+    # Levels 10-12 have no fixed content. What they read depends on what the
+    # parent pastes in, the names in their word list, and how far the child has
+    # got - so it cannot be listed here, cannot be recorded in advance, and is
+    # different for every family. This is what the cloned voice is for.
+    Level(10, "Anything you paste in",
+          "A page of a book, a card from Nana, a note about the day. "
+          "Read word by word, then whole.", "open"),
+    Level(11, "Their own sentences",
+          "Sentences built from the names and things in your word list. "
+          "Different for every family, and they change as you add words.", "open"),
+    Level(12, "A story that grows",
+          "A story told only with the letters they have learned so far. "
+          "It gets longer as they learn more.", "open"),
 ]
 
 # The Building-up ladder, in chapters.
@@ -214,7 +228,7 @@ _check_ladder()
 # All nine are built now. Levels 7-9 still lean on generation for the parts
 # nobody can record - nonsense blends, and whole sentences read with real
 # intonation - which is what the "install the extra voice" note is about.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
 
 
 def level_status(capabilities: dict) -> list:
@@ -230,6 +244,20 @@ def level_status(capabilities: dict) -> list:
             reason = "" if ok else "Needs the voice recordings, or the built-in voice."
             if ok and not capabilities.get("recordings"):
                 reason = "Will use the built-in voice until the recordings are imported."
+        elif lv.voice == "open":
+            # Nothing here can be pre-recorded, so the voice question is real
+            # rather than a fallback: without cloning these levels work, but
+            # in the built-in voice rather than hers.
+            ok = capabilities.get("cloning") or capabilities.get("fallback_voice")
+            if not ok:
+                reason = "Needs the built-in voice or voice cloning installed."
+            elif capabilities.get("cloning"):
+                reason = ""
+            else:
+                reason = ("Read in the built-in voice. This is the level the "
+                          "extra voice pack is actually for - it is the only "
+                          "way these can be in your voice, because nobody can "
+                          "record them in advance.")
         else:
             ok = capabilities.get("cloning") or capabilities.get("fallback_voice")
             reason = "" if ok else "Needs the built-in voice or voice cloning installed."
@@ -237,7 +265,11 @@ def level_status(capabilities: dict) -> list:
                 reason = ("Whole sentences use the built-in voice. Install the "
                           "extra voice pack to have them read in your own.")
         out.append({"id": lv.id, "name": lv.name, "description": lv.description,
-                    "available": bool(ok), "reason": reason})
+                    "available": bool(ok), "reason": reason,
+                    # The UI has to know to show a text box for level 10, and
+                    # to group the open-ended levels apart from the ladder.
+                    "kind": lv.voice,
+                    "needsText": lv.id == 10})
     return out
 
 
@@ -406,6 +438,32 @@ def build(level: int, voice, opts: dict) -> list:
                           reps, pause)
     if level == 9:
         return _sentences(voice, SENTENCES, reps, pause)
+
+    # ---- open-ended levels: content comes from the parent, not from here ----
+    if level == 10:
+        lines = openended.split_sentences(opts.get("text", ""))
+        if not lines:
+            raise ValueError(
+                "Paste some text for this level first - a page of a book, a "
+                "card, anything they would like read to them."
+            )
+        return _sentences(voice, lines, reps, pause)
+
+    if level == 11:
+        lines = openended.from_wordlist(groups)
+        if not lines:
+            raise ValueError(
+                "This level builds sentences from your own word list, and it "
+                "needs some names and some things to work with. Add a few to "
+                "the People and Home groups on the Words tab."
+            )
+        return _sentences(voice, lines, reps, pause)
+
+    if level == 12:
+        lines = openended.story_so_far(stage=opts.get("stage"))
+        if not lines:
+            raise ValueError("No part of the story is readable yet.")
+        return _sentences(voice, lines, reps, pause)
 
     raise NotImplementedError(
         f"Level {level} is designed but not built yet - see README for the plan."
