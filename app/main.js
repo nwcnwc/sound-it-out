@@ -32,6 +32,21 @@ const isPackaged = app.isPackaged
 // Harmless on a normal desktop.
 app.commandLine.appendSwitch('disable-dev-shm-usage')
 
+// On ChromeOS/Crostini the GPU process cannot initialise: the container's
+// virtio-gpu does not support the native buffers Chromium wants, so it fails,
+// retries, and floods the console with "Buffer handle is null" and
+// "StagingBuffer's SharedImage failed" - hundreds of lines that look alarming
+// and mean nothing. Chromium then falls back to software rendering, which is
+// what actually draws the window. Skipping the doomed attempt gets the same
+// result quietly, and makes a real error visible when there is one.
+//
+// Deliberately narrow: only where we can see we are in a Crostini container.
+// Everywhere else the GPU works and is worth having.
+if (process.platform === 'linux' && fs.existsSync('/opt/google/cros-containers')) {
+  app.commandLine.appendSwitch('disable-gpu')
+  app.commandLine.appendSwitch('disable-gpu-compositing')
+}
+
 let win = null
 let player = null
 let sidecar = null
