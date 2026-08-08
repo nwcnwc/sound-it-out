@@ -72,7 +72,10 @@ def run(copy=False) -> dict:
                           say="", length="free").path()
         (have_w if src.exists() else miss_w).append((w, src))
     for text in lines:
-        src = VOICE_DIR / "sentences" / f"{sentence_key(text)}.wav"
+        # THROUGH the item, never a hand-built path: the studio encodes keys
+        # on the way to disk (_safe turns "_" into "u005f"), and a hand-built
+        # path here reported every recorded line as missing.
+        src = slib._line_item(text).path()
         (have_l if src.exists() else miss_l).append((text, src))
     for spelling, ipa in all_rimes():
         src = VOICE_DIR / "phonemes" / f"{_safe(ipa)}.wav"
@@ -136,7 +139,7 @@ def generate_missing(profile="mum", variant="english", log=print) -> dict:
         if not dest.exists():
             jobs.append(("word", w, dest))
     for text in lines:
-        dest = STARTER_VOICE / "sentences" / f"{sentence_key(text)}.wav"
+        dest = STARTER_VOICE / "sentences" / f"{_safe(sentence_key(text))}.wav"
         if not dest.exists():
             jobs.append(("line", text, dest))
     # Rimes are deliberately NOT generated: an isolated sound is what
