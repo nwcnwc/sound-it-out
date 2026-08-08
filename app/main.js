@@ -282,6 +282,14 @@ function registerIpc () {
     return { ok: true }
   })
 
+  ipcMain.handle('cloning:info', async () => {
+    try {
+      return { ok: true, ...(await sidecar.call('cloning.info', {})) }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
   ipcMain.handle('cloning:install', async () => {
     try {
       await sidecar.call('cloning.install')

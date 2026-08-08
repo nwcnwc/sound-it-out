@@ -50,6 +50,10 @@ LENGTH_TARGET = {
     "hold": (1.0, 3.0, 2.0),    # min, max, ideal seconds
     "crisp": (0.05, 0.60, 0.20),
     "free": (0.08, 1.50, 0.40),
+    # A whole line, not a word. Scored against "free" every sentence would be
+    # over its 1.5s ceiling and lose points for the length that makes it a
+    # sentence.
+    "line": (0.8, 6.0, 2.2),
 }
 
 TAKES_DEFAULT = 3
@@ -64,7 +68,7 @@ TAKES_DEFAULT = 3
 # something the speaker does correctly by reflex, and three takes of "dog"
 # turns a manageable sitting into an hour of repeating herself. One take, and
 # the scorer speaks up when it actually went wrong.
-TAKES = {"phonemes": 3, "words": 1}
+TAKES = {"phonemes": 3, "words": 1, "sentences": 1}
 
 
 def takes_for(part: str) -> int:
@@ -95,7 +99,7 @@ class Item:
     ipa: str = ""
 
     def path(self):
-        sub = "phonemes" if self.kind == "phoneme" else "words"
+        sub = {"phoneme": "phonemes", "sentence": "sentences"}.get(self.kind, "words")
         key = self.ipa if self.kind == "phoneme" else self.key
         safe = "".join(f"u{ord(c):04x}" if not c.isalnum() else c for c in key)
         return VOICE_DIR / sub / f"{safe}.wav"
@@ -131,6 +135,24 @@ def plan(part="phonemes", order="rows") -> list:
                      + ("hold it for about two seconds." if hold else
                         "keep it short and crisp." if p.length == "crisp" else
                         "say it naturally.")),
+            ))
+    elif part == "sentences":
+        # Every whole line any level reads out. There are about ten and they
+        # take a minute; before this they were the one thing that could not be
+        # her voice at all, however much else she recorded.
+        from gen import levels
+        from gen.voice import sentence_key
+
+        seen = set()
+        for text in ([ch["sentence"] for ch in levels.LADDER] + list(levels.SENTENCES)):
+            key = sentence_key(text)
+            if key in seen:
+                continue
+            seen.add(key)
+            items.append(Item(
+                key=key, kind="sentence", display=text, length="line",
+                say="Read the whole line the way you would to your child - "
+                    "not word by word.",
             ))
     else:
         from gen import levels, wordlists

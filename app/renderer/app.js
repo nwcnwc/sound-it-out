@@ -798,6 +798,22 @@ function setUpCloning () {
 
   if (state.capabilities && state.capabilities.cloning) { showInstalled(); return }
 
+  // Say up front what this needs and whether the computer has it. The space
+  // check is instant, and finding out you are short only after committing to a
+  // 3 GB download is a bad way to learn it.
+  api.cloningInfo().then((info) => {
+    if (!info || info.ok === false || info.enough_space !== false) return
+    const gb = (n) => (n / 1e9).toFixed(1) + ' GB'
+    btn.disabled = true
+    status.hidden = false
+    status.className = 'install-status is-bad'
+    status.textContent =
+      `This needs about ${gb(info.install_bytes)} free while it installs, and ` +
+      `there is ${gb(info.free_bytes)} on this computer. Free up about ` +
+      `${gb(info.install_bytes - info.free_bytes)} and reopen this screen. ` +
+      'Everything else works without it.'
+  }).catch(() => { /* the button still works; the check is a courtesy */ })
+
   api.onInstallProgress((e) => {
     status.hidden = false
     bar.hidden = false
@@ -810,10 +826,19 @@ function setUpCloning () {
     btn.disabled = true
     btn.textContent = 'Downloading…'
     status.hidden = false
+    status.className = 'install-status'
+    // Clear the previous attempt's message. Without this a retry that fails
+    // the same way instantly looks like a dead button: same text, no bar, no
+    // visible change at all.
     status.textContent = 'Starting the download. This can take a while — it carries on in the background.'
     try {
       const res = await api.installCloning()
-      if (res && res.ok === false) throw new Error('install failed')
+      // res.error is the real reason - out of disk space, no network, a
+      // refused connection. It used to be replaced here with a generic
+      // "install failed" and then reported as an internet problem, so
+      // somebody 2 GB short of disk was told to check their wifi and given a
+      // button that could only fail again.
+      if (res && res.ok === false) throw new Error(res.error || 'The download did not finish.')
       state = await api.getState()
       renderCapabilities()
       renderLevels(picked('level'))
@@ -824,7 +849,9 @@ function setUpCloning () {
       btn.disabled = false
       btn.textContent = 'Try the download again'
       bar.hidden = true
-      status.textContent =
+      status.className = 'install-status is-bad'
+      const why = String((e && e.message) || '').trim()
+      status.textContent = why ||
         "The download didn't finish. Check the internet connection and try again — " +
         'it picks up where it left off. Nothing else is affected.'
     }
@@ -859,34 +886,39 @@ boot()
  * terminal. This is the way in.
  */
 
-const PART_NAMES = { phonemes: 'sounds', words: 'words', passage: 'reading passage' }
+const PART_NAMES = {
+  phonemes: 'sounds', words: 'words', sentences: 'sentences', passage: 'reading passage'
+}
 
 async function voiceCounts (caps) {
   const p = (caps && caps.recorded_phonemes) || 0
   const w = (caps && caps.recorded_words) || 0
+  const sn = (caps && caps.recorded_sentences) || 0
 
   // Totals come from the plan so the denominator is always the real list -
   // adding a word to the word list changes what "finished" means.
-  let totals = { phonemes: 42, words: w }
+  let totals = { phonemes: 42, words: w, sentences: sn }
   try {
-    const [ps, ws] = await Promise.all([
-      api.studioPlan({ part: 'phonemes' }), api.studioPlan({ part: 'words' })
+    const [ps, ws, ss] = await Promise.all([
+      api.studioPlan({ part: 'phonemes' }), api.studioPlan({ part: 'words' }),
+      api.studioPlan({ part: 'sentences' })
     ])
-    totals = { phonemes: ps.total, words: ws.total }
+    totals = { phonemes: ps.total, words: ws.total, sentences: ss.total }
   } catch { /* fall back to what we know */ }
 
   showPartProgress('phonemes', p, totals.phonemes)
   showPartProgress('words', w, totals.words)
+  showPartProgress('sentences', sn, totals.sentences)
   showPassageState()
-  for (const [part, n] of [['phonemes', p], ['words', w]]) {
+  for (const [part, n] of [['phonemes', p], ['words', w], ['sentences', sn]]) {
     const b = document.querySelector(`.vpart-review[data-part="${part}"]`)
     if (b) b.hidden = n === 0
   }
 
   const foot = $('voice-foot')
   if (!foot) return
-  const total = totals.phonemes + totals.words
-  const done = p + w
+  const total = totals.phonemes + totals.words + totals.sentences
+  const done = p + w + sn
   foot.textContent = done === 0
     ? 'Nothing recorded yet \u2014 the computer voice is being used for now.'
     : done >= total
@@ -1483,8 +1515,7 @@ async function showScript (part) {
     alert('Could not build the list: ' + (err.message || err))
     return
   }
-  const title = part === 'phonemes' ? 'What to say - the sounds'
-                                    : 'What to say - the words'
+  const title = 'What to say - the ' + (PART_NAMES[part] || 'words')
   $('script-title').textContent = title
 
   const body = $('script-body')
@@ -1659,7 +1690,7 @@ async function redoSelected () {
 }
 
 async function clearPart () {
-  const what = review.part === 'phonemes' ? 'sounds' : 'words'
+  const what = PART_NAMES[review.part] || 'recordings'
   if (!confirm(`Delete all recorded ${what} and start that part again?\n\n` +
                'The recordings are removed from this computer. This cannot be undone.')) return
   await api.studioRemove({ part: review.part })

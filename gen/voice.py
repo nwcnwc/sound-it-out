@@ -21,6 +21,41 @@ from gen.paths import MODELS, VOICE_DIR
 from gen.soundout import SR, Voice as KokoroVoice, slower, tidy_word
 
 
+# The same sound written two ways, and a recording of one must satisfy a
+# request for the other.
+#
+# This is not pedantry. The recording table transcribes the vowel in "cat" as
+# /a/, the way modern British dictionaries do; levels.py writes it /æ/, the way
+# espeak needs it for synthesis. Both are right for their own job, and neither
+# should change - but the lookup between them was exact, so every "a" in the
+# curriculum fell back to the built-in voice even after she had recorded it.
+# "a" is in the first chapter (s, a, t, p, i, n), so this was audible in almost
+# every video the app made.
+#
+# Aliases apply to the lookup only. What gets sent to the synthesiser is
+# untouched, because there /æ/ and /a/ genuinely are not interchangeable.
+PHONEME_ALIASES = {
+    "æ": ("a",),
+    "a": ("æ",),
+    "ɛ": ("e",),
+    "e": ("ɛ",),
+    # espeak emits U+0261 (script g), keyboards produce U+0067.
+    "\u0261": ("g",),
+    "g": ("\u0261",),
+}
+
+
+def sentence_key(text: str) -> str:
+    """Stable, filesystem-safe key for a whole sentence.
+
+    Shared with gen/studio.py: what the studio saves and what this looks for
+    have to agree exactly, or a recorded sentence is silently never found.
+    """
+    import re
+
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")[:80]
+
+
 def _safe(name: str) -> str:
     """Filesystem-safe key. IPA symbols are not portable filenames - Windows
     in particular rejects several, and case-insensitive filesystems collide
@@ -46,6 +81,8 @@ class VoiceSource:
         phon = VOICE_DIR / "phonemes"
         n_words = len(list(words.glob("*.wav"))) if words.exists() else 0
         n_phon = len(list(phon.glob("*.wav"))) if phon.exists() else 0
+        sent = VOICE_DIR / "sentences"
+        n_sent = len(list(sent.glob("*.wav"))) if sent.exists() else 0
         cloning = False
         try:
             from gen import clone
@@ -58,6 +95,7 @@ class VoiceSource:
             "recordings": n_words > 0 or n_phon > 0,
             "recorded_words": n_words,
             "recorded_phonemes": n_phon,
+            "recorded_sentences": n_sent,
             # `kokoro` is the published name in the UI contract; `fallback_voice`
             # is what levels.py reads. Same fact, both emitted - the UI reported
             # the built-in voice as missing when only one of them existed.
@@ -81,7 +119,14 @@ class VoiceSource:
             return None
         f = VOICE_DIR / kind / f"{_safe(key)}.wav"
         if not f.exists():
-            return None
+            # Try the other transcription of the same sound before giving up.
+            for alt in PHONEME_ALIASES.get(key, ()):
+                g = VOICE_DIR / kind / f"{_safe(alt)}.wav"
+                if g.exists():
+                    f = g
+                    break
+            else:
+                return None
         data, sr = sf.read(f, dtype="float32")
         if sr != SR:  # recordings are normalised on import, but never assume
             return None
@@ -132,6 +177,18 @@ class VoiceSource:
         return tidy_word(self.kokoro.say(key, phonemes=True))
 
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
+        # Her own read of the whole line, if there is one.
+        #
+        # This lookup did not exist, which made the sentence read the one thing
+        # in the app that could never be her voice however much she recorded -
+        # and the only thing voice cloning was actually generating. A recorded
+        # sentence is returned untouched: she reads at her own pace, and the
+        # tempo below exists to stop a synthesised line running away, not to
+        # slow down a real person.
+        a = self._recorded("sentences", sentence_key(text))
+        if a is not None:
+            return a
+
         if self.clone_profile is not None:
             try:
                 from gen import clone

@@ -153,11 +153,28 @@ def _version(interp: Path | None) -> str | None:
 
 
 def capabilities() -> dict:
-    """Everything the UI needs to decide whether levels 6-8 are offered.
+    """What the UI needs to describe this honestly.
 
-    Never raises. `reason` is written to be shown to a non-technical user as-is,
-    which is the whole point - "levels 6-8 need the voice model, which isn't
-    installed" is a usable message; a traceback at generation time is not.
+    Never raises. `reason` is written to be shown to a non-technical user as-is
+    - a usable sentence beats a traceback at generation time.
+
+    ## What this is actually for, which is less than it looks
+
+    Cloning used to be presented as unlocking the later levels. Measured
+    against a complete recording session, it was generating exactly one thing:
+    the whole-sentence read at the end of a level, because gen/voice.py had no
+    lookup for a recorded sentence and went straight to synthesis. There are
+    ten such sentences and they take about a minute to read.
+
+    With those recordable, a parent who records everything gets levels 1-3 and
+    7-9 entirely in her own voice and needs none of this. What is left
+    synthesised is nonsense fragments like /sae/ and "pi" - not words, nothing
+    anyone could record, and precisely what cloning models are worst at. They
+    stay on the built-in voice deliberately.
+
+    So this is genuinely optional, and the UI says so. Its real use is words
+    added to the list later and not yet recorded: without it those fall back to
+    a stranger's voice, and with it they sound like her.
     """
     try:
         variant = VARIANTS[_manifest().get("variant", DEFAULT_VARIANT)]
@@ -171,8 +188,11 @@ def capabilities() -> dict:
         need = variant.nbytes + (0 if interp else STACK_BYTES)
 
         if interp is None:
-            reason = ("The voice model isn't installed. Levels 1-5 work without "
-                      f"it; levels 6-8 need a one-off {variant.nbytes / 1e9:.1f} GB download.")
+            reason = ("Not installed - and you probably do not need it. If you "
+                      "record the sounds, words and sentences, every level is "
+                      "already your own voice. This is for words you add later "
+                      f"and have not recorded yet. One-off "
+                      f"{variant.nbytes / 1e9:.1f} GB download.")
         elif missing:
             reason = (f"The voice model is part-downloaded ({len(missing)} of "
                       f"{len(variant.files)} files missing). Run the install again to resume.")
@@ -185,7 +205,9 @@ def capabilities() -> dict:
         return {
             "available": interp is not None and not missing,
             "reason": reason,
-            "levels": [6, 7, 8],
+            # Nothing requires it any more; kept so an older UI still reads.
+            "levels": [],
+            "optional": True,
             "variant": variant.name,
             "variant_note": variant.note,
             "model": {"package": PACKAGE, "version": _version(interp),
@@ -204,7 +226,7 @@ def capabilities() -> dict:
         }
     except Exception as e:  # capabilities() must never be the thing that breaks
         return {"available": False, "reason": f"Voice cloning unavailable: {e}",
-                "levels": [6, 7, 8], "profiles": []}
+                "levels": [], "optional": True, "profiles": []}
 
 
 def is_available() -> bool:

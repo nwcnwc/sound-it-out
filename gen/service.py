@@ -166,6 +166,21 @@ def m_render_chrome(params):
     return {"ok": True}
 
 
+def m_cloning_info(_params):
+    """What the download needs, and whether this computer can take it.
+
+    Asked before the button is pressed. Finding out you are 2 GB short after
+    committing to a 3 GB download is a bad way to learn it, and the check
+    itself is instant.
+    """
+    from gen import clone
+
+    try:
+        return clone.capabilities()
+    except Exception as e:
+        return {"available": False, "reason": str(e), "enough_space": None}
+
+
 def m_install_cloning(params):
     from gen import clone
 
@@ -478,6 +493,7 @@ METHODS = {
     "encode": m_encode,
     "render.chrome": m_render_chrome,
     "cloning.install": m_install_cloning,
+    "cloning.info": m_cloning_info,
     "recordings.import": m_recordings_import,
     "studio.plan": m_studio_plan,
     "studio.submit": m_studio_submit,

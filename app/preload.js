@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('soundout', {
   generate: (opts) => ipcRenderer.invoke('job:generate', opts),
   cancelJob: (jobId) => ipcRenderer.invoke('job:cancel', jobId),
   installCloning: () => ipcRenderer.invoke('cloning:install'),
+  cloningInfo: () => ipcRenderer.invoke('cloning:info'),
   openPath: (p) => ipcRenderer.invoke('path:open', p),
   openExternal: (u) => ipcRenderer.invoke('url:open', u),
   chooseRecording: () => ipcRenderer.invoke('recordings:choose'),

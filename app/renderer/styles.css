@@ -686,6 +686,10 @@ dl.format dd { margin: .2rem 0 0; color: var(--ink-soft); font-size: .95rem; }
 .clone-cost { color: var(--ink); }
 .clone-state { min-width: 15rem; }
 .install-status { font-size: .92rem; color: var(--ink-soft); margin: .6rem 0 .4rem; }
+/* A real reason the install cannot proceed - out of space, no network.
+   Needs to read as a fact about this computer, not as a passing note. */
+.install-status.is-bad { color: var(--ink); background: var(--bad-wash);
+  border: 1px solid var(--bad); border-radius: 10px; padding: .7rem .85rem; }
 .installed {
   display: inline-flex;
   align-items: center;
