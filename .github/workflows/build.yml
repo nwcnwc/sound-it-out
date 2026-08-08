@@ -54,10 +54,13 @@ jobs:
             label: macOS (arm64)
             arch: arm64
             builder_args: --mac dmg --arm64
+            # The words About This Mac uses. See the rename step below.
+            friendly: AppleSilicon-arm64
           - os: macos-15-intel
             label: macOS (x64)
             arch: x64
             builder_args: --mac dmg --x64
+            friendly: Intel-x64
           - os: windows-latest
             label: Windows (x64)
             arch: x64
@@ -189,13 +192,20 @@ jobs:
       # `plan` runs Kokoro, which runs phonemizer, which dlopen()s espeak-ng
       # and reads its dictionaries by path.
       #
-      # Advisory rather than fatal because `plan` also depends on the sidecar
-      # resolving the model paths correctly under PyInstaller, which is app
-      # logic and not this workflow's business. If it fails, read the output
-      # before shipping - "data path not exists" means the espeakng_loader
-      # entries in build/sidecar.spec are wrong.
+      # FATAL, not advisory. It used to be advisory, on the reasoning that a
+      # failure here might be app logic rather than packaging and should not
+      # block a build. What actually happened is that it failed on all four
+      # platforms for a genuine packaging reason - language_tags' JSON was not
+      # bundled, so the sidecar could not import Kokoro and the app could not
+      # speak - and the warning scrolled past in an otherwise green run. That
+      # build was released.
+      #
+      # An installer that cannot say a word is not worth shipping, so this now
+      # fails the build. If it breaks: "data path not exists" means the
+      # espeakng_loader entries in build/sidecar.spec are wrong, and a
+      # FileNotFoundError under site-packages means some dependency's data
+      # files need a collect_data_files line.
       - name: Smoke-test the sidecar (speech path)
-        continue-on-error: true
         shell: bash
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
@@ -248,6 +258,32 @@ jobs:
           # choice - see the long note in electron-builder.yml.
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
         run: npx electron-builder ${{ matrix.builder_args }} --publish never
+
+      # electron-builder substitutes ${arch} but cannot branch, so the dmg
+      # arrives named -Mac-arm64 or -Mac-x64. Nobody choosing a download knows
+      # which of those their Mac is; About This Mac says "Apple M2" or "Intel",
+      # so the file should say the same. Renaming here rather than in the
+      # builder config is not a workaround - this is the only place in the
+      # pipeline that can make a decision.
+      - name: Name the Mac installer the way About This Mac does
+        if: matrix.friendly
+        shell: bash
+        env:
+          ARCH: ${{ matrix.arch }}
+          FRIENDLY: ${{ matrix.friendly }}
+        run: |
+          set -euo pipefail
+          cd dist/installers
+          for f in *"-Mac-$ARCH".dmg*; do
+            [ -e "$f" ] || continue
+            mv -v "$f" "${f/-Mac-$ARCH./-Mac-$FRIENDLY.}"
+          done
+          # updater.js picks the Intel build with /(x64|intel)/ and the Apple
+          # Silicon one with /arm64/. If a rename ever drops one of those
+          # tokens, an Intel Mac quietly updates itself to a build it cannot
+          # run - so check that the file exists rather than trusting the loop.
+          ls -1 *.dmg
+          ls -1 *"-Mac-$FRIENDLY.dmg" >/dev/null
 
       - name: Upload installer
         uses: actions/upload-artifact@v4

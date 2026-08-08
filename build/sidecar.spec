@@ -94,6 +94,19 @@ datas += copy_metadata("kokoro-onnx")
 # imports every backend, so they must be present for the import to succeed.
 datas += collect_data_files("phonemizer")
 
+# language_tags keeps the IANA subtag registry as JSON beside its code and
+# reads it at import time. It is four levels down a chain nobody would guess
+# at - phonemizer imports every backend, one of which is segments, which pulls
+# in csvw, which imports language_tags - so nothing in our code mentions it and
+# PyInstaller, which follows imports and not data, shipped the modules without
+# the JSON.
+#
+# The result was total: the frozen sidecar could not import kokoro_onnx at all,
+# so a build that packaged and installed perfectly could not speak a single
+# word. It reached a release before it was caught, because the smoke test that
+# found it was advisory. It is not advisory any more.
+datas += collect_data_files("language_tags")
+
 # The default word lists. Carried inside the frozen payload so the sidecar can
 # seed a user's editable copy however the executable is laid out - the resources
 # directory is right in a real install but absent when the sidecar runs on its

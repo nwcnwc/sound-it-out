@@ -93,11 +93,14 @@ mac:
   # bad twice over: the parent installing it sees two .dmg files and only one
   # of them says what it is for, and updater.js matches Intel with
   # /(x64|intel)/ - an unmarked file falls through to "first dmg found" and can
-  # hand an Intel Mac an arm64 build. Both names below say it in plain words
-  # AND keep the token the updater matches on.
-  artifactName: >-
-    ${productName}-${version}-Mac-${arch == "arm64" ? "AppleSilicon-arm64" :
-    "Intel-x64"}.${ext}
+  # hand an Intel Mac an arm64 build.
+  #
+  # These are macros, not expressions. electron-builder substitutes ${arch} and
+  # friends by name and does nothing else; a ternary in here is not evaluated,
+  # it is copied into the filename verbatim, quotes and all, and then fails to
+  # upload. The plain-English part of the name (AppleSilicon / Intel) is
+  # applied by the build workflow, which can branch.
+  artifactName: Sound-It-Out-${version}-Mac-${arch}.${ext}
   # One extendInfo block only - two of them is a duplicated YAML key and
   # electron-builder refuses the whole file.
   extendInfo:
@@ -122,7 +125,7 @@ dmg:
       path: /Applications
 
 win:
-  artifactName: ${productName}-${version}-Windows-x64.${ext}
+  artifactName: Sound-It-Out-${version}-Windows-x64.${ext}
   target:
     - target: nsis
       arch:
@@ -143,7 +146,7 @@ nsis:
   deleteAppDataOnUninstall: false
 
 linux:
-  artifactName: ${productName}-${version}-Linux-x64.${ext}
+  artifactName: Sound-It-Out-${version}-Linux-x64.${ext}
   target:
     - target: AppImage
       arch:
