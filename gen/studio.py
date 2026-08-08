@@ -70,23 +70,33 @@ TAKES_DEFAULT = 3
 # the scorer speaks up when it actually went wrong.
 TAKES = {"phonemes": 3, "rimes": 2, "words": 1, "sentences": 1}
 
-# A real word carrying each rime, so the prompt can say "as in ...". Not
-# every rime has an everyday word, so the prompt ALWAYS spells the sound
-# out too - "say 'ay' then 'b', run together" - because a prompt that
-# names a sound the reader cannot deduce is a prompt that stops the
-# session dead.
+# A real word carrying each rime's SOUND, so the prompt can always say
+# "as in ...". Every rime has one - a prompt that names a sound the reader
+# cannot deduce is a prompt that stops the session dead. Where no same-
+# spelled everyday word exists, a sound-alike anchors it instead: "beef"
+# carries /eef/ for "efe" perfectly well, because the anchor is for the
+# ear, not the spelling.
 RIME_EXAMPLES = {
     "abe": "babe", "ace": "face", "ade": "made", "afe": "safe",
     "age": "page", "ake": "cake", "ale": "tale", "ame": "name",
     "ane": "plane", "ape": "tape", "ase": "case", "ate": "gate",
-    "aze": "maze", "eme": "theme", "ene": "gene", "ete": "Pete",
+    "aze": "maze",
+    "ebe": "Beebe", "ece": "niece", "ede": "Swede", "efe": "beef",
+    "ege": "siege", "eke": "week", "ele": "eel", "eme": "theme",
+    "ene": "gene", "epe": "deep", "ese": "geese", "ete": "Pete",
+    "eze": "sneeze",
     "ibe": "tribe", "ice": "nice", "ide": "ride", "ife": "life",
-    "ike": "like", "ile": "smile", "ime": "time", "ine": "nine",
-    "ipe": "pipe", "ite": "kite", "ize": "prize",
-    "obe": "robe", "ode": "rode", "oke": "joke", "ole": "hole",
-    "ome": "home", "one": "bone", "ope": "hope", "ote": "note",
-    "oze": "doze", "ube": "tube", "uce": "spruce", "ude": "rude",
-    "uke": "duke", "ule": "rule", "une": "June", "ute": "flute",
+    "ige": "oblige", "ike": "like", "ile": "smile", "ime": "time",
+    "ine": "nine", "ipe": "pipe", "ise": "rice", "ite": "kite",
+    "ize": "prize",
+    "obe": "robe", "oce": "dose", "ode": "rode", "ofe": "loaf",
+    "oge": "doge", "oke": "joke", "ole": "hole", "ome": "home",
+    "one": "bone", "ope": "hope", "ose": "dose", "ote": "note",
+    "oze": "doze",
+    "ube": "tube", "uce": "spruce", "ude": "rude", "ufe": "roof",
+    "uge": "huge", "uke": "duke", "ule": "rule", "ume": "zoom",
+    "une": "June", "upe": "soup", "use": "goose", "ute": "flute",
+    "uze": "snooze",
 }
 
 # How each half of a rime is said, in plain letters a non-linguist can

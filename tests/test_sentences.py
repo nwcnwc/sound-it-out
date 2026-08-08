@@ -369,3 +369,10 @@ def test_rimes_record_into_the_phoneme_bank(library):
 
 def test_rime_takes_are_two(library):
     assert studio.takes_for("rimes") == 2
+
+
+def test_every_rime_prompt_carries_an_example_word(library):
+    """"oo then j" is linguistics homework; "as in huge" is an instruction.
+    Every rime must anchor its sound to a real word."""
+    for it in studio.plan("rimes"):
+        assert "as in" in it.say, f"rime '{it.key}' has no example word"
