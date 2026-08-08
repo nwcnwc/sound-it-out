@@ -49,7 +49,7 @@ rescue
 # Delete the ones that don't apply. Add as many as you like.
 Alex
 Mum
-Daddy
+Dad
 Nana
 Grandad
 # brother or sister names here

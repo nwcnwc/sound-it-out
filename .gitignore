@@ -35,3 +35,13 @@ assets/voice/
 # Clips set aside before re-recording. Same reason as above: these are
 # hundreds of MB of audio, and a public repo is no place for a voice.
 assets/voice-*/
+
+# The live word list. The app writes the family's real names here - their
+# child's name, their parents, their pets - and when the app runs from source
+# this path is inside the repo. It was committed to a public repo once exactly
+# that way, by a `git add -A` that had no idea it was publishing a child's
+# name.
+#
+# What ships is sight-words.default.txt, with placeholder names. This file is
+# seeded from it on first run and belongs to the family, not to git.
+wordlists/sight-words.txt

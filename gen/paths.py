@@ -87,7 +87,15 @@ def ensure_user_files():
         if shipped == WORDLISTS:
             continue
         for src in shipped.glob("*.txt"):
-            dst = WORDLISTS / src.name
+            # "sight-words.default.txt" ships; "sight-words.txt" is what the
+            # family edits. They are two files on purpose: when the app runs
+            # from source the writable path is inside the repo, and the live
+            # list - which holds a child's name, their parents, their pets -
+            # was once committed to a public repo by a `git add -A` that could
+            # not know what it was publishing. Only the placeholder version is
+            # tracked now, and this is where the real one gets created.
+            name = src.name.replace(".default.txt", ".txt")
+            dst = WORDLISTS / name
             if not dst.exists():
                 shutil.copy2(src, dst)
 
