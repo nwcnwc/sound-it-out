@@ -32,3 +32,6 @@ Thumbs.db
 .DS_Store
 .venv-clone/
 assets/voice/
+# Clips set aside before re-recording. Same reason as above: these are
+# hundreds of MB of audio, and a public repo is no place for a voice.
+assets/voice-*/

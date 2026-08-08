@@ -10,15 +10,15 @@ This is a download and a couple of clicks.
 Go to **[the releases page](https://github.com/nwcnwc/sound-it-out/releases/latest)**
 and download the file for your computer:
 
-| Your computer | Download the file ending in |
+| Your computer | Download the file with this in the name |
 |---|---|
-| Mac (2020 or newer) | `-arm64.dmg` |
-| Mac (older, Intel) | `-x64.dmg` |
-| Windows | `.exe` |
-| Linux | `.AppImage` |
+| Mac with Apple M1/M2/M3/M4 | `Mac-AppleSilicon` |
+| Mac with Intel | `Mac-Intel` |
+| Windows | `Windows` |
+| Linux | `Linux` |
 
-Not sure which Mac you have? Click the  menu → **About This Mac**. If it says
-**Apple M1/M2/M3/M4**, use `arm64`. If it says **Intel**, use `x64`.
+Not sure which Mac you have? Click the  menu → **About This Mac**. It will say
+either **Apple M1** (or M2/M3/M4) or **Intel**. Pick the matching file.
 
 The file is large — around 500 MB — because the whole thing works offline. Nothing
 is downloaded again later, and it never needs the internet to run.

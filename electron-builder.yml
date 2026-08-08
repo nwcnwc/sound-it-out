@@ -89,6 +89,15 @@ mac:
         - arm64
         - x64
   category: public.app-category.education
+  # The default name for the x64 dmg carries no architecture at all, which is
+  # bad twice over: the parent installing it sees two .dmg files and only one
+  # of them says what it is for, and updater.js matches Intel with
+  # /(x64|intel)/ - an unmarked file falls through to "first dmg found" and can
+  # hand an Intel Mac an arm64 build. Both names below say it in plain words
+  # AND keep the token the updater matches on.
+  artifactName: >-
+    ${productName}-${version}-Mac-${arch == "arm64" ? "AppleSilicon-arm64" :
+    "Intel-x64"}.${ext}
   # One extendInfo block only - two of them is a duplicated YAML key and
   # electron-builder refuses the whole file.
   extendInfo:
@@ -113,6 +122,7 @@ dmg:
       path: /Applications
 
 win:
+  artifactName: ${productName}-${version}-Windows-x64.${ext}
   target:
     - target: nsis
       arch:
@@ -133,6 +143,7 @@ nsis:
   deleteAppDataOnUninstall: false
 
 linux:
+  artifactName: ${productName}-${version}-Linux-x64.${ext}
   target:
     - target: AppImage
       arch:
