@@ -599,6 +599,36 @@ function updateSummary (knownTotal) {
   if (level.kind === 'open' && level.reason) {
     el.textContent += ' ' + level.reason
   }
+
+  // And if it IS installed, say what it will cost in time.
+  //
+  // Making speech in her voice runs far slower than realtime on an ordinary
+  // laptop - measured at about 128 seconds of computing per second of speech.
+  // A page of pasted text is therefore an hours-long job the first time, which
+  // is survivable if you know before you start and infuriating if you find out
+  // afterwards. Every clip is cached, so this is a one-off per sentence.
+  const warn = $('make-slow')
+  if (warn) {
+    const rate = (state.cloneInfo && state.cloneInfo.seconds_per_second) || 0
+    const lines = id === '10'
+      ? (o.text || '').trim().split(/(?<=[.!?])\s+/).filter(Boolean).length
+      : id === '11' ? 20 : 25
+    const usingClone = level.kind === 'open' &&
+      state.capabilities && state.capabilities.cloning
+    if (usingClone && rate && lines) {
+      // ~1.6s of speech per line, from the measured samples.
+      const mins = Math.round(lines * 1.6 * rate / 60)
+      warn.hidden = false
+      warn.textContent = mins < 5
+        ? `The first time, this takes a few minutes to say in your voice. After that it is instant.`
+        : `Heads up: making this in your voice takes roughly ${
+            mins < 90 ? mins + ' minutes' : (mins / 60).toFixed(1) + ' hours'
+          } the first time, because your computer has to generate every line. ` +
+          `You can leave it running. Once made, each line is kept and is instant afterwards.`
+    } else {
+      warn.hidden = true
+    }
+  }
 }
 
 function updateExportDest () {
@@ -908,6 +938,9 @@ function setUpCloning () {
   // check is instant, and finding out you are short only after committing to a
   // 3 GB download is a bad way to learn it.
   api.cloningInfo().then((info) => {
+    // Kept for the time estimate on the open-ended levels, which is the one
+    // number that decides whether a parent starts a render or walks away.
+    if (info && info.ok !== false) { state.cloneInfo = info; updateSummary() }
     if (!info || info.ok === false || info.enough_space !== false) return
     const gb = (n) => (n / 1e9).toFixed(1) + ' GB'
     btn.disabled = true

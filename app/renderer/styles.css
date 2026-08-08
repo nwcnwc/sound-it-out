@@ -1021,3 +1021,7 @@ body.script-open { overflow: hidden; }
   line-height: 1.6; color: var(--ink); background: var(--surface);
   border: 1px solid var(--line-firm); border-radius: 10px; resize: vertical;
 }
+
+/* The generation-time warning. Uses the warm notice style rather than the bad
+   one: a long render is a fact to plan around, not a failure. */
+.make-slow { display: block; max-width: 52rem; margin-top: 1rem; font-size: .95rem; }

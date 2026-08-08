@@ -28,6 +28,7 @@ import hashlib
 import importlib.metadata
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -88,19 +89,26 @@ VARIANTS = {
         "english", "ResembleAI/chatterbox",
         ("ve.safetensors", "t3_cfg.safetensors", "s3gen.safetensors",
          "tokenizer.json", "conds.pt"),
-        3_191_966_992, 15.0,
-        "0.5B English. Best quality, but painfully slow on a CPU-only laptop.",
+        3_191_966_992, 128.0,
+        "0.5B English. Best quality, and very slow on a CPU-only laptop.",
     ),
     # 110M, built for the edge: Resemble measure 3x faster than realtime on 8
-    # CPU threads. That is the difference between a usable and an unusable
-    # build on an ordinary laptop - but the loader landed after 0.1.7, so
-    # `install(variant="nano")` only works once the pinned release catches up.
+    # CPU threads, which would be the difference between a usable and an
+    # unusable build on an ordinary laptop.
+    #
+    # NOT SELECTABLE YET, and the previous note here was wrong in both
+    # directions. chatterbox.tts_turbo IS present in 0.1.7 - it did not "land
+    # after" it - but its loader is from_local(ckpt_dir, device) with no `nano`
+    # argument, so the call below raises TypeError. Wiring this up means
+    # matching the turbo checkpoint layout and re-testing the whole path, not
+    # waiting for a release. Left in place because the speed case for it is
+    # strong; see `_supports_nano`, which is what stops anyone selecting it.
     "nano": Variant(
         "nano", "ResembleAI/chatterbox-nano",
         ("ve.safetensors", "t3_nano_v1.safetensors", "s3gen_meanflow.safetensors",
          "vocab.json", "merges.txt", "tokenizer_config.json",
          "special_tokens_map.json", "added_tokens.json", "conds.pt"),
-        1_942_099_748, 0.33,
+        1_942_099_748, 0.33,   # claimed by Resemble; unverified here
         "110M edge model. ~3x realtime on 8 CPU threads, noticeably plainer.",
     ),
 }
@@ -221,8 +229,14 @@ def capabilities() -> dict:
             "free_bytes": free,
             "enough_space": free > need * 1.1,
             "sample_rate": SR,
-            "speed_note": (f"~{variant.rtf:g}s of CPU per second of speech. "
-                           "Generated clips are cached, so each sentence is slow once."),
+            # Measured, not guessed. The previous figure was 15s and the real
+            # number on a 4-thread i3-10110U is around 128s - a difference
+            # between "slow" and "leave it running overnight", which a parent
+            # deserves to know before starting rather than after.
+            "speed_note": (f"About {variant.rtf:g} seconds of computing for every "
+                           "second of speech, on an ordinary laptop. Each sentence "
+                           "is only ever made once - after that it is instant."),
+            "seconds_per_second": variant.rtf,
         }
     except Exception as e:  # capabilities() must never be the thing that breaks
         return {"available": False, "reason": f"Voice cloning unavailable: {e}",
@@ -570,7 +584,27 @@ def _worker_main() -> None:
     """Child process: load once, then answer JSON lines on stdin.
 
     Everything torch touches lives below this line and runs in `.venv-clone`.
+
+    ## stdout belongs to the protocol, and nothing else
+
+    The model stack prints to stdout uninvited. Chatterbox's watermarker
+    announces itself with "loaded PerthNet (Implicit) at step 250,000" the
+    moment it loads, and that line arrived first on the pipe - so the parent
+    read a banner where it expected JSON and cloning failed with a
+    JSONDecodeError that named nothing useful.
+
+    Suppressing that one message would be treating the symptom. Any library in
+    a stack this size may print at any time, including from C, where replacing
+    sys.stdout would not help. So file descriptor 1 is redirected to stderr for
+    the whole process, and the protocol writes to a duplicate of the original -
+    a handle nothing else can reach. Chatter goes to the log where it is
+    harmless, and the channel carries only what this function puts on it.
     """
+    # Do this before importing anything heavy - the banner fires at import.
+    protocol_fd = os.dup(1)
+    os.dup2(2, 1)
+    protocol = os.fdopen(protocol_fd, "w", buffering=1)
+
     import torch  # noqa: F401  - present only in the sidecar environment
 
     man = _manifest()
@@ -618,8 +652,8 @@ def _worker_main() -> None:
                 res = {"error": f"unknown op {op!r}"}
         except Exception as e:
             res = {"error": f"{type(e).__name__}: {e}"}
-        sys.stdout.write(json.dumps(res) + "\n")
-        sys.stdout.flush()
+        protocol.write(json.dumps(res) + "\n")
+        protocol.flush()
 
 
 if __name__ == "__main__":
