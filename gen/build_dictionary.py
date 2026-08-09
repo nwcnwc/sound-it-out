@@ -75,6 +75,13 @@ TAUGHT_EXCEPTIONS = {
     ("ie", ("ɛ",)),            # friend
     ("ai", ("ə",)),            # certain, captain
     ("a", ("ɔː",)),            # water, walk, tall
+    # Doubled consonants are one sound - every teacher writes that on the
+    # board - but a bare double is rarer than its bundled chunks, and
+    # rubble lost its alignment to that arithmetic.
+    ("bb", ("b",)), ("cc", ("k",)), ("dd", ("d",)), ("ff", ("f",)),
+    ("gg", ("ɡ",)), ("ll", ("l",)), ("mm", ("m",)), ("nn", ("n",)),
+    ("pp", ("p",)), ("rr", ("ɹ",)), ("ss", ("s",)), ("tt", ("t",)),
+    ("zz", ("z",)),
 }
 
 

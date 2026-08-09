@@ -1,7 +1,7 @@
 # word  letters=sound ...  built by gen/build_dictionary.py
 # from CMUdict (public domain); alignment learned by EM, rare
 # correspondences dropped so every chunk shown is teachable.
-ab ab=æb
+ab a=æ b=b
 ababa a=ə ba=bɒ b=b a=ə
 abacha ab=æb a=ə ch=k a=ə
 aback a=ə b=b ack=æk
@@ -35,8 +35,14 @@ abatements a=ə b=b ate=eɪt m=m en=ən t=t s=s
 abates a=ə b=b ate=eɪt s=s
 abating a=ə b=b at=eɪt ing=ɪŋ
 abba abb=æb a=ə
+abbado a=ə bb=b a=ɒ d=d o=əʊ
+abbas a=ə bb=b a=ɒ s=s
+abbasi a=ɒ bb=b a=ɒ s=s i=iː
+abbate a=ɒ bb=b ate=eɪt
+abbatiello a=ɒ bb=b a=ɒ t=t i=iː ell=ɛl o=əʊ
 abbe abb=æb e=iː
 abbenhaus abb=æb en=ən hau=haʊ s=s
+abbett a=ə bb=b e=ɛ tt=t
 abbeville abbe=æb v=v ille=ɪl
 abbey abb=æb ey=iː
 abbie abb=æb ie=iː
@@ -45,6 +51,14 @@ abbot abb=æb o=ə t=t
 abbotstown abb=æb o=ə t=t s=s t=t own=aʊn
 abbott abb=æb o=ə tt=t
 abbottstown abb=æb o=ə tt=t s=s t=t own=aʊn
+abboud a=ə bb=b ou=uː d=d
+abbreviate a=ə bb=b re=ɹiː v=v i=iː ate=eɪt
+abbreviated a=ə bb=b re=ɹiː v=v i=iː at=eɪt e=ɪ d=d
+abbreviates a=ə bb=b re=ɹiː v=v i=iː ate=eɪt s=s
+abbreviating a=ə bb=b re=ɹiː v=v i=iː at=eɪt ing=ɪŋ
+abbreviation a=ə bb=b re=ɹiː v=v i=iː ati=eɪʃ o=ə n=n
+abbreviations a=ə bb=b re=ɹiː v=v i=iː ati=eɪʃ o=ə ns=nz
+abbruzzese a=ɒ bb=b ru=ɹuː zz=ts e=eɪ s=z e=iː
 abbs abb=æb s=z
 abby abb=æb y=iː
 abco ab=æb c=k o=əʊ
@@ -249,6 +263,7 @@ abruptly a=ə b=b ru=ɹʌ p=p t=t l=l y=iː
 abruptness a=ə b=b ru=ɹʌ p=p t=t n=n ess=əs
 abrutyn a=eɪ b=b r=ɹ ut=uːt yn=ɪn
 abruzzese a=ɒ b=b ru=ɹuː zz=ts e=eɪ s=z e=iː
+abruzzo a=ɒ b=b ru=ɹuː zz=z o=əʊ
 absalom ab=æb s=s a=ə l=l o=ə m=m
 absaraka ab=æb s=s ar=ɒɹ a=ə k=k a=ə
 abscam ab=æb s=s c=k am=æm
@@ -330,6 +345,7 @@ abut a=ə bu=bʌ t=t
 abuts a=ə bu=bʌ t=t s=s
 abutted a=ə b=b utt=ʌt e=ɪ d=d
 abutting a=ə b=b utt=ʌt ing=ɪŋ
+abuzz a=ə bu=bʌ zz=z
 abysmal a=ə b=b y=ɪ s=z m=m a=ə l=l
 abysmally a=ə b=b y=ɪ s=z m=m a=ə ll=l y=iː
 abyss a=ə b=b y=ɪ ss=s
@@ -733,7 +749,7 @@ acute a=ə c=k u=juː te=t
 acutely a=ə c=k u=juː te=t l=l y=iː
 acuteness a=ə c=k u=juː te=t n=n ess=əs
 acyclovir a=ə cy=sɪ c=k l=l o=əʊ vi=vɪ r=ɹ
-ad ad=æd
+ad a=æ d=d
 ada a=eɪ d=d a=ə
 adabel ad=æd a=ə be=bɛ l=l
 adabelle ad=æd a=ə b=b e=ə lle=l
@@ -788,23 +804,46 @@ adblock ad=æd b=b loc=lɒ k=k
 adcock a=ə d=d c=k ock=ɒk
 adcox a=ə d=d co=kɒ x=ks
 add add=æd
+addair a=ə dd=d air=ɛɹ
 addams add=æd a=ə ms=mz
 added add=æd e=ə d=d
+addendum a=ə dd=d en=ɛn d=d um=əm
+addendums a=ə dd=d en=ɛn d=d u=ə ms=mz
+addeo a=ɒ dd=d eo=iːəʊ
 adder add=æd er=ɜː
+adderley a=ə dd=d er=ɜː l=l ey=iː
 addicks add=æd ick=ɪk s=s
+addict a=ə dd=d ic=ɪk t=t
+addicted a=ə dd=d ic=ɪk t=t e=ɪ d=d
+addicting a=ə dd=d ic=ɪk t=t ing=ɪŋ
+addiction a=ə dd=d ic=ɪk tio=ʃə n=n
+addictions a=ə dd=d ic=ɪk tio=ʃə ns=nz
+addictive a=ə dd=d ic=ɪk t=t ive=ɪv
+addicts a=ə dd=d ic=ɪk t=t s=s
+addidas a=ə dd=d i=iː d=d a=ə s=s
+addidases a=ə dd=d i=iː d=d a=ə s=s es=ɪz
 addie add=æd ie=iː
 adding add=æd ing=ɪŋ
 addington add=æd ing=ɪŋ t=t o=ə n=n
+addis a=ɒ dd=d is=ɪs
 addison add=æd i=ə s=s o=ə n=n
+addition a=ə dd=d iti=ɪʃ o=ə n=n
+additional a=ə dd=d iti=ɪʃ o=ə n=n a=ə l=l
+additionally a=ə dd=d iti=ɪʃ o=ə n=n a=ʌ ll=l y=iː
+additions a=ə dd=d iti=ɪʃ o=ə ns=nz
 additive add=æd i=ə t=t ive=ɪv
 additives add=æd i=ə ti=tɪ ves=vz
 addle add=æd le=əl
 addled add=æd le=əl d=d
 addleman add=æd le=əl m=m a=ə n=n
 address add=æd r=ɹ ess=ɛs
+addressable a=ə dd=d r=ɹ ess=ɛs a=ə b=b le=əl
+addressed a=ə dd=d r=ɹ ess=ɛs ed=t
 addressee add=æd r=ɹ ess=ɛs ee=iː
 addresses add=æd r=ɹ ess=ɛs es=ɪz
+addressing a=ə dd=d r=ɹ ess=ɛs ing=ɪŋ
 adds add=æd s=z
+adduci a=ɒ dd=d u=uː ci=tʃiː
 adduct add=æd u=ə c=k t=t
 addwest add=æd we=wɛ s=s t=t
 addy add=æd y=iː
@@ -819,6 +858,7 @@ adelanto ad=æd e=ə la=lɒ n=n t=t o=əʊ
 adelbert a=ə d=d el=ɛl b=b er=ɜː t=t
 adele a=ə d=d ele=ɛl
 adeline ad=æd el=əl ine=aɪn
+adelizzi ad=æd el=əl i=iː zz=z i=iː
 adell a=ə d=d ell=ɛl
 adelle a=ə d=d elle=ɛl
 adelman ad=æd el=əl m=m a=ə n=n
@@ -1288,7 +1328,7 @@ afterthoughts af=æf t=t er=ɜː th=θ ough=ɒ t=t s=s
 afterward af=æf t=t er=ɜː w=w ard=ɜːd
 afterwards af=æf t=t er=ɜː w=w ard=ɜːd s=z
 afula a=ə f=f u=uː l=l a=ə
-ag ag=æɡ
+ag a=æ g=ɡ
 aga a=ɒ g=ɡ a=ə
 agache ag=æɡ a=æ che=tʃ
 agaches ag=æɡ a=æ ch=tʃ es=əz
@@ -1330,8 +1370,13 @@ agers age=eɪdʒ rs=ɜːz
 agerton a=eɪ g=ɡ er=ɜː t=t o=ə n=n
 ages a=eɪ ge=dʒə s=z
 agfa ag=æɡ f=f a=ə
+aggarwal a=ə gg=ɡ ar=ɒɹ w=w a=ə l=l
 aggie agg=æɡ ie=iː
 aggies agg=æɡ ies=iːz
+agglomerate a=ə gg=ɡ l=l om=ɒm er=ɜː ate=eɪt
+agglomeration a=ə gg=ɡ l=l om=ɒm er=ɜː ati=eɪʃ o=ə n=n
+agglutinate a=ə gg=ɡ l=l ut=uːt in=ɪn ate=eɪt
+aggrandize a=ə gg=ɡ r=ɹ an=æn d=d ize=aɪz
 aggrandizement agg=æɡ r=ɹ a=ə n=n d=d ize=aɪz m=m en=ən t=t
 aggrandizing agg=æɡ r=ɹ a=ə n=n d=d iz=aɪz ing=ɪŋ
 aggravate agg=æɡ r=ɹ a=ə v=v ate=eɪt
@@ -1342,6 +1387,17 @@ aggravation agg=æɡ r=ɹ a=ə v=v ati=eɪʃ o=ə n=n
 aggregate agg=æɡ r=ɹ e=ə g=ɡ a=ə te=t
 aggregated agg=æɡ r=ɹ e=ə g=ɡ at=eɪt e=ɪ d=d
 aggregation agg=æɡ r=ɹ e=ə g=ɡ ati=eɪʃ o=ə n=n
+aggress a=ə gg=ɡ r=ɹ ess=ɛs
+aggression a=ə gg=ɡ re=ɹ ssi=ɛʃ o=ə n=n
+aggressions a=ə gg=ɡ re=ɹ ssi=ɛʃ o=ə ns=nz
+aggressive a=ə gg=ɡ r=ɹ ess=ɛs ive=ɪv
+aggressively a=ə gg=ɡ r=ɹ ess=ɛs ive=ɪv l=l y=iː
+aggressiveness a=ə gg=ɡ r=ɹ ess=ɛs ive=ɪv n=n ess=əs
+aggressivity a=ə gg=ɡ r=ɹ ess=ɛs i=ɪ vi=vɪ t=t y=iː
+aggressor a=ə gg=ɡ r=ɹ esso=ɛs r=ɜː
+aggressors a=ə gg=ɡ r=ɹ ess=ɛs ors=ɜːz
+aggrieve a=ə gg=ɡ r=ɹ ie=iː ve=v
+aggrieved a=ə gg=ɡ r=ɹ ie=iː ve=v d=d
 aggy agg=æɡ y=iː
 aghast a=ə gh=ɡ as=æs t=t
 aghazadeh agh=æɡ a=ə za=zɒ d=d eh=ɛ
@@ -1745,7 +1801,7 @@ akst ak=æk s=s t=t
 akyanama ak=æk ya=jɒ na=nɒ m=m a=ə
 akzo ak=æk z=z o=əʊ
 akzos ak=æk z=z os=əʊz
-al al=æl
+al a=æ l=l
 ala al=æl a=ə
 alabama al=æl a=ə b=b am=æm a=ə
 alabaman al=æl a=ə b=b am=æm a=ə n=n
@@ -2630,7 +2686,7 @@ alzena a=ɒ l=l ze=zɛ n=n a=ə
 alzene a=ɒ l=l z=z ene=iːn
 alzheimer al=æl z=z h=h ei=aɪ m=m er=ɜː
 alzona al=æl z=z o=əʊ n=n a=ə
-am am=æm
+am a=æ m=m
 ama a=eɪ m=ɛm a=eɪ
 amabel am=æm a=ə be=bɛ l=l
 amabelle am=æm a=ə b=b e=ə lle=l
@@ -3060,7 +3116,7 @@ amygdala am=æm y=ɪ g=ɡ da=dɒ l=l a=ə
 amylin am=æm y=ɪ l=l in=ɪn
 amyotrophic am=æm y=aɪ o=ə t=t r=ɹ o=əʊ ph=f ic=ɪk
 amyx am=æm y=ɪ x=ks
-an an=æn
+an a=æ n=n
 ana a=ɒ n=n a=ə
 anabaptist an=æn a=ə b=b ap=æp t=t i=ə s=s t=t
 anable a=eɪ n=n a=ə b=b le=əl
@@ -3183,6 +3239,7 @@ andel an=æn d=d el=əl
 ander an=æn d=d er=ɜː
 andera an=æn d=d er=ɜː a=ə
 anderberg an=æn d=d er=ɜː b=b er=ɜː g=ɡ
+anderegg an=æn d=d er=ɜː e=ɪ gg=ɡ
 anderle an=æn d=d er=ɜː le=əl
 anderlini an=æn d=d er=ɜː l=l i=iː n=n i=iː
 anderman an=æn d=d er=ɜː m=m a=ə n=n
@@ -4077,6 +4134,7 @@ aptitude ap=æp t=t i=ə t=t ude=uːd
 aptitudes ap=æp t=t i=ə t=t ude=uːd s=z
 aptiva ap=æp t=t i=iː v=v a=ə
 aptly ap=æp t=t l=l y=iː
+apuzzo a=ɒ p=p u=uː zz=z o=əʊ
 aqua a=æ qu=kw a=ə
 aquaculture a=æ qu=kw a=ə cu=kʌ l=l ture=tʃɜː
 aqualung a=æ qu=kw a=ə l=l u=ə ng=ŋ
@@ -4101,7 +4159,7 @@ aquilino a=ɒ qu=kw i=iː l=l i=iː n=n o=əʊ
 aquinas a=ə qu=kw i=aɪ n=n a=ə s=s
 aquirre a=æ quir=kw re=ɜː
 aquitaine a=æ qu=kw it=ɪt aine=eɪn
-ar ar=ɒɹ
+ar a=ɒ r=ɹ
 ara a=æ r=ɹ a=ə
 arab a=æ r=ɹ a=ə b=b
 arabe ar=ɒɹ a=ɒ b=b e=eɪ
@@ -5064,7 +5122,7 @@ asymmetry a=eɪ sy=sɪ mm=m et=ət r=ɹ y=iː
 asymptomatic a=eɪ sy=sɪ m=m p=p t=t o=ə ma=mæ t=t ic=ɪk
 asymptotic as=æs ym=ɪm p=p t=t o=ɔː t=t ic=ɪk
 asynchronous a=eɪ sy=sɪ nc=ŋk hr=ɹ o=ə n=n ous=əs
-at at=æt
+at a=æ t=t
 ata a=ɒ t=t a=ə
 atacama a=ɒ ta=tɒ ca=kɒ ma=mɒ
 atalanta at=æt a=ə l=l an=æn t=t a=ə
@@ -5814,6 +5872,7 @@ azura a=ə z=z ur=ʊɹ a=ə
 azzara a=ɒ zz=ts ar=ɒɹ a=ə
 azzarello a=ɒ zz=ts ar=ɒɹ ell=ɛl o=əʊ
 azzaro a=ɒ zz=ts ar=ɒɹ o=əʊ
+azzato a=ə zz=z a=ɒ t=t o=əʊ
 azzopardi a=ɒ zz=ts o=əʊ p=p ar=ɒɹ d=d i=iː
 baab baa=bɒ b=b
 baack baa=bɒ ck=k
@@ -7513,6 +7572,8 @@ bazinet ba=bæ z=z in=ɪn et=ɛt
 bazooka b=b a=ə z=z oo=uː k=k a=ə
 bazookas b=b a=ə z=z oo=uː k=k a=ə s=z
 bazzano ba=bɒ zz=ts a=ɒ n=n o=əʊ
+bazzell ba=bæ zz=z e=ə ll=l
+bazzle ba=bæ zz=z le=əl
 be b=b e=iː
 bea b=b ea=iː
 beaber b=b ea=iː b=b er=ɜː
@@ -7681,6 +7742,9 @@ beavin b=b ea=iː v=v in=ɪn
 beavis b=b ea=iː v=v i=ə s=s
 beazer b=b ea=iː z=z er=ɜː
 beazley b=b ea=iː z=z l=l ey=iː
+bebb be=bɛ bb=b
+bebber be=bɛ bb=b er=ɜː
+bebbits be=bɛ bb=b i=ə t=t s=s
 bebe b=b e=iː b=b e=iː
 bebear b=b e=ə b=b ear=ɪɹ
 bebeau b=b e=ɪ b=b eau=əʊ
@@ -8571,6 +8635,7 @@ berget b=b er=ɜː g=ɡ et=ɛt
 bergevin b=b er=ɜː g=ɡ ev=ɛv in=ɪn
 bergey b=b er=ɜː ge=dʒ y=iː
 bergfeld b=b er=ɜː g=ɡ fe=fɛ l=l d=d
+berggren b=b er=ɜː gg=ɡ re=ɹɛ n=n
 bergh b=b er=ɜː gh=ɡ
 berghof b=b er=ɜː g=ɡ h=h of=ɔːf
 berghoff b=b er=ɜː g=ɡ hof=hɔː f=f
@@ -9029,7 +9094,8 @@ bhopal bh=b o=əʊ pa=pɒ l=l
 bhosle bh=b os=ɔːs le=əl
 bhutan bh=b ut=uːt an=æn
 bhutto bh=b u=uː tt=t o=əʊ
-bi bi=baɪ
+bi b=b i=aɪ
+biaggini b=b i=iː a=ə gg=ɡ i=iː n=n i=iː
 biagi b=b i=iː a=ɒ gi=dʒiː
 biagini b=b i=iː a=ə gi=dʒiː n=n i=iː
 biagioni b=b i=iː a=ɒ gi=dʒiː o=əʊ n=n i=iː
@@ -9061,6 +9127,7 @@ biba b=b i=iː b=b a=ə
 bibb b=b ibb=ɪb
 bibbee b=b ibb=ɪb ee=iː
 bibbins b=b ibb=ɪb in=ɪn s=z
+bibbo b=b i=iː bb=b o=əʊ
 bibbs b=b ibb=ɪb s=z
 bibby b=b ibb=ɪb y=iː
 bibeau bi=bɪ b=b eau=əʊ
@@ -10143,8 +10210,9 @@ bloem b=b l=l oe=əʊ m=m
 bloemer b=b l=l oe=əʊ m=m er=ɜː
 bloemker b=b l=l oe=əʊ m=m k=k er=ɜː
 blog b=b lo=lɔː g=ɡ
-blogger b=b lo=lɔː gge=ɡ r=ɜː
+blogger b=b lo=lɔː gg=ɡ er=ɜː
 bloggers b=b lo=lɔː gge=ɡ rs=ɜːz
+blogging b=b lo=lɔː gg=ɡ ing=ɪŋ
 blogosphere b=b lo=lɔː g=ɡ o=ə s=s ph=f ere=ɪɹ
 blogs b=b lo=lɔː g=ɡ s=z
 blohm b=b l=l o=əʊ hm=m
@@ -10272,6 +10340,7 @@ bloxsom b=b l=l o=ɒ xs=ks o=ə m=m
 bloyd b=b l=l oy=ɔɪ d=d
 bloyer b=b l=l oy=ɔɪ er=ɜː
 blubaugh b=b l=l ub=ʌb augh=ɔː
+blubber b=b lu=lʌ bb=b er=ɜː
 bludgeon b=b l=l udge=ʌdʒ o=ə n=n
 bludgeoned b=b l=l udge=ʌdʒ o=ə ne=n d=d
 bludgeoning b=b l=l udge=ʌdʒ o=ə n=n ing=ɪŋ
@@ -10451,6 +10520,10 @@ bobbing b=b obb=ɒb ing=ɪŋ
 bobbinger b=b obb=ɒb ing=ɪŋ er=ɜː
 bobbitt b=b obb=ɒb itt=ɪt
 bobbitts b=b obb=ɒb itt=ɪt s=s
+bobble b=b o=ɔː bb=b le=əl
+bobbled b=b o=ɔː bb=b le=əl d=d
+bobbles b=b o=ɔː bb=b le=əl s=z
+bobbling b=b o=ɔː bb=b l=l ing=ɪŋ
 bobbo b=b obb=ɒb o=əʊ
 bobby b=b obb=ɒb y=iː
 bobcat b=b ob=ɒb ca=kæ t=t
@@ -10498,6 +10571,10 @@ bocuse b=b o=əʊ c=k u=juː se=z
 boda b=b o=əʊ d=d a=ə
 bodamer b=b od=ɒd a=ə m=m er=ɜː
 bodanis b=b o=əʊ da=dɒ n=n is=ɪs
+bodden bo=bɒ dd=d en=ən
+boddie bo=bɒ dd=d ie=iː
+boddington bo=bɒ dd=d ing=ɪŋ t=t o=ə n=n
+boddy bo=bɒ dd=d y=iː
 bode b=b o=əʊ de=d
 bodega b=b o=əʊ d=d e=eɪ g=ɡ a=ə
 bodegas b=b o=əʊ d=d e=eɪ g=ɡ a=ə s=s
@@ -10618,7 +10695,16 @@ bogey b=b o=əʊ g=ɡ ey=iː
 bogeyed b=b o=əʊ g=ɡ eye=iː d=d
 bogeyman b=b o=əʊ g=ɡ ey=iː m=m an=æn
 bogeymen b=b o=əʊ g=ɡ ey=iː m=m e=ɪ n=n
+boggan bo=bɒ gg=ɡ a=ə n=n
 bogged bo=bɒ gge=ɡ d=d
+boggess bo=bɒ gg=ɡ e=ɪ ss=s
+bogging b=b o=ɔː gg=ɡ ing=ɪŋ
+boggle bo=bɒ gg=ɡ le=əl
+boggled bo=bɒ gg=ɡ le=əl d=d
+boggles bo=bɒ gg=ɡ le=əl s=z
+boggling bo=bɒ gg=ɡ l=əl ing=ɪŋ
+boggs b=b o=ɔː gg=ɡ s=z
+boggus bo=bɒ gg=ɡ us=əs
 bogin b=b o=əʊ gi=dʒɪ n=n
 bogle b=b o=əʊ g=ɡ le=əl
 bognar b=b o=ə g=ɡ n=n ar=ɒɹ
@@ -11032,6 +11118,8 @@ boomsma b=b oo=uː ms=mz m=m a=ə
 boomtown b=b oo=uː m=m t=t own=aʊn
 boon b=b oo=uː n=n
 boondocks b=b oo=uː n=n d=d ock=ɒk s=s
+boondoggle b=b oo=uː n=n do=dɒ gg=ɡ le=əl
+boondoggles b=b oo=uː n=n do=dɒ gg=ɡ le=əl s=z
 boone b=b oo=uː ne=n
 boons b=b oo=uː ns=nz
 boonstra b=b oo=uː n=n s=s t=t r=ɹ a=ə
@@ -11649,6 +11737,9 @@ bozman bo=bɒ z=z m=m a=ə n=n
 bozo b=b o=əʊ z=z o=əʊ
 bozos b=b o=əʊ z=z os=əʊz
 boztepe bo=bɒ z=z t=t epe=ɛp
+bozza bo=bɒ zz=z a=ə
+bozzi bo=bɒ zz=z i=iː
+bozzo bo=bɒ zz=z o=əʊ
 bra b=b ra=ɹɒ
 braaksma b=b raa=ɹɒ k=k s=s m=m a=ə
 braasch b=b raa=ɹɒ sch=ʃ
@@ -12040,6 +12131,9 @@ brazilian b=b r=ɹ a=ə z=z il=ɪl ia=jə n=n
 brazilians b=b r=ɹ a=ə z=z il=ɪl ia=jə ns=nz
 brazill b=b ra=ɹæ z=z i=ə ll=l
 brazos b=b r=ɹ az=ɒz o=əʊ s=s
+brazzaville b=b ra=ɹæ zz=z a=ə v=v ille=ɪl
+brazzel b=b ra=ɹæ zz=z el=əl
+brazzell b=b ra=ɹæ zz=z e=ə ll=l
 brea b=b r=ɹ ea=iː
 breach b=b r=ɹ ea=iː ch=tʃ
 breached b=b r=ɹ ea=iː ch=tʃ ed=t
@@ -12554,6 +12648,7 @@ broadcaster b=b ro=ɹ a=ɔː d=d c=k as=æs t=t er=ɜː
 broadcasters b=b ro=ɹ a=ɔː d=d c=k as=æs te=t rs=ɜːz
 broadcasting b=b ro=ɹ a=ɔː d=d c=k as=æs t=t ing=ɪŋ
 broadcasts b=b ro=ɹ a=ɔː d=d c=k as=æs t=t s=s
+broaddus b=b ro=ɹ a=ɔː dd=d us=ɪs
 broaden b=b ro=ɹ a=ɔː d=d en=ən
 broadened b=b ro=ɹ a=ɔː d=d ene=ən d=d
 broadening b=b ro=ɹ a=ɔː d=d en=ən ing=ɪŋ
@@ -12861,10 +12956,11 @@ bruder b=b r=ɹ ud=uːd er=ɜː
 brue b=b rue=ɹuː
 bruecher b=b rue=ɹuː ch=tʃ er=ɜː
 brueck b=b rue=ɹuː ck=k
+bruegge b=b rue=ɹuː gg=ɡ e=ə
 brueggeman b=b rue=ɹuː gge=ɡ m=m a=ə n=n
 brueggemann b=b rue=ɹuː gge=ɡ m=m a=ə nn=n
-brueggen b=b rue=ɹuː gge=ɡ n=ən
-bruegger b=b rue=ɹuː gge=ɡ r=ɜː
+brueggen b=b rue=ɹuː gg=ɡ en=ən
+bruegger b=b rue=ɹuː gg=ɡ er=ɜː
 bruehl b=b rue=ɹuː hl=l
 bruella b=b ru=ɹuː ell=ɛl a=ə
 bruemmer b=b rue=ɹuː mm=m er=ɜː
@@ -13038,6 +13134,13 @@ bryson b=b ry=ɹaɪ s=s o=ə n=n
 bua b=b u=juː a=ə
 bub b=b ub=ʌb
 bubar bu=buː ba=b r=ɜː
+bubb bu=bʌ bb=b
+bubba bu=bʌ bb=b a=ə
+bubble bu=bʌ bb=b le=əl
+bubbled bu=bʌ bb=b le=əl d=d
+bubbles bu=bʌ bb=b le=əl s=z
+bubbling bu=bʌ bb=b l=əl ing=ɪŋ
+bubbly bu=bʌ bb=b l=l y=iː
 bubeck bu=buː b=b eck=ɛk
 bubel bu=buː b=b el=əl
 buber bu=buː b=b er=ɜː
@@ -13154,6 +13257,10 @@ budde b=b udde=ʌd
 budden b=b udd=ʌd en=ən
 buddenbrooks b=b udd=ʌd en=ən b=b r=ɹ ook=ʊk s=s
 buddenhagen b=b udd=ʌd e=ɪ n=n h=h a=ə g=ɡ en=ən
+buddha bu=buː ddh=d a=ə
+buddhism bu=buː ddh=d is=ɪz m=əm
+buddhist bu=buː ddh=d i=ə s=s t=t
+buddhists bu=buː ddh=d i=ə s=s t=t s=s
 buddie b=b udd=ʌd ie=iː
 buddier b=b udd=ʌd i=iː er=ɜː
 buddiers b=b udd=ʌd ie=iː rs=ɜːz
@@ -13600,6 +13707,7 @@ burgeson bur=bɜː g=ɡ e=ɪ s=s o=ə n=n
 burgess b=b urg=ɜːdʒ ess=əs
 burget bur=bɜː g=ɡ et=ɛt
 burgett b=b urg=ɜːdʒ e=ɪ tt=t
+burggraf bur=bɜː gg=ɡ r=ɹ a=ə f=f
 burghardt bur=bɜː gh=ɡ ar=ɒɹ dt=t
 burghart bur=bɜː g=ɡ h=h ar=ɒɹ t=t
 burgher bur=bɜː gh=ɡ er=ɜː
@@ -14005,8 +14113,22 @@ buzard b=b u=juː z=z ar=ɒɹ d=d
 buzbee bu=bʌ z=z b=b ee=iː
 buzby bu=bʌ z=z b=b y=iː
 buzek b=b uz=uːz ek=ɛk
+buzz bu=bʌ zz=z
+buzzard bu=bʌ zz=z ard=ɜːd
+buzzards bu=bʌ zz=z ard=ɜːd s=z
+buzze bu=bʌ zze=z
+buzzed bu=bʌ zze=z d=d
+buzzell b=b u=ə zz=z ell=ɛl
 buzzelli bu=buː zz=ts ell=ɛl i=iː
-by by=baɪ
+buzzer bu=bʌ zz=z er=ɜː
+buzzes bu=bʌ zz=z es=ɪz
+buzzetta b=b u=juː zz=z e=ɛ tt=t a=ə
+buzzfeed bu=bʌ zz=z f=f ee=iː d=d
+buzzing bu=bʌ zz=z ing=ɪŋ
+buzzword bu=bʌ zz=z w=w ord=ɜːd
+buzzwords bu=bʌ zz=z wor=wɜː ds=dz
+buzzy bu=bʌ zz=z y=iː
+by b=b y=aɪ
 byam by=baɪ a=ə m=m
 byard b=b ya=jɒ r=ɹ d=d
 byars bya=baɪ rs=ɜːz
@@ -14458,6 +14580,7 @@ calumet c=k al=æl u=jə me=mɛ t=t
 calumny c=k al=æl um=əm n=n y=iː
 calutzi c=k a=ə l=l ut=uːt z=z i=iː
 caluzu c=k a=ə lu=luː zu=zuː
+caluzzi c=k a=ə lu=luː zz=z i=iː
 calvani c=k al=ɔːl va=vɒ n=n i=iː
 calvano ca=kɒ l=l va=vɒ n=n o=əʊ
 calvaries c=k al=æl va=v r=ɜː ies=iːz
@@ -14747,6 +14870,7 @@ cannister c=k ann=æn is=ɪs t=t er=ɜː
 cannisters c=k ann=æn is=ɪs te=t rs=ɜːz
 cannistraro c=k ann=æn is=ɪs t=t r=ɹ ar=ɒɹ o=əʊ
 cannizzaro ca=kɒ nn=n i=iː zz=ts ar=ɒɹ o=əʊ
+cannizzo ca=kɒ nn=n i=iː zz=z o=əʊ
 cannock c=k ann=æn o=ə ck=k
 cannon c=k ann=æn o=ə n=n
 cannonball c=k ann=æn o=ə n=n bal=bɔː l=l
@@ -14911,6 +15035,7 @@ caporale ca=kɒ p=p or=ɔːɹ a=ɒ l=l e=iː
 caporaso ca=kɒ p=p or=ɔːɹ a=ɒ s=s o=əʊ
 capote c=k a=ə p=p o=əʊ te=t
 capoten c=k a=ə p=p o=əʊ t=t en=ən
+capozzi c=k a=ə po=pɒ zz=z i=iː
 capozzoli ca=kɒ p=p o=əʊ zz=ts o=əʊ l=l i=iː
 capp c=k app=æp
 cappa c=k app=æp a=ə
@@ -15348,6 +15473,7 @@ carouse car=kɜː ou=aʊ se=z
 carousel c=k ar=ɛɹ ous=əs el=ɛl
 carousing car=kɜː ou=aʊ s=z ing=ɪŋ
 carow ca=kæ r=ɹ ow=əʊ
+carozza car=kɜː o=ɒ zz=z a=ə
 carp c=k ar=ɒɹ p=p
 carpal c=k ar=ɒɹ p=p a=ə l=l
 carpenito c=k ar=ɒɹ pe=pɛ n=n i=iː t=t o=əʊ
@@ -15436,6 +15562,8 @@ carrothers c=k arr=æɹ o=ə the=ð rs=ɜːz
 carrots c=k arr=æɹ o=ə t=t s=s
 carrousel c=k arr=ɛɹ ous=əs el=ɛl
 carrow c=k arr=æɹ ow=əʊ
+carrozza ca=kɒ rr=ɹ o=əʊ zz=z a=ə
+carrubba ca=kɒ rr=ɹ u=uː bb=b a=ə
 carruth c=k arr=æɹ uth=uːθ
 carry c=k arr=æɹ y=iː
 carryanne c=k arr=æɹ y=iː anne=æn
@@ -16363,6 +16491,7 @@ chacon ch=tʃ ac=æk o=ə n=n
 chad ch=tʃ ad=æd
 chadbourne ch=ʃ a=ə d=d b=b our=ʊɹ ne=n
 chadd ch=tʃ add=æd
+chadderdon ch=tʃ a=ə dd=d er=ɜː d=d o=ə n=n
 chaddock ch=tʃ add=æd o=ə ck=k
 chadel ch=tʃ ad=æd el=əl
 chadian cha=tʃeɪ d=d i=iː a=ə n=n
@@ -16757,6 +16886,7 @@ chaz ch=tʃ a=æ z=z
 chazanoff ch=tʃ a=æ z=z a=ə n=n off=ɔːf
 chazen cha=tʃeɪ z=z en=ən
 chazov ch=tʃ a=æ z=z o=ɒ v=v
+chazz ch=tʃ a=æ zz=z
 che ch=tʃ e=eɪ
 chea ch=tʃ ea=iː
 cheadle ch=tʃ ea=iː d=d le=əl
@@ -17079,7 +17209,7 @@ chiengmai chi=tʃ eng=ɛŋ m=m ai=aɪ
 chiesa ch=k ie=iː s=s a=ə
 chiffon ch=ʃ iff=ɪf o=ɒ n=n
 chiffre ch=ʃ i=iː ff=f r=ɹ e=ə
-chiggers ch=tʃ igge=ɪɡ rs=ɜːz
+chiggers chi=tʃɪ gge=ɡ rs=ɜːz
 chigney chi=tʃɪ g=ɡ n=n ey=iː
 chihuahua ch=tʃ ih=ə uah=wɒ ua=wɒ
 chikane chi=tʃɪ ka=kɒ n=n e=eɪ
@@ -18244,6 +18374,7 @@ cloer c=k l=l o=əʊ er=ɜː
 cloey c=k l=l oe=əʊ y=iː
 clog c=k l=l og=ɒɡ
 clogged c=k lo=lɔː gge=ɡ d=d
+clogging c=k l=l o=ɒ gg=ɡ ing=ɪŋ
 clogs c=k l=l og=ɒɡ s=z
 clogston c=k l=l og=ɒɡ s=s t=t o=ə n=n
 cloherty c=k l=l o=ɒ h=h er=ɜː t=t y=iː
@@ -18342,6 +18473,10 @@ cloyd c=k l=l oy=ɔɪ d=d
 cloying c=k l=l oy=ɔɪ ing=ɪŋ
 clozapine c=k l=l o=əʊ z=z a=ə p=p ine=aɪn
 club c=k l=l ub=ʌb
+clubb c=k lu=lʌ bb=b
+clubbed c=k lu=lʌ bbe=b d=d
+clubbing c=k lu=lʌ bb=b ing=ɪŋ
+clubby c=k lu=lʌ bb=b y=iː
 clubhouse c=k l=l ub=ʌb h=h ou=aʊ se=s
 clubhouses c=k l=l ub=ʌb h=h ou=aʊ s=s es=ɪz
 clubs c=k l=l ub=ʌb s=z
@@ -18579,6 +18714,12 @@ cod c=k od=ɒd
 coda c=k o=əʊ d=d a=ə
 codag c=k o=əʊ d=d ag=æɡ
 coday c=k o=əʊ d=d ay=eɪ
+codd co=kɒ dd=d
+codding co=kɒ dd=d ing=ɪŋ
+coddington co=kɒ dd=d ing=ɪŋ t=t o=ə n=n
+coddle co=kɒ dd=d le=əl
+coddled co=kɒ dd=d le=əl d=d
+coddling co=kɒ dd=d l=əl ing=ɪŋ
 code c=k o=əʊ de=d
 codebase c=k o=əʊ de=d b=b ase=eɪs
 codebreaker c=k o=əʊ de=d b=b re=ɹ ak=eɪk er=ɜː
@@ -18663,6 +18804,9 @@ cogenerator c=k o=əʊ ge=dʒɛ n=n er=ɜː ato=eɪt r=ɜː
 cogenerators c=k o=əʊ ge=dʒɛ n=n er=ɜː ato=eɪt rs=ɜːz
 cogent c=k o=əʊ ge=dʒə n=n t=t
 coger c=k o=əʊ ger=dʒɜː
+coggeshall co=kɒ gg=ɡ e=ɪ sh=ʃ all=ɔːl
+coggin co=kɒ gg=ɡ in=ɪn
+coggins co=kɒ gg=ɡ in=ɪn s=z
 coghill co=kɒ g=ɡ hil=hɪ l=l
 coghlan co=kɒ g=ɡ hl=l a=ə n=n
 cogitate co=kɒ gi=dʒɪ t=t ate=eɪt
@@ -18741,6 +18885,7 @@ cokley co=kɒ k=k l=l ey=iː
 cola c=k o=əʊ l=l a=ə
 colab c=k o=əʊ l=l ab=æb
 colabella c=k o=əʊ l=l a=ə b=b ell=ɛl a=ə
+colaizzi c=k o=əʊ lai=leɪ zz=z i=iː
 colaluca c=k o=əʊ l=l a=ə lu=luː c=k a=ə
 colan c=k o=əʊ l=l a=ə n=n
 colander co=kɒ l=l a=ə n=n d=d er=ɜː
@@ -21489,6 +21634,7 @@ cozman c=k o=əʊ z=z m=m a=ə n=n
 cozy c=k o=əʊ z=z y=iː
 cozying c=k o=əʊ z=z y=iː ing=ɪŋ
 cozza c=k o=əʊ zz=ts a=ə
+cozzens co=kɒ zz=z e=ə ns=nz
 cozzi c=k o=əʊ zz=ts i=iː
 cozzolino c=k o=əʊ zz=ts o=əʊ l=l i=iː n=n o=əʊ
 cps c=siː p=piː s=ɛs
@@ -22344,6 +22490,10 @@ cub cu=kʌ b=b
 cuba c=k u=juː b=b a=ə
 cuban c=k u=juː b=b a=ə n=n
 cubans c=k u=juː b=b a=ə ns=nz
+cubbage cu=kʌ bb=b age=ɪdʒ
+cubbies cu=kʌ bb=b ies=iːz
+cubbison cu=kʌ bb=b is=ɪs o=ə n=n
+cubbyhole cu=kʌ bb=b y=iː h=h o=əʊ le=l
 cube c=k u=juː be=b
 cubed c=k u=juː be=b d=d
 cubes c=k u=juː be=b s=z
@@ -22366,14 +22516,14 @@ cuco c=k u=uː c=k o=əʊ
 cucumber c=k u=juː c=k um=əm b=b er=ɜː
 cucumbers c=k u=juː c=k um=əm be=b rs=ɜːz
 cudahy cu=kʌ d=d a=ə h=h y=iː
-cudd c=k udd=ʌd
-cuddeback c=k udde=ʌd b=b ack=æk
-cuddihy c=k udd=ʌd i=ɪ h=h y=iː
-cuddle c=k udd=ʌd le=əl
-cuddled c=k udd=ʌd le=əl d=d
-cuddling c=k udd=ʌd l=l ing=ɪŋ
-cuddly c=k udd=ʌd l=l y=iː
-cuddy c=k udd=ʌd y=iː
+cudd cu=kʌ dd=d
+cuddeback cu=kʌ dde=d b=b ack=æk
+cuddihy cu=kʌ dd=d i=ɪ h=h y=iː
+cuddle cu=kʌ dd=d le=əl
+cuddled cu=kʌ dd=d le=əl d=d
+cuddling cu=kʌ dd=d l=l ing=ɪŋ
+cuddly cu=kʌ dd=d l=l y=iː
+cuddy cu=kʌ dd=d y=iː
 cude c=k u=juː de=d
 cudgel c=k udg=ʌdʒ el=əl
 cudgels c=k udg=ʌdʒ e=ə ls=lz
@@ -22762,12 +22912,13 @@ cutworms cu=kʌ t=t wor=wɜː ms=mz
 cuvelier c=k u=juː ve=v l=l i=iː er=ɜː
 cuyahoga cu=k y=aɪ a=ə h=h o=əʊ g=ɡ a=ə
 cuyler cu=k yl=aɪl er=ɜː
+cuzzort cu=kʌ zzo=z r=ɜː t=t
 cwiertnia c=k w=w ie=iː r=ɹ t=t n=n i=iː a=ə
 cwik c=k w=w ik=ɪk
 cwikla c=k w=w ik=ɪk l=l a=ə
 cwiklinski c=k w=w ik=ɪk l=l in=ɪn s=s k=k i=iː
 cwynar c=k w=w yna=ɪn r=ɜː
-cy cy=saɪ
+cy c=s y=aɪ
 cyan cy=saɪ an=æn
 cyanamid cy=saɪ an=æn a=ə mi=mɪ d=d
 cyanazine cy=saɪ a=ə n=n a=ə z=z i=iː ne=n
@@ -22865,7 +23016,7 @@ cytoplasm cy=saɪ t=t o=ə p=p la=læ s=z m=əm
 cytoplasmic cy=saɪ t=t o=ə p=p la=læ s=z m=m ic=ɪk
 cytotech cy=saɪ t=t o=əʊ t=t ech=ɛk
 cytotechs cy=saɪ t=t o=əʊ t=t ech=ɛk s=s
-da da=dɒ
+da d=d a=ɒ
 daane daa=dɒ ne=n
 daas daa=dɒ s=s
 dab d=d ab=æb
@@ -22900,7 +23051,9 @@ dacy da=deɪ cy=siː
 dad d=d ad=æd
 dada da=dɒ da=dɒ
 dadamo da=dɒ da=dɒ m=m o=əʊ
+daddario da=dɒ dd=d ar=ɒɹ io=iːəʊ
 daddies d=d add=æd ies=iːz
+daddona da=dɒ dd=d o=əʊ n=n a=ə
 daddy d=d add=æd y=iː
 dade d=d ade=eɪd
 dadeland d=d ade=eɪd l=l a=ə n=n d=d
@@ -23285,8 +23438,10 @@ daphnis d=d aph=æf n=n i=ə s=s
 dapice da=dɒ p=p ice=ɪs
 dapolito da=dɒ p=p o=əʊ l=l i=iː t=t o=əʊ
 daponte da=dɒ p=p o=əʊ n=n t=t e=eɪ
+dapozzo d=d a=ə po=pɒ zz=z o=əʊ
 dapp d=d app=æp
 dapper d=d app=æp er=ɜː
+dapuzzo d=d a=ə pu=pʌ zz=z o=əʊ
 daquila da=dɒ qu=kw i=iː l=l a=ə
 dar d=d ar=ɒɹ
 dara da=dæ r=ɹ a=ə
@@ -23598,6 +23753,10 @@ daywalt d=d ay=eɪ w=w a=ə l=l t=t
 daze d=d aze=eɪz
 dazed d=d aze=eɪz d=d
 dazey d=d az=eɪz ey=iː
+dazzle da=dæ zz=z le=əl
+dazzled da=dæ zz=z le=əl d=d
+dazzling da=dæ zz=z l=əl ing=ɪŋ
+dazzo da=dæ zz=z o=əʊ
 dbase d=diː b=b ase=eɪs
 dc d=diː c=siː
 de d=d e=iː
@@ -23731,6 +23890,8 @@ debator d=d e=iː b=b ato=eɪt r=ɜː
 debauche d=d e=ɛ bau=baʊ che=k
 debauchery d=d e=ə b=b au=ɔː ch=tʃ er=ɜː y=iː
 debaun d=d e=ɛ bau=baʊ n=n
+debbie d=d e=ɛ bb=b ie=iː
+debby d=d e=ɛ bb=b y=iː
 debeer d=d eb=ɛb eer=ɪɹ
 debeers d=d e=ɪ b=b eer=ɪɹ s=z
 debelak d=d eb=ɛb e=ɪ l=l a=ə k=k
@@ -24640,6 +24801,7 @@ delphic d=d el=ɛl ph=f ic=ɪk
 delphina d=d el=ɛl ph=f i=iː n=n a=ə
 delphine d=d el=ɛl ph=f i=iː ne=niː
 delpino d=d el=ɛl p=p i=iː n=n o=əʊ
+delpizzo d=d el=ɛl p=p i=iː zz=z o=əʊ
 delponte d=d el=ɛl p=p o=əʊ n=n t=t e=iː
 delpozo d=d el=ɛl p=p o=əʊ z=z o=əʊ
 delprete d=d el=ɛl p=p r=ɹ ete=iːt
@@ -27404,6 +27566,10 @@ documented d=d oc=ɒk u=jə me=mɛ n=n t=t e=ə d=d
 documenting d=d oc=ɒk u=jə m=m en=ən t=t ing=ɪŋ
 documents d=d oc=ɒk u=jə m=m en=ən t=t s=s
 dodaro d=d o=əʊ d=d ar=ɒɹ o=əʊ
+dodd do=dɒ dd=d
+doddering do=dɒ dd=d er=ɜː ing=ɪŋ
+doddridge do=dɒ dd=d r=ɹ idge=ɪdʒ
+dodds do=dɒ dd=d s=z
 dodi d=d o=əʊ d=d i=iː
 dodo d=d o=əʊ d=d o=əʊ
 dodos d=d o=əʊ d=d os=əʊz
@@ -27448,7 +27614,14 @@ dogfight d=d og=ɒɡ figh=faɪ t=t
 dogfights d=d o=ɔː g=ɡ figh=faɪ t=t s=s
 dogfish d=d o=ɔː g=ɡ f=f ish=ɪʃ
 dogged d=d o=ɔː gge=ɡ d=d
-doggerel do=dɒ gge=ɡ r=ɜː el=əl
+doggedly d=d o=ɔː gg=ɡ e=ə d=d l=l y=iː
+doggerel do=dɒ gg=ɡ er=ɜː el=əl
+doggett do=dɒ gg=ɡ e=ɪ tt=t
+doggie d=d o=ɔː gg=ɡ ie=iː
+doggies d=d o=ɔː gg=ɡ ies=iːz
+dogging d=d o=ɔː gg=ɡ ing=ɪŋ
+doggone d=d o=ɔː gg=ɡ o=ɔː ne=n
+doggy d=d o=ɔː gg=ɡ y=iː
 doghouse d=d o=ɔː g=ɡ h=h ou=aʊ se=s
 doghouses d=d o=ɔː g=ɡ h=h ou=aʊ s=s es=ɪz
 dogle d=d o=əʊ g=ɡ le=əl
@@ -27958,6 +28131,7 @@ dougall d=d ou=aʊ g=ɡ a=ə ll=l
 dougan d=d ou=aʊ g=ɡ a=ə n=n
 dougans d=d ou=aʊ g=ɡ a=ə ns=n
 dougens d=d ou=aʊ g=ɡ e=ə ns=nz
+douggins d=d ou=uː gg=ɡ i=ə ns=nz
 dough d=d ough=əʊ
 doughboy d=d ough=əʊ b=b oy=ɔɪ
 dougher d=d ough=əʊ er=ɜː
@@ -28082,6 +28256,7 @@ downtime d=d own=aʊn t=t ime=aɪm
 downtown d=d own=aʊn t=t own=aʊn
 downtowns d=d own=aʊn t=t own=aʊn s=z
 downtrend d=d own=aʊn t=t re=ɹɛ n=n d=d
+downtrodden d=d own=aʊn t=t ro=ɹɒ dd=d en=ən
 downturn d=d own=aʊn t=t urn=ɜːn
 downturns d=d own=aʊn t=t ur=ɜː ns=nz
 downum d=d own=aʊn um=əm
@@ -28398,6 +28573,7 @@ drizzling d=d r=ɹ izz=ɪz l=əl ing=ɪŋ
 drizzly d=d r=ɹ izz=ɪz l=l y=iː
 drobkov d=d r=ɹ o=ɔː b=b k=k o=ɔː v=v
 drobny d=d r=ɹ ob=ɒb n=n y=iː
+droddy d=d ro=ɹɒ dd=d y=iː
 droege d=d r=ɹ oe=əʊ ge=dʒ
 droessler d=d r=ɹ oe=əʊ ss=s le=əl r=ɜː
 droge d=d r=ɹ o=əʊ ge=dʒ
@@ -28468,6 +28644,8 @@ drozda d=d ro=ɹɒ z=z d=d a=ə
 drozdowski d=d r=ɹ o=ə z=z d=d ow=ɔːf s=s k=k i=iː
 dru d=d ru=ɹuː
 drub d=d r=ɹ ub=ʌb
+drubbed d=d ru=ɹʌ bbe=b d=d
+drubbing d=d ru=ɹʌ bb=b ing=ɪŋ
 druce d=d ru=ɹuː ce=s
 drucie d=d r=ɹ uc=ʌk ie=iː
 druck d=d r=ɹ uck=ʌk
@@ -28541,7 +28719,7 @@ drysdale d=d ry=ɹaɪ s=z d=d ale=eɪl
 dryser d=d ry=ɹaɪ s=s er=ɜː
 drywall d=d ry=ɹaɪ wa=wɒ ll=l
 dss d=diː s=ɛs s=ɛs
-du du=duː
+du d=d u=uː
 dual du=duː a=ə l=l
 dualism du=duː a=ə li=lɪ s=z m=əm
 dualisms du=duː a=ə li=lɪ s=z m=əm s=z
@@ -28558,6 +28736,10 @@ dubai du=duː b=b ai=aɪ
 dubarry du=duː b=b arr=ɛɹ y=iː
 dubas du=duː b=b a=ə s=z
 dubay d=d ub=ʌb ay=eɪ
+dubbed du=dʌ bbe=b d=d
+dubberly du=dʌ bb=b er=ɜː l=l y=iː
+dubbing du=dʌ bb=b ing=ɪŋ
+dubbs du=dʌ bb=b s=z
 dubcek d=d ub=ʌb ce=tʃɛ k=k
 dube du=duː be=b
 dubeau d=d u=ə b=b eau=əʊ
@@ -28784,6 +28966,8 @@ dumais d=d u=ə mais=meɪ
 duman du=duː m=m a=ə n=n
 dumas du=duː m=m a=ə s=z
 dumbass du=dʌ m=m b=b ass=æs
+dumbbell du=dʌ m=m bb=b ell=ɛl
+dumbbells du=dʌ m=m bb=b ell=ɛl s=z
 dumbledore du=dʌ m=m b=b le=əl d=d ore=ɔːɹ
 dumbo du=dʌ m=m b=b o=əʊ
 dumenil du=duː m=m en=ən il=ɪl
@@ -29187,6 +29371,7 @@ dzik d=d z=z ik=ɪk
 each ea=iː ch=tʃ
 eachan ea=iː ch=tʃ a=ə n=n
 eachus ea=iː ch=tʃ us=əs
+eaddy ea=iː dd=d y=iː
 eade ea=iː de=d
 eader ea=iː d=d er=ɜː
 eades ea=iː des=dz
@@ -29371,7 +29556,7 @@ eavenson ea=iː v=v e=ɪ n=n s=s o=ə n=n
 eaves ea=iː ves=vz
 eavesdrop ea=iː ves=vz d=d r=ɹ op=ɒp
 eavesdropping ea=iː ves=vz d=d r=ɹ opp=ɒp ing=ɪŋ
-eb eb=ɛb
+eb e=ɛ b=b
 eba e=iː b=b a=ə
 eban eb=ɛb a=ə n=n
 ebanks eb=ɛb a=ə nk=ŋk s=s
@@ -29380,6 +29565,15 @@ ebarb eb=ɛb ar=ɒɹ b=b
 ebasco eb=ɛb as=æs c=k o=əʊ
 ebaugh eb=ɛb augh=ɔː
 ebay e=iː b=b ay=eɪ
+ebb e=ɛ bb=b
+ebba e=ɛ bb=b a=ə
+ebbed e=ɛ bb=b e=ə d=d
+ebben e=ɛ bb=b en=ən
+ebbers e=ɛ bbe=b rs=ɜːz
+ebbert e=ɛ bb=b er=ɜː t=t
+ebbing e=ɛ bb=b ing=ɪŋ
+ebbs e=ɛ bb=b s=z
+ebby e=ɛ bb=b y=iː
 ebel eb=ɛb el=əl
 ebeling eb=ɛb el=əl ing=ɪŋ
 eben eb=ɛb en=ən
@@ -29989,7 +30183,7 @@ ejecting e=ɪ j=dʒ ec=ɛk t=t ing=ɪŋ
 ejection e=ɪ j=dʒ ec=ɛk tio=ʃə n=n
 ejects e=ɪ j=dʒ ec=ɛk t=t s=s
 ejup e=iː j=dʒ u=ə p=p
-ek ek=ɛk
+ek e=ɛ k=k
 eka ek=ɛk a=ə
 ekaterina e=eɪ ka=kɒ te=tɛ r=ɹ i=iː n=n a=ə
 ekberg ek=ɛk b=b er=ɜː g=ɡ
@@ -30010,7 +30204,7 @@ ekofisk ek=ɛk o=ə f=f is=ɪs k=k
 eksportfinans ek=ɛk s=s p=p or=ɔːɹ t=t f=f in=ɪn a=ə ns=nz
 ekstrand ek=ɛk s=s t=t r=ɹ a=ə n=n d=d
 ekstrom ek=ɛk s=s t=t r=ɹ o=ə m=m
-el el=ɛl
+el e=ɛ l=l
 ela el=ɛl a=ə
 elaborate e=ɪ l=l abo=æb r=ɹ a=ə te=t
 elaborated e=ɪ la=læ bor=bɜː at=eɪt e=ə d=d
@@ -30465,7 +30659,7 @@ elza el=ɛl z=z a=ə
 elzey el=ɛl z=z ey=iː
 elzinga el=ɛl z=z i=iː ng=ŋɡ a=ə
 elzy el=ɛl z=z y=iː
-em em=ɛm
+em e=ɛ m=m
 ema e=iː m=m a=ə
 emacs e=iː m=m ac=æk s=s
 emad e=iː m=m ad=æd
@@ -30525,6 +30719,13 @@ ember em=ɛm b=b er=ɜː
 embers em=ɛm be=b rs=ɜːz
 emberson em=ɛm b=b er=ɜː s=s o=ə n=n
 emberton e=ɪ m=m b=b er=ɜː t=t o=ə n=n
+embezzle e=ɪ m=m be=bɛ zz=z le=əl
+embezzled e=ɪ m=m be=bɛ zz=z le=əl d=d
+embezzlement em=ɛm be=bɛ zz=z le=əl m=m en=ən t=t
+embezzler e=ɪ m=m be=bɛ zz=z le=əl r=ɜː
+embezzlers e=ɪ m=m be=bɛ zz=z le=əl rs=ɜːz
+embezzles e=ɪ m=m be=bɛ zz=z le=əl s=z
+embezzling e=ɪ m=m be=bɛ zz=z l=əl ing=ɪŋ
 embitter em=ɛm b=b itt=ɪt er=ɜː
 embittered em=ɛm b=b itt=ɪt ere=ɜː d=d
 emblazon em=ɛm b=b l=l az=eɪz o=ə n=n
@@ -30768,7 +30969,7 @@ emulsifies e=ɪ mu=mʌ l=l s=s i=ə f=f ies=aɪz
 emulsify e=ɪ mu=mʌ l=l s=s i=ə fy=faɪ
 emulsifying e=ɪ mu=mʌ l=l s=s i=ə fy=faɪ ing=ɪŋ
 emulsion e=ɪ mu=mʌ l=l sio=ʃə n=n
-en en=ɛn
+en e=ɛ n=n
 ena en=ɛn a=ə
 enable en=ɛn a=eɪ b=b le=əl
 enabled en=ɛn a=eɪ b=b le=əl d=d
@@ -31221,6 +31422,7 @@ entanglement en=ɛn ta=tæ ng=ŋɡ le=əl m=m en=ən t=t
 entanglements en=ɛn ta=tæ ng=ŋɡ le=əl m=m en=ən t=t s=s
 entangling e=ɪ n=n t=t ang=æŋ l=l ing=ɪŋ
 ente en=ɛn t=t e=eɪ
+entebbe en=ɛn te=tɛ bb=b e=iː
 entenmann en=ɛn t=t en=ən m=m a=ə nn=n
 enter en=ɛn t=t er=ɜː
 entered en=ɛn t=t ere=ɜː d=d
@@ -31727,7 +31929,7 @@ erxleben er=ɜː x=ks l=l eb=ɛb en=ən
 erykah e=ɛ r=ɹ y=iː k=k ah=ə
 erythropoietin e=ɛ r=ɹ y=ɪ th=θ r=ɹ o=ə poie=pɔɪ t=t in=ɪn
 erzurum er=ɜː z=z ur=ʊɹ um=əm
-es es=ɛs
+es e=ɛ s=s
 esarey esa=ɛs r=ɜː ey=iː
 esau e=iː s=s au=ɔː
 esbenshade es=ɛs b=b e=ɪ n=n sh=ʃ a=ə de=d
@@ -31965,7 +32167,7 @@ estuaries es=ɛs tu=tʃuː ar=ɛɹ ies=iːz
 estuary es=ɛs tu=tʃuː ar=ɛɹ y=iː
 esty es=ɛs t=t y=iː
 esworthy es=ɛs wor=wɜː th=ð y=iː
-et et=ɛt
+et e=ɛ t=t
 etcetera et=ɛt ce=sɛ t=t er=ɜː a=ə
 etch e=ɛ tch=tʃ
 etched e=ɛ tch=tʃ ed=t
@@ -32135,7 +32337,7 @@ eustis eu=juː s=s t=t i=ə s=s
 euthanize eu=juː th=θ a=ə n=n ize=aɪz
 eutsey eu=juː t=t s=s ey=iː
 eutsler eu=juː t=t s=s l=l er=ɜː
-ev ev=ɛv
+ev e=ɛ v=v
 eva e=eɪ v=v a=ə
 evacuate e=ɪ v=v ac=æk u=jə ate=eɪt
 evacuee e=ɪ v=v ac=æk u=juː ee=iː
@@ -32933,6 +33135,8 @@ ezoe ez=ɛz oe=əʊ
 ezola e=eɪ z=z o=əʊ l=l a=ə
 ezra ez=ɛz r=ɹ a=ə
 ezrachi ez=ɛz ra=ɹɒ ch=tʃ i=iː
+ezzell e=ɛ zz=z e=ə ll=l
+ezzo e=ɛ zz=z o=əʊ
 faal faa=fɒ l=l
 faas faa=fɒ s=z
 fab f=f ab=æb
@@ -33673,6 +33877,7 @@ fazekas fa=fæ z=z e=ɪ k=k a=ə s=z
 fazenbaker f=f az=eɪz en=ən b=b ak=eɪk er=ɜː
 fazio f=f az=eɪz io=iːəʊ
 fazzino fa=fɒ zz=ts i=iː n=n o=əʊ
+fazzio fa=fæ zz=z io=iːəʊ
 fe f=f e=eɪ
 feagan fe=f a=eɪ g=ɡ a=ə n=n
 feagans f=f ea=iː g=ɡ a=ə ns=nz
@@ -33734,9 +33939,9 @@ fecteau f=f e=ɪ c=k t=t eau=əʊ
 fecundity f=f e=ə cu=kʌ n=n di=dɪ t=t y=iː
 fed fe=fɛ d=d
 fedak fe=fɛ d=d a=ə k=k
-fedder f=f edd=ɛd er=ɜː
-fedders f=f edde=ɛd rs=ɜːz
-feddersen f=f edd=ɛd er=ɜː s=s en=ən
+fedder fe=fɛ dd=d er=ɜː
+fedders fe=fɛ dde=d rs=ɜːz
+feddersen fe=fɛ dd=d er=ɜː s=s en=ən
 fede f=f e=iː de=d
 fedeccredito fe=fɛ d=d e=ɛ cc=k re=ɹɛ d=d i=iː t=t o=əʊ
 fedele fe=fɛ de=d le=əl
@@ -34173,6 +34378,7 @@ ferronickel fe=fɛ rr=ɹ o=ə nic=nɪ k=k el=əl
 ferrotype fe=fɛ rr=ɹ o=ə t=t y=aɪ pe=p
 ferrous fe=fɛ rr=ɹ ous=əs
 ferrucci f=f err=ɜː ucc=uːtʃ i=iː
+ferruzzi fe=fɛ rr=ɹ u=uː zz=z i=iː
 ferry fe=fɛ rr=ɹ y=iː
 ferryboat fe=fɛ rr=ɹ y=iː b=b oat=əʊt
 ferryboats fe=fɛ rr=ɹ y=iː b=b oat=əʊt s=s
@@ -34286,7 +34492,7 @@ fewer f=f ew=juː er=ɜː
 fewest f=f ew=juː e=ə s=s t=t
 feyen f=f eye=aɪ n=n
 fez fe=fɛ z=z
-fi fi=faɪ
+fi f=f i=aɪ
 fiacco f=f i=iː a=ɒ cc=k o=əʊ
 fiala f=f i=iː a=ɒ l=l a=ə
 fialkowski f=f i=iː a=ə l=l k=k ow=ɔːf s=s k=k i=iː
@@ -34616,6 +34822,7 @@ finanza f=f in=ɪn an=æn z=z a=ə
 finanziaria f=f in=ɪn an=æn z=z i=iː ar=ɛɹ i=iː a=ə
 finanziario f=f in=ɪn an=æn z=z i=iː ar=ɛɹ io=iːəʊ
 finarte f=f in=ɪn ar=ɒɹ te=t
+finazzo f=f i=iː na=nɒ zz=z o=əʊ
 finbar f=f in=ɪn b=b ar=ɒɹ
 finberg f=f in=ɪn b=b er=ɜː g=ɡ
 fincannon f=f in=ɪn c=k a=ə nn=n o=ɒ n=n
@@ -34932,6 +35139,8 @@ fitz fi=fɪ tz=ts
 fitzco fi=fɪ tz=ts c=k o=əʊ
 fitzer fi=fɪ tz=ts er=ɜː
 fitzgerald fi=fɪ tz=ts ge=dʒɛ r=ɹ a=ə l=l d=d
+fitzgibbon fi=fɪ tz=ts gi=dʒɪ bb=b o=ə n=n
+fitzgibbons fi=fɪ tz=ts gi=dʒɪ bb=b o=ə ns=nz
 fitzharris fi=fɪ tz=ts ha=hæ rr=ɹ is=ɪs
 fitzhenry fi=fɪ tz=ts he=hɛ n=n r=ɜː y=iː
 fitzhugh fi=fɪ tz=ts h=h ugh=juː
@@ -35341,6 +35550,7 @@ flodin f=f l=l o=əʊ d=d in=ɪn
 floe f=f l=l oe=əʊ
 floersheim f=f loe=lɔː r=ɹ sh=ʃ ei=aɪ m=m
 flog f=f l=l og=ɒɡ
+flogging f=f l=l o=ɒ gg=ɡ ing=ɪŋ
 flohr f=f l=l o=ɒ hr=ɹ
 flom f=f l=l om=ɒm
 flonorial f=f l=l o=ɒ n=n or=ɔːɹ i=iː a=ə l=l
@@ -35553,6 +35763,7 @@ focused f=f o=əʊ c=k u=ə sed=st
 focuses f=f o=əʊ c=k us=əs es=ɪz
 focusing f=f o=əʊ c=k us=əs ing=ɪŋ
 focussed f=f o=əʊ c=k u=ə ss=s ed=t
+fodder fo=fɒ dd=d er=ɜː
 fodera f=f o=əʊ d=d e=ɛ r=ɹ a=ə
 fodor f=f o=əʊ dor=dɜː
 foe f=f oe=əʊ
@@ -35569,6 +35780,9 @@ fogelberg f=f o=əʊ g=ɡ el=əl b=b er=ɜː g=ɡ
 fogelman f=f o=əʊ g=ɡ el=əl m=m a=ə n=n
 fogelson f=f o=əʊ g=ɡ el=əl s=s o=ə n=n
 fogerty f=f og=ɒdʒ er=ɜː t=t y=iː
+fogg fo=fɒ gg=ɡ
+foggiest fo=fɒ gg=ɡ i=iː e=ə s=s t=t
+foggy fo=fɒ gg=ɡ y=iː
 fogle f=f o=əʊ g=ɡ le=əl
 fogleman f=f o=əʊ g=ɡ le=əl m=m a=ə n=n
 fogler f=f o=əʊ g=ɡ le=əl r=ɜː
@@ -36435,7 +36649,10 @@ frayne f=f r=ɹ ay=eɪ ne=n
 fraze f=f r=ɹ aze=eɪz
 frazee f=f r=ɹ a=ə z=z ee=iː
 frazer f=f r=ɹ az=eɪz er=ɜː
+frazzano f=f r=ɹ a=ə zz=z a=ɒ n=n o=əʊ
 frazzini f=f ra=ɹɒ zz=ts i=iː n=n i=iː
+frazzle f=f ra=ɹæ zz=z le=əl
+frazzled f=f ra=ɹæ zz=z le=əl d=d
 fread f=f r=ɹ ead=ɛd
 freak f=f r=ɹ ea=iː k=k
 freaked f=f r=ɹ ea=iː ked=kt
@@ -36672,6 +36889,7 @@ frew f=f rew=ɹuː
 frewen f=f rew=ɹuː en=ən
 frewin f=f rew=ɹuː in=ɪn
 freyermuth f=f r=ɜː eye=aɪ r=ɹ m=m uth=uːθ
+frezza f=f re=ɹɛ zz=z a=ə
 friar f=f ria=ɹaɪ r=ɜː
 friars f=f ria=ɹaɪ rs=ɜːz
 friary f=f ria=ɹaɪ r=ɜː y=iː
@@ -36840,6 +37058,7 @@ froelich f=f r=ɹ oe=əʊ l=l ich=ɪk
 froemming f=f r=ɹ oe=əʊ mm=m ing=ɪŋ
 froese f=f r=ɹ oe=əʊ se=s
 frog f=f r=ɹ og=ɒɡ
+frogg f=f ro=ɹɒ gg=ɡ
 frogge f=f ro=ɹɒ gge=ɡ
 frogman f=f r=ɹ og=ɒɡ m=m an=æn
 frogmen f=f r=ɹ og=ɒɡ m=m e=ɪ n=n
@@ -36979,6 +37198,8 @@ fuckin f=f uck=ʌk in=ɪn
 fucking f=f uck=ʌk ing=ɪŋ
 fucks f=f uck=ʌk s=s
 fudala f=f ud=uːd a=ɒ l=l a=ə
+fuddle fu=fʊ dd=d le=əl
+fuddles fu=fʊ dd=d le=əl s=z
 fuddrucker f=f udd=ʌd r=ɹ u=ə ck=k er=ɜː
 fuddruckers f=f udd=ʌd r=ɹ u=ə cke=k rs=ɜːz
 fuddy f=f udd=ʌd y=iː
@@ -37305,6 +37526,9 @@ futurist f=f u=juː tur=tʃɜː is=ɪs t=t
 futuristic f=f u=juː tur=tʃɜː is=ɪs t=t ic=ɪk
 futurists f=f u=juː tur=tʃɜː is=ɪs t=t s=s
 fuzes f=f u=juː z=z es=ɪz
+fuzz fu=fʌ zz=z
+fuzzier fu=fʌ zz=z i=iː er=ɜː
+fuzzy fu=fʌ zz=z y=iː
 fye fye=faɪ
 fyfe fy=faɪ fe=f
 fyffe fy=faɪ ffe=f
@@ -37312,7 +37536,7 @@ fyffes f=f y=ɪ ffe=f s=s
 fyke fy=faɪ ke=k
 fyodor f=f yo=jəʊ dor=dɜː
 fyodorov f=f yo=jəʊ dor=dɜː o=ɔː v=v
-ga ga=ɡɒ
+ga g=ɡ a=ɒ
 gaal gaa=ɡɒ l=l
 gaar ga=ɡ ar=ɒɹ
 gaarder ga=ɡ ar=ɒɹ d=d er=ɜː
@@ -37322,6 +37546,7 @@ gabaldon ga=ɡɒ ba=bɒ l=l d=d o=ɔː n=n
 gabardine g=ɡ ab=æb ard=ɜːd i=iː ne=n
 gabardines g=ɡ ab=æb ard=ɜːd i=iː nes=nz
 gabay g=ɡ ab=æb ay=eɪ
+gabbard g=ɡ a=ə bb=b ar=ɒɹ d=d
 gabbert g=ɡ abb=æb er=ɜː t=t
 gabbing g=ɡ abb=æb ing=ɪŋ
 gabbro g=ɡ abb=æb r=ɹ o=əʊ
@@ -37603,6 +37828,7 @@ gallucci ga=ɡɒ ll=l ucc=uːtʃ i=iː
 galluccio ga=ɡɒ ll=l ucc=uːtʃ io=iːəʊ
 gallup gal=ɡæ l=l u=ə p=p
 gallus gal=ɡæ l=l us=əs
+galluzzo ga=ɡɒ ll=l u=uː zz=z o=əʊ
 gallway g=ɡ all=ɔːl w=w ay=eɪ
 galoob g=ɡ a=ə l=l oo=uː b=b
 galore g=ɡ a=ə l=l ore=ɔːɹ
@@ -38272,6 +38498,8 @@ gearing g=ɡ ear=ɪɹ ing=ɪŋ
 gears g=ɡ ear=ɪɹ s=z
 geary g=ɡ ear=ɪɹ y=iː
 gebauer g=ɡ e=ɛ bau=baʊ er=ɜː
+gebbia ge=dʒɛ bb=b i=iː a=ə
+gebbie ge=dʒɛ bb=b ie=iː
 gebel g=ɡ eb=ɛb el=əl
 gebert g=ɡ eb=ɛb er=ɜː t=t
 gebhard g=ɡ eb=ɛb h=h ard=ɜːd
@@ -38284,6 +38512,8 @@ gecko g=ɡ eck=ɛk o=əʊ
 geckos g=ɡ eck=ɛk os=əʊz
 ged g=ɡ e=ɛ d=d
 geddes g=ɡ edd=ɛd e=ə s=s
+geddie ge=dʒɛ dd=d ie=iː
+geddings ge=dʒɛ dd=d ing=ɪŋ s=z
 geddis g=ɡ edd=ɛd is=ɪs
 gedeon g=ɡ e=ɛ d=d eo=iːə n=n
 gedney ge=dʒɛ d=d n=n ey=iː
@@ -38313,6 +38543,7 @@ geffner g=ɡ eff=ɛf n=n er=ɜː
 geffre ge=dʒɛ ff=f re=ɜː
 gefinor g=ɡ e=ɛ fi=fɪ nor=nɜː
 gegenheimer g=ɡ eg=ɛɡ e=ɪ n=n h=h ei=aɪ m=m er=ɜː
+gegg ge=dʒɛ gg=ɡ
 gehl g=ɡ e=ɛ hl=l
 gehle ge=dʒɛ h=h le=əl
 gehlhausen g=ɡ e=ɛ hl=l hau=haʊ s=z en=ən
@@ -38870,6 +39101,7 @@ ghetto gh=ɡ e=ɛ tt=t o=əʊ
 ghettoize gh=ɡ e=ɛ tt=t o=əʊ ize=aɪz
 ghettos gh=ɡ e=ɛ tt=t os=əʊz
 ghez gh=ɡ ez=ɛz
+ghezzi gh=ɡ e=ɛ zz=z i=iː
 ghidella gh=ɡ id=ɪd ell=ɛl a=ə
 ghio gh=ɡ i=aɪ o=əʊ
 ghitis gh=ɡ i=iː ti=tɪ s=z
@@ -38918,10 +39150,15 @@ giap gi=dʒiː ap=æp
 giard gi=dʒiː ar=ɒɹ d=d
 giardi gi=dʒiː ar=ɒɹ d=d i=iː
 gib g=ɡ i=ɪ b=b
+gibb gi=dʒɪ bb=b
 gibbens g=ɡ ibb=ɪb e=ə ns=nz
 gibberish g=ɡ ibb=ɪb er=ɜː ish=ɪʃ
+gibbins gi=dʒɪ bb=b in=ɪn s=z
+gibble gi=dʒɪ bb=b le=əl
 gibbon g=ɡ ibb=ɪb o=ə n=n
+gibboney gi=dʒɪ bb=b o=ə n=n ey=iː
 gibbs g=ɡ ibb=ɪb s=z
+gibby gi=dʒɪ bb=b y=iː
 giberson gi=dʒɪ b=b er=ɜː s=s o=ə n=n
 gibert g=ɡ i=ɪ b=b er=ɜː t=t
 gibian g=ɡ i=ɪ b=b i=iː a=ə n=n
@@ -39705,6 +39942,13 @@ godbout g=ɡ od=ɒd b=b ou=aʊ t=t
 godby g=ɡ od=ɒd b=b y=iː
 goddam g=ɡ od=ɒd d=d am=æm
 goddammit g=ɡ od=ɒd d=d amm=æm it=ɪt
+goddard go=ɡɒ dd=d ard=ɜːd
+goddart go=ɡɒ dd=d ar=ɒɹ t=t
+goddeau go=ɡɒ dd=d eau=əʊ
+godden go=ɡɒ dd=d en=ən
+goddess go=ɡɒ dd=d ess=əs
+goddesses go=ɡɒ dd=d ess=əs es=ɪz
+godding go=ɡɒ dd=d ing=ɪŋ
 godek g=ɡ o=əʊ d=d e=ɪ k=k
 godette g=ɡ o=ə de=d tte=ɛt
 godfather g=ɡ od=ɒd fa=fɒ the=ð r=ɜː
@@ -39744,8 +39988,10 @@ godwin g=ɡ od=ɒd w=w in=ɪn
 godzilla g=ɡ od=ɒd z=z ill=ɪl a=ə
 goe g=ɡ oe=əʊ
 goeas g=ɡ o=əʊ ea=iːə s=z
+goebbels g=ɡ oe=əʊ bb=b e=ə ls=lz
 goebel g=ɡ oe=əʊ b=b el=əl
 goecke g=ɡ oe=əʊ cke=k
+goedde g=ɡ oe=əʊ dde=d
 goede g=ɡ oe=əʊ de=d
 goedecke g=ɡ oe=əʊ d=d e=ɪ cke=k
 goeden g=ɡ oe=əʊ d=d en=ən
@@ -39800,6 +40046,11 @@ goforth g=ɡ o=əʊ f=f or=ɔːɹ th=θ
 goga g=ɡ o=əʊ g=ɡ a=ə
 gogan g=ɡ o=əʊ g=ɡ a=ə n=n
 gogel g=ɡ o=əʊ g=ɡ el=əl
+goggans go=ɡɒ gg=ɡ a=ə ns=nz
+goggin go=ɡɒ gg=ɡ in=ɪn
+goggins go=ɡɒ gg=ɡ in=ɪn s=z
+goggle go=ɡɒ gg=ɡ le=əl
+goggles go=ɡɒ gg=ɡ le=əl s=z
 gogh g=ɡ ogh=əʊ
 goghs g=ɡ ogh=əʊ s=z
 goglia g=ɡ og=ɒɡ l=l i=iː a=ə
@@ -40503,6 +40754,10 @@ grandbaby g=ɡ r=ɹ an=æn d=d ba=beɪ b=b y=iː
 grandberry g=ɡ r=ɹ an=æn d=d b=b err=ɛɹ y=iː
 grandchamp g=ɡ r=ɹ an=æn d=d ch=tʃ am=æm p=p
 grandchild g=ɡ r=ɹ an=æn d=d ch=tʃ i=aɪ l=l d=d
+granddad g=ɡ r=ɹ an=æn dd=d ad=æd
+granddaddy g=ɡ r=ɹ an=æn dd=d add=æd y=iː
+granddaughter g=ɡ r=ɹ an=æn dd=d augh=ɔː t=t er=ɜː
+granddaughters g=ɡ r=ɹ an=æn dd=d augh=ɔː te=t rs=ɜːz
 grande g=ɡ r=ɹ an=æn de=d
 grander g=ɡ r=ɹ an=æn d=d er=ɜː
 granderson g=ɡ r=ɹ an=æn d=d er=ɜː s=s o=ə n=n
@@ -41177,6 +41432,8 @@ groff g=ɡ r=ɹ off=ɔːf
 groft g=ɡ r=ɹ of=ɒf t=t
 grog g=ɡ r=ɹ og=ɒɡ
 grogan g=ɡ r=ɹ o=əʊ g=ɡ a=ə n=n
+grogg g=ɡ ro=ɹɒ gg=ɡ
+groggy g=ɡ ro=ɹɒ gg=ɡ y=iː
 groh g=ɡ r=ɹ oh=əʊ
 grohman g=ɡ r=ɹ o=əʊ hm=m a=ə n=n
 grohs g=ɡ r=ɹ oh=əʊ s=s
@@ -41335,6 +41592,9 @@ grua g=ɡ ru=ɹuː a=ə
 grub g=ɡ r=ɹ ub=ʌb
 gruba g=ɡ ru=ɹuː b=b a=ə
 grubaugh g=ɡ r=ɹ ub=ʌb augh=ɔː
+grubb g=ɡ ru=ɹʌ bb=b
+grubbs g=ɡ ru=ɹʌ bb=b s=z
+grubby g=ɡ ru=ɹʌ bb=b y=iː
 grube g=ɡ ru=ɹuː be=b
 gruben g=ɡ r=ɹ ub=ʌb en=ən
 gruber g=ɡ ru=ɹuː b=b er=ɜː
@@ -41422,7 +41682,7 @@ grzeskowiak g=ɡ r=ɜː z=z e=ɪ s=s k=k ow=aʊ i=iː ak=æk
 grzyb g=ɡ r=ɜː z=z y=ɪ b=b
 grzybowski g=ɡ r=ɜː z=z y=ɪ b=b ow=aʊ s=s k=k i=iː
 grzywinski g=ɡ r=ɜː z=z y=ɪ w=w in=ɪn s=s k=k i=iː
-gu gu=ɡuː
+gu g=ɡ u=uː
 guacamole g=ɡ ua=wɒ c=k a=ə m=m o=əʊ l=l e=iː
 guadagno gu=ɡ a=ɒ da=dɒ g=ɡ n=n o=əʊ
 guadalcanal g=ɡ ua=wɒ d=d a=ə l=l c=k a=ə n=n al=æl
@@ -41484,6 +41744,8 @@ guava g=ɡ ua=wɒ v=v a=ə
 guavas g=ɡ ua=wɒ v=v a=ə s=z
 guay gu=ɡ ay=eɪ
 guba gu=ɡuː b=b a=ə
+gubbels gu=ɡʌ bb=b e=ə ls=lz
+gubbins gu=ɡʌ bb=b in=ɪn s=z
 guber g=ɡ u=juː b=b er=ɜː
 guberman gu=ɡuː b=b er=ɜː m=m a=ə n=n
 gubernatorial gu=ɡuː b=b er=ɜː n=n a=ə t=t or=ɔːɹ i=iː a=ə l=l
@@ -41555,7 +41817,7 @@ guffey g=ɡ uff=ʌf ey=iː
 guffin g=ɡ uff=ʌf in=ɪn
 guffy g=ɡ uff=ʌf y=iː
 gugel gu=ɡuː g=ɡ el=əl
-guggenheim gu=ɡuː gge=ɡ n=ən h=h ei=aɪ m=m
+guggenheim gu=ɡuː gg=ɡ en=ən h=h ei=aɪ m=m
 guggisberg g=ɡ ugg=ʌɡ is=ɪs b=b er=ɜː g=ɡ
 gugino gu=ɡuː gi=dʒiː n=n o=əʊ
 guglielmetti gu=ɡuː g=ɡ l=l i=iː el=ɛl me=mɛ tt=t i=iː
@@ -41914,7 +42176,14 @@ guzowski g=ɡ u=ə z=z ow=ɔːf s=s k=k i=iː
 guzy g=ɡ u=juː z=z y=iː
 guzzardo gu=ɡuː zz=ts ar=ɒɹ d=d o=əʊ
 guzzetta gu=ɡuː zz=ts e=ɛ tt=t a=ə
+guzzetti g=ɡ u=juː zz=z e=ɛ tt=t i=iː
 guzzi gu=ɡuː zz=ts i=iː
+guzzle gu=ɡʌ zz=z le=əl
+guzzler gu=ɡʌ zz=z l=l er=ɜː
+guzzlers gu=ɡʌ zz=z le=əl rs=ɜːz
+guzzles gu=ɡʌ zz=z le=əl s=z
+guzzling gu=ɡʌ zz=z l=əl ing=ɪŋ
+guzzo gu=ɡuː zz=z o=əʊ
 gwaltney g=ɡ wa=wɔː l=l t=t n=n ey=iː
 gwartney g=ɡ wa=wɔː r=ɹ t=t n=n ey=iː
 gway g=ɡ w=w ay=eɪ
@@ -41969,7 +42238,7 @@ habeas h=h ab=æb ea=iːə s=s
 habeck h=h a=ɒ b=b eck=ɛk
 habecker h=h ab=æb eck=ɛk er=ɜː
 habeeb h=h ab=æb ee=iː b=b
-habegger h=h ab=æb e=ɪ gge=ɡ r=ɜː
+habegger h=h ab=æb e=ɪ gg=ɡ er=ɜː
 habel h=h ab=æb el=əl
 habenicht h=h ab=æb e=ɪ n=n ic=ɪk ht=t
 haber h=h abe=eɪb r=ɜː
@@ -42139,6 +42408,7 @@ hagewood h=h age=eɪdʒ w=w ood=ʊd
 hagey ha=hæ ge=dʒ y=iː
 hagfish ha=hæ g=ɡ f=f ish=ɪʃ
 hagg h=h agg=æɡ
+haggadah h=h a=ə gg=ɡ a=ʌ d=d ah=ə
 haggan h=h agg=æɡ a=ə n=n
 haggar h=h agga=æɡ r=ɜː
 haggard h=h agg=æɡ ard=ɜːd
@@ -43634,6 +43904,7 @@ hazleton h=h az=eɪz le=əl t=t o=ə n=n
 hazlett ha=hæ z=z l=l e=ɪ tt=t
 hazlewood h=h az=eɪz le=əl w=w ood=ʊd
 hazy h=h az=eɪz y=iː
+hazzard ha=hæ zz=z ard=ɜːd
 he h=h e=iː
 heaberlin h=h ea=iː b=b er=ɜː l=l in=ɪn
 heacock h=h ea=iː c=k o=ə ck=k
@@ -43648,6 +43919,7 @@ headboards hea=hɛ d=d b=b oar=ɔːɹ ds=dz
 headcheese hea=hɛ d=d che=tʃ ese=iːz
 headcount hea=hɛ d=d c=k ou=aʊ n=n t=t
 headcounts hea=hɛ d=d c=k ou=aʊ n=n t=t s=s
+headdress hea=hɛ dd=d r=ɹ ess=ɛs
 headdresses hea=hɛ d=d d=d re=ɹɛ sse=sə s=z
 headed hea=hɛ d=d e=ə d=d
 headen hea=hɛ d=d en=ən
@@ -43836,6 +44108,7 @@ heavyset hea=hɛ v=v y=iː se=sɛ t=t
 heavyweight hea=hɛ v=v y=iː w=w eig=eɪ ht=t
 heavyweights hea=hɛ v=v y=iː w=w eig=eɪ ht=t s=s
 hebard he=hɛ b=b ard=ɜːd
+hebb he=hɛ bb=b
 hebda he=hɛ b=b d=d a=ə
 hebding he=hɛ b=b d=d ing=ɪŋ
 hebe h=h e=iː be=b
@@ -43888,10 +44161,10 @@ hectoring he=hɛ c=k tor=tɜː ing=ɪŋ
 hecuba he=hɛ c=k u=jə b=b a=ə
 heda h=h e=eɪ d=d a=ə
 hedberg he=hɛ d=d b=b er=ɜː g=ɡ
-hedda h=h edd=ɛd a=ə
-hedden h=h edd=ɛd en=ən
-hedding h=h edd=ɛd ing=ɪŋ
-heddy h=h edd=ɛd y=iː
+hedda he=hɛ dd=d a=ə
+hedden he=hɛ dd=d en=ən
+hedding he=hɛ dd=d ing=ɪŋ
+heddy he=hɛ dd=d y=iː
 hedeen he=hɛ d=d ee=iː n=n
 hedge h=h edge=ɛdʒ
 hedgecock h=h edge=ɛdʒ c=k ock=ɒk
@@ -43983,10 +44256,10 @@ hegemonic he=hɛ g=ɡ e=ə mo=mɒ n=n ic=ɪk
 hegemony h=h e=iː ge=dʒɛ m=m o=ə n=n y=iː
 hegenna he=hɛ g=ɡ enn=ɛn a=ə
 heger h=h e=iː g=ɡ er=ɜː
-hegg h=h egg=ɛɡ
+hegg he=hɛ gg=ɡ
 hegge he=hɛ gge=ɡ
-heggen h=h egg=ɛɡ en=ən
-heggie h=h egg=ɛɡ ie=iː
+heggen he=hɛ gg=ɡ en=ən
+heggie he=hɛ gg=ɡ ie=iː
 hegland he=hɛ g=ɡ l=l a=ə n=n d=d
 hegler he=hɛ g=ɡ l=l er=ɜː
 heglund he=hɛ g=ɡ l=l u=ə n=n d=d
@@ -44013,7 +44286,7 @@ heidbreder h=h ei=aɪ d=d b=b r=ɹ e=ɪ d=d er=ɜː
 heidbrink h=h ei=aɪ d=d b=b ri=ɹɪ nk=ŋk
 heide h=h ei=aɪ de=d
 heidecker h=h ei=aɪ d=d e=ɪ ck=k er=ɜː
-heidegger h=h ei=aɪ d=d e=ɪ gge=ɡ r=ɜː
+heidegger h=h ei=aɪ d=d e=ɪ gg=ɡ er=ɜː
 heidel h=h ei=aɪ d=d el=əl
 heidelberg h=h ei=aɪ d=d el=əl b=b er=ɜː g=ɡ
 heidelberger h=h ei=aɪ d=d el=əl b=b er=ɜː g=ɡ er=ɜː
@@ -44858,7 +45131,7 @@ heye h=h eye=aɪ
 heyen h=h eye=aɪ n=n
 heying h=h e=eɪ yi=ɪ ng=ŋ
 hezbollah he=hɛ z=z b=b oll=ɒl ah=ʌ
-hi hi=haɪ
+hi h=h i=aɪ
 hiaasen hia=haɪ a=ɒ s=s e=ɪ n=n
 hialeah hi=haɪ a=ə l=l eah=iːə
 hiam hi=haɪ a=ə m=m
@@ -44866,15 +45139,15 @@ hiatt hi=haɪ a=ə tt=t
 hiatus hi=haɪ at=eɪt us=əs
 hiawatha hi=haɪ a=ə wa=wɒ th=θ a=ə
 hibachi h=h i=ə ba=bɒ ch=tʃ i=iː
-hibbard h=h ibb=ɪb ard=ɜːd
-hibben h=h ibb=ɪb en=ən
-hibberd h=h ibb=ɪb er=ɜː d=d
-hibbert h=h ibb=ɪb er=ɜː t=t
-hibbett h=h ibb=ɪb e=ɪ tt=t
-hibbing h=h ibb=ɪb ing=ɪŋ
-hibbitts h=h ibb=ɪb itt=ɪt s=s
-hibbler h=h ibb=ɪb l=l er=ɜː
-hibbs h=h ibb=ɪb s=z
+hibbard hi=hɪ bb=b ard=ɜːd
+hibben hi=hɪ bb=b en=ən
+hibberd hi=hɪ bb=b er=ɜː d=d
+hibbert hi=hɪ bb=b er=ɜː t=t
+hibbett hi=hɪ bb=b e=ɪ tt=t
+hibbing hi=hɪ bb=b ing=ɪŋ
+hibbitts hi=hɪ bb=b itt=ɪt s=s
+hibbler hi=hɪ bb=b l=l er=ɜː
+hibbs hi=hɪ bb=b s=z
 hibdon hi=hɪ b=b d=d o=ə n=n
 hibernate h=h ib=aɪb er=ɜː n=n ate=eɪt
 hibernation h=h ib=aɪb er=ɜː n=n ati=eɪʃ o=ə n=n
@@ -44910,7 +45183,7 @@ hickson hi=hɪ ck=k s=s o=ə n=n
 hicksville hi=hɪ ck=k s=s v=v ille=ɪl
 hid hi=hɪ d=d
 hidalgo h=h i=ə d=d al=æl g=ɡ o=əʊ
-hidden h=h idd=ɪd en=ən
+hidden hi=hɪ dd=d en=ən
 hide h=h ide=aɪd
 hideaki h=h i=iː d=d e=eɪ a=ɒ k=k i=iː
 hideaway h=h ide=aɪd a=ə w=w ay=eɪ
@@ -44951,15 +45224,15 @@ higbee hi=hɪ g=ɡ b=b ee=iː
 higbie hi=hɪ g=ɡ b=b ie=iː
 higby hi=hɪ g=ɡ b=b y=iː
 higdon hi=hɪ g=ɡ d=d o=ə n=n
-higgason h=h igg=ɪɡ a=ə s=s o=ə n=n
-higgenbotham h=h igg=ɪɡ e=ɪ n=n b=b o=ə th=θ a=ə m=m
-higgens h=h igg=ɪɡ e=ə ns=nz
-higgerson h=h igg=ɪɡ er=ɜː s=s o=ə n=n
-higginbotham h=h igg=ɪɡ in=ɪn bo=bɒ th=θ a=ə m=m
-higginbottom h=h igg=ɪɡ in=ɪn b=b ott=ɒt o=ə m=m
-higgins h=h igg=ɪɡ in=ɪn s=z
-higginson h=h igg=ɪɡ in=ɪn s=s o=ə n=n
-higgs h=h igg=ɪɡ s=z
+higgason hi=hɪ gg=ɡ a=ə s=s o=ə n=n
+higgenbotham hi=hɪ gg=ɡ e=ɪ n=n b=b o=ə th=θ a=ə m=m
+higgens hi=hɪ gg=ɡ e=ə ns=nz
+higgerson hi=hɪ gg=ɡ er=ɜː s=s o=ə n=n
+higginbotham hi=hɪ gg=ɡ in=ɪn bo=bɒ th=θ a=ə m=m
+higginbottom hi=hɪ gg=ɡ in=ɪn b=b ott=ɒt o=ə m=m
+higgins hi=hɪ gg=ɡ in=ɪn s=z
+higginson hi=hɪ gg=ɡ in=ɪn s=s o=ə n=n
+higgs hi=hɪ gg=ɡ s=z
 high high=haɪ
 higham high=haɪ a=ə m=m
 highberger high=haɪ b=b er=ɜː g=ɡ er=ɜː
@@ -45455,6 +45728,7 @@ hobbies h=h obb=ɒb ies=iːz
 hobbing h=h obb=ɒb ing=ɪŋ
 hobbins h=h obb=ɒb in=ɪn s=z
 hobbit h=h obb=ɒb it=ɪt
+hobbits h=h o=ɔː bb=b it=ɪt s=s
 hobble h=h obb=ɒb le=əl
 hobbled h=h obb=ɒb le=əl d=d
 hobbles h=h obb=ɒb le=əl s=z
@@ -45515,6 +45789,10 @@ hocus h=h o=əʊ c=k us=əs
 hocutt h=h oc=ɒk u=ə tt=t
 hodak h=h o=əʊ d=d a=ə k=k
 hodapp h=h od=ɒd a=ə pp=p
+hodde ho=hɒ dde=d
+hodder ho=hɒ dd=d er=ɜː
+hodding ho=hɒ dd=d ing=ɪŋ
+hoddur ho=hɒ dd=d ur=ɜː
 hodel h=h o=əʊ d=d el=əl
 hodes h=h o=əʊ des=dz
 hodkinson h=h od=ɒd k=k in=ɪn s=s o=ə n=n
@@ -45616,7 +45894,13 @@ hogeland h=h og=ɒɡ e=ɪ l=l a=ə n=n d=d
 hogen h=h og=ɒɡ en=ən
 hogenson h=h og=ɒdʒ e=ɪ n=n s=s o=ə n=n
 hoger h=h o=əʊ g=ɡ er=ɜː
+hogg ho=hɒ gg=ɡ
+hoggan ho=hɒ gg=ɡ a=ə n=n
+hoggard ho=hɒ gg=ɡ ard=ɜːd
+hoggart ho=hɒ gga=ɡ r=ɜː t=t
+hoggatt ho=hɒ gg=ɡ a=ə tt=t
 hogge ho=hɒ gge=ɡ
+hogging h=h o=ɔː gg=ɡ ing=ɪŋ
 hogland h=h og=ɒɡ l=l a=ə n=n d=d
 hogle h=h o=əʊ g=ɡ le=əl
 hoglund h=h o=ɔː g=ɡ l=l u=ə n=n d=d
@@ -46621,6 +46905,14 @@ huan h=h ua=wɒ n=n
 huaneng h=h ua=wɒ n=n eng=ɛŋ
 huard h=h ua=wɒ r=ɹ d=d
 hub hu=hʌ b=b
+hubbard hu=hʌ bb=b ard=ɜːd
+hubbart hu=hʌ bba=b r=ɜː t=t
+hubbell hu=hʌ bb=b e=ə ll=l
+hubbert hu=hʌ bb=b er=ɜː t=t
+hubble hu=hʌ bb=b le=əl
+hubbs hu=hʌ bb=b s=z
+hubbub hu=hʌ bb=b u=ə b=b
+hubby hu=hʌ bb=b y=iː
 hubcap hu=hʌ b=b c=k ap=æp
 hubcaps hu=hʌ b=b c=k ap=æp s=s
 hubco hu=hʌ b=b c=k o=əʊ
@@ -46659,14 +46951,14 @@ hucksters hu=hʌ ck=k s=s te=t rs=ɜːz
 hud hu=hʌ d=d
 huda h=h ud=uːd a=ə
 hudak h=h ud=uːd a=ə k=k
-huddie h=h udd=ʌd ie=iː
-huddle h=h udd=ʌd le=əl
-huddled h=h udd=ʌd le=əl d=d
-huddles h=h udd=ʌd le=əl s=z
-huddleson h=h udd=ʌd le=əl s=s o=ə n=n
-huddleston h=h udd=ʌd le=əl s=s t=t o=ə n=n
-huddling h=h udd=ʌd l=əl ing=ɪŋ
-huddy h=h udd=ʌd y=iː
+huddie hu=hʌ dd=d ie=iː
+huddle hu=hʌ dd=d le=əl
+huddled hu=hʌ dd=d le=əl d=d
+huddles hu=hʌ dd=d le=əl s=z
+huddleson hu=hʌ dd=d le=əl s=s o=ə n=n
+huddleston hu=hʌ dd=d le=əl s=s t=t o=ə n=n
+huddling hu=hʌ dd=d l=əl ing=ɪŋ
+huddy hu=hʌ dd=d y=iː
 hudec h=h ud=uːd e=ɪ c=k
 hudecek hu=hʌ d=d e=ɪ ce=tʃɛ k=k
 hudek h=h ud=uːd e=ɪ k=k
@@ -46725,16 +47017,16 @@ huge h=h u=juː ge=dʒ
 hugel h=h u=uː g=ɡ el=əl
 hugely h=h u=juː ge=dʒ l=l y=iː
 hugest h=h u=juː ge=dʒə s=s t=t
-hugg h=h ugg=ʌɡ
-huggard h=h ugg=ʌɡ ard=ɜːd
+hugg hu=hʌ gg=ɡ
+huggard hu=hʌ gg=ɡ ard=ɜːd
 hugged hu=hʌ gge=ɡ d=d
-hugger h=h ugg=ʌɡ er=ɜː
-huggett h=h ugg=ʌɡ e=ɪ tt=t
-huggies h=h ugg=ʌɡ ies=iːz
-hugging h=h ugg=ʌɡ ing=ɪŋ
-huggins h=h ugg=ʌɡ in=ɪn s=z
-huggler h=h ugg=ʌɡ l=l er=ɜː
-huggy h=h ugg=ʌɡ y=iː
+hugger hu=hʌ gg=ɡ er=ɜː
+huggett hu=hʌ gg=ɡ e=ɪ tt=t
+huggies hu=hʌ gg=ɡ ies=iːz
+hugging hu=hʌ gg=ɡ ing=ɪŋ
+huggins hu=hʌ gg=ɡ in=ɪn s=z
+huggler hu=hʌ gg=ɡ l=l er=ɜː
+huggy hu=hʌ gg=ɡ y=iː
 hugh h=h ugh=juː
 hughart hu=hʌ g=ɡ h=h ar=ɒɹ t=t
 hughbanks hugh=hʌ b=b a=ə nk=ŋk s=s
@@ -47143,7 +47435,7 @@ hwa h=h wa=wɒ
 hwan h=h wa=wɒ n=n
 hwang h=h w=w ang=æŋ
 hwe h=h w=w e=eɪ
-hy hy=haɪ
+hy h=h y=aɪ
 hyacinth hy=haɪ a=ə ci=sɪ n=n th=θ
 hyacintha hy=haɪ a=ə ci=sɪ n=n th=θ a=ə
 hyacinthe hy=haɪ a=ə ci=sɪ n=n the=θ
@@ -47446,7 +47738,7 @@ iconoclastic i=aɪ c=k o=ə n=n o=ə c=k l=l as=æs t=t ic=ɪk
 iconography i=aɪ c=k o=ə n=n og=ɒɡ r=ɹ a=ə ph=f y=iː
 icons i=aɪ co=kɒ ns=nz
 icy i=aɪ cy=siː
-id id=ɪd
+id i=ɪ d=d
 ida id=aɪd a=ə
 idaho id=aɪd a=ə h=h o=əʊ
 idalia id=ɪd a=ɒ l=l ia=jə
@@ -47611,7 +47903,7 @@ ikie ik=ɪk ie=iː
 ikle ik=ɪk le=əl
 ikner ik=ɪk n=n er=ɜː
 ikon i=aɪ ko=kɒ n=n
-il il=ɪl
+il i=ɪ l=l
 ila i=iː l=l a=ə
 ilalis il=ɪl al=æl i=ə s=s
 ilan i=iː la=lɒ n=n
@@ -47690,7 +47982,7 @@ ilsley il=ɪl s=z l=l ey=iː
 ilva il=ɪl v=v a=ə
 ilya il=ɪl ya=jə
 ilyaronoff il=ɪl ya=jɒ r=ɹ o=ɔː n=n off=ɔːf
-im im=ɪm
+im i=ɪ m=m
 image im=ɪm a=ə ge=dʒ
 imageries im=ɪm age=ɪdʒ r=ɹ ies=iːz
 imagery im=ɪm a=ə ge=dʒ r=ɹ y=iː
@@ -48070,7 +48362,7 @@ imre im=ɪm r=ɹ e=ə
 imreg im=ɪm r=ɹ eg=ɛɡ
 imrie im=ɪm r=ɜː ie=iː
 imus i=aɪ m=m us=əs
-in in=ɪn
+in i=ɪ n=n
 ina i=iː n=n a=ə
 inability in=ɪn a=ə bi=bɪ li=lɪ t=t y=iː
 inabinet in=ɪn a=ə b=b in=ɪn e=ɪ t=t
@@ -49791,6 +50083,7 @@ irradiation irr=ɪɹ a=eɪ d=d i=iː ati=eɪʃ o=ə n=n
 irrational irr=ɪɹ a=æ tio=ʃə n=n a=ə l=l
 irrationality irr=ɪɹ a=æ tio=ʃə n=n al=æl i=ə t=t y=iː
 irrationally irr=ɪɹ a=æ tio=ʃə n=n a=ə ll=l y=iː
+irrawaddy irr=ɪɹ a=ə wa=wɒ dd=d y=iː
 irreconcilable irr=ɪɹ ec=ɛk o=ə n=n ci=saɪ l=l a=ə b=b le=əl
 irredentism irr=ɪɹ e=ə d=d en=ɛn ti=tɪ s=z m=əm
 irrefutable irr=ɪɹ e=ə f=f u=juː t=t a=ə b=b le=əl
@@ -49836,7 +50129,7 @@ irritates irr=ɪɹ it=ɪt ate=eɪt s=s
 irritating irr=ɪɹ i=ə t=t at=eɪt ing=ɪŋ
 irritation irr=ɪɹ it=ɪt ati=eɪʃ o=ə n=n
 irritations irr=ɪɹ it=ɪt ati=eɪʃ o=ə ns=nz
-is is=ɪz
+is i=ɪ s=z
 isa i=iː s=s a=ə
 isaac i=aɪ sa=z a=ə c=k
 isaacks isa=ɪs a=ɒ ck=k s=s
@@ -49985,7 +50278,7 @@ istre is=ɪs t=t re=ɜː
 isty is=ɪs t=t y=iː
 isu i=ɪ su=suː
 isuzu i=ɪ su=suː zu=zuː
-it it=ɪt
+it i=ɪ t=t
 ita i=aɪ t=t a=ə
 italia i=iː t=t al=æl i=iː a=ə
 italian it=ɪt al=æl ia=jə n=n
@@ -50096,12 +50389,13 @@ izzard izz=ɪz ard=ɜːd
 izzi izz=ɪz i=iː
 izzo izz=ɪz o=əʊ
 izzy izz=ɪz y=iː
-ja ja=jɒ
+ja j=j a=ɒ
 jaan jaa=jɒ n=n
 jab j=dʒ ab=æb
 jabah j=dʒ ab=æb ah=ə
 jabaliya j=dʒ a=ɒ b=b a=ə li=l y=iː a=ə
 jabar j=dʒ a=ə b=b ar=ɒɹ
+jabbar j=dʒ a=ə bb=b ar=ɒɹ
 jabbed j=dʒ abbe=æb d=d
 jabbing j=dʒ abb=æb ing=ɪŋ
 jaber j=dʒ abe=eɪb r=ɜː
@@ -50184,6 +50478,7 @@ jacquelyn jac=dʒæ qu=kw e=ɪ l=l yn=ɪn
 jacquez jac=jɒ qu=kw ez=ɛz
 jacquie jac=dʒæ qu=kw ie=iː
 jacquin jac=dʒæ qu=kw in=ɪn
+jacuzzi j=dʒ a=ə c=k u=uː zz=z i=iː
 jade j=dʒ ade=eɪd
 jaded j=dʒ a=eɪ d=d e=ə d=d
 jadeite j=dʒ ade=eɪd ite=aɪt
@@ -50481,6 +50776,11 @@ jaywalk j=dʒ ay=eɪ wal=wɔː k=k
 jaywalking j=dʒ ay=eɪ wal=wɔː k=k ing=ɪŋ
 jazeera j=dʒ a=ə z=z ee=iː r=ɹ a=ə
 jazmin ja=dʒæ z=z m=m in=ɪn
+jazz ja=dʒæ zz=z
+jazzed ja=dʒæ zze=z d=d
+jazzman ja=dʒæ zz=z m=m an=æn
+jazzmen ja=dʒæ zz=z m=m en=ən
+jazzy ja=dʒæ zz=z y=iː
 je j=dʒ e=iː
 jealous j=dʒ ea=ɛ l=l ous=əs
 jealousies j=dʒ ea=ɛ l=l ous=əs ies=iːz
@@ -50850,8 +51150,9 @@ joffe j=dʒ o=ɒ ffe=f
 joffrey j=dʒ off=ɔːf r=ɹ ey=iː
 jog j=dʒ og=ɒɡ
 jogged j=dʒ o=ɒ gge=ɡ d=d
-jogger j=dʒ o=ɒ gge=ɡ r=ɜː
+jogger j=dʒ o=ɒ gg=ɡ er=ɜː
 joggers j=dʒ o=ɒ gge=ɡ rs=ɜːz
+jogging j=dʒ o=ɒ gg=ɡ ing=ɪŋ
 jogs j=dʒ og=ɒɡ s=z
 joh j=dʒ oh=əʊ
 johanna j=dʒ o=ə h=h ann=æn a=ə
@@ -51061,10 +51362,11 @@ joyriding j=dʒ oy=ɔɪ r=ɹ id=aɪd ing=ɪŋ
 joys j=dʒ oy=ɔɪ s=z
 joystick j=dʒ oy=ɔɪ s=s t=t ick=ɪk
 jozef j=dʒ o=əʊ z=z e=ə f=f
-ju ju=dʒuː
+ju j=dʒ u=uː
 jua ju=dʒuː a=ə
 juang j=dʒ ua=wɒ ng=ŋ
 juba ju=dʒuː b=b a=ə
+jubb ju=dʒʌ bb=b
 jubilant ju=dʒuː b=b i=ə l=l a=ə n=n t=t
 jubilation ju=dʒuː b=b i=ə l=l ati=eɪʃ o=ə n=n
 jubilee ju=dʒuː b=b i=ə l=l ee=iː
@@ -51306,11 +51608,14 @@ juxtaposition ju=dʒʌ x=ks t=t a=ə p=p o=ə s=z iti=ɪʃ o=ə n=n
 juxtapositions ju=dʒʌ x=ks t=t a=ə p=p o=ə s=z iti=ɪʃ o=ə ns=nz
 jwan j=dʒ wa=wɒ n=n
 jyishane j=dʒ yi=iː sh=ʃ ane=eɪn
-ka ka=kɒ
+ka k=k a=ɒ
 kaas kaa=kɒ s=s
 kaatz kaa=kɒ tz=ts
 kabart k=k a=ə b=b ar=ɒɹ t=t
 kabat k=k ab=æb a=ə t=t
+kabbah k=k a=ə bb=b ah=ʌ
+kabbalah k=k a=ə bb=b a=ɒ l=l ah=ə
+kabbani k=k a=ə bb=b a=ɒ n=n i=iː
 kabel k=k ab=æb el=əl
 kabi k=k ab=æb i=iː
 kabila k=k a=ə b=b il=ɪl a=ə
@@ -51859,6 +52164,7 @@ katja ka=kɒ t=t ja=jə
 katmandu ka=kæ t=t m=m an=æn du=duː
 kato k=k at=eɪt o=əʊ
 katona ka=kɒ t=t o=əʊ n=n a=ə
+katragadda ka=kɒ t=t r=ɹ a=ə ga=ɡɒ dd=d a=ə
 katrina k=k a=ə t=t r=ɹ i=iː n=n a=ə
 kats ka=kæ t=t s=s
 katsanos ka=kæ t=t sa=sɒ n=n o=əʊ s=s
@@ -51968,7 +52274,7 @@ kazoo k=k a=ə z=z oo=uː
 kazuhiko ka=kɒ zu=zuː h=h i=iː k=k o=əʊ
 kazunori ka=kæ z=z u=ə n=n o=əʊ r=ɹ i=iː
 kazuo ka=kɒ zu=zuː o=əʊ
-ke ke=kɛ
+ke k=k e=ɛ
 kea k=k ea=iː
 keach k=k ea=iː ch=tʃ
 keadle k=k ea=iː d=d le=əl
@@ -52165,6 +52471,8 @@ kellis k=k ell=ɛl is=ɪs
 kellison k=k ell=ɛl is=ɪs o=ə n=n
 kellman k=k ell=ɛl m=m a=ə n=n
 kellner k=k ell=ɛl n=n er=ɜː
+kellogg k=k ell=ɛl o=ɔː gg=ɡ
+kelloggs k=k ell=ɛl o=ɔː gg=ɡ s=z
 kellough k=k ell=ɛl ough=aʊ
 kellow k=k ell=ɛl ow=əʊ
 kells ke=kɛ lls=lz
@@ -53218,6 +53526,7 @@ klawitter k=k l=l aw=ɔː itt=ɪt er=ɜː
 klay k=k l=l ay=eɪ
 klayman k=k l=l ay=eɪ m=m a=ə n=n
 kleban k=k l=l eb=ɛb a=ə n=n
+klebba k=k l=l e=ɛ bb=b a=ə
 klebe k=k l=l e=iː be=b
 kleber k=k l=l e=iː b=b er=ɜː
 kleck k=k l=l eck=ɛk
@@ -54253,6 +54562,7 @@ kray k=k r=ɹ ay=eɪ
 kraynak k=k r=ɹ ay=eɪ n=n a=ə k=k
 kreager k=k r=ɹ ea=iː g=ɡ er=ɜː
 kreamer k=k r=ɹ ea=iː m=m er=ɜː
+krebbs k=k re=ɹɛ bb=b s=z
 krebs k=k r=ɹ eb=ɛb s=z
 krebsbach k=k r=ɹ eb=ɛb sb=zb ach=ɒk
 krech k=k r=ɹ ech=ɛk
@@ -54511,7 +54821,7 @@ kryptonite k=k r=ɹ yp=ɪp t=t o=ə n=n ite=aɪt
 kryptos k=k r=ɹ yp=ɪp t=t o=əʊ s=s
 krysiak k=k r=ɹ ys=ɪs i=iː ak=æk
 krystal k=k r=ɹ ys=ɪs t=t a=ə l=l
-ku ku=kuː
+ku k=k u=uː
 kuala k=k ua=wɒ l=l a=ə
 kuan k=k ua=wɒ n=n
 kuba k=k u=juː b=b a=ə
@@ -54849,7 +55159,7 @@ kytril k=k y=ɪ t=t r=ɹ il=ɪl
 kyu k=k yu=juː
 kyzar k=k y=ɪ za=z r=ɜː
 kyzer k=k y=aɪ z=z er=ɜː
-la la=lɒ
+la l=l a=ɒ
 laabs laa=lɒ bs=bz
 laack laa=lɒ ck=k
 laaco laa=lɒ c=k o=əʊ
@@ -56223,6 +56533,7 @@ lazzara la=lɒ zz=ts ar=ɒɹ a=ə
 lazzari la=lɒ zz=ts ar=ɒɹ i=iː
 lazzarini la=lɒ zz=ts ar=ɒɹ i=iː n=n i=iː
 lazzaro la=lɒ zz=ts ar=ɒɹ o=əʊ
+lazzell la=læ zz=z e=ə ll=l
 le l=l e=ə
 lea l=l ea=iː
 leabo l=l ea=iː b=b o=əʊ
@@ -56306,6 +56617,7 @@ leap l=l ea=iː p=p
 leaped l=l ea=ɛ ped=pt
 leapfrog l=l ea=iː p=p f=f r=ɹ o=ɔː g=ɡ
 leapfrogged l=l ea=iː p=p f=f r=ɹ o=ɔː gge=ɡ d=d
+leapfrogging l=l ea=iː p=p f=f r=ɹ o=ɔː gg=ɡ ing=ɪŋ
 leaphart l=l ea=iː p=p h=h ar=ɒɹ t=t
 leaping l=l ea=iː p=p ing=ɪŋ
 leapley l=l ea=iː p=p l=l ey=iː
@@ -57113,6 +57425,7 @@ leukocyte le=l u=uː k=k o=ə cy=saɪ te=t
 leumi le=l u=uː m=m i=iː
 leung le=l u=uː ng=ŋ
 leutwiler le=l ut=uːt wi=waɪ l=l er=ɜː
+leuzzi le=l u=uː zz=z i=iː
 lev l=l ev=ɛv
 leva l=l ev=ɛv a=ə
 leval l=l e=ə va=vɒ l=l
@@ -58359,10 +58672,13 @@ logbook lo=lɔː g=ɡ b=b ook=ʊk
 loge l=l o=əʊ ge=dʒ
 loges l=l o=əʊ ge=dʒ s=ɪz
 logged lo=lɔː gge=ɡ d=d
-logger l=l o=ɒ gge=ɡ r=ɜː
-loggerhead l=l o=ɒ gge=ɡ r=ɜː hea=hɛ d=d
-loggerheads l=l o=ɒ gge=ɡ r=ɜː hea=hɛ ds=dz
+logger l=l o=ɒ gg=ɡ er=ɜː
+loggerhead l=l o=ɒ gg=ɡ er=ɜː hea=hɛ d=d
+loggerheads l=l o=ɒ gg=ɡ er=ɜː hea=hɛ ds=dz
 loggers l=l o=ɒ gge=ɡ rs=ɜːz
+loggia l=l o=ɒ gg=ɡ i=iː a=ə
+logging lo=lɔː gg=ɡ ing=ɪŋ
+loggins l=l o=ɒ gg=ɡ in=ɪn s=z
 loghry l=l og=ɒɡ hr=ɹ y=iː
 logic l=l og=ɒdʒ ic=ɪk
 logica l=l og=ɒdʒ ic=ɪk a=ə
@@ -58946,7 +59262,7 @@ lozinski l=l o=ə z=z in=ɪn s=s k=k i=iː
 lozito l=l o=əʊ z=z i=iː t=t o=əʊ
 lozon l=l o=əʊ z=z o=ə n=n
 lozoya l=l o=əʊ z=z oy=ɔɪ a=ə
-lu lu=luː
+lu l=l u=uː
 lua lu=luː a=ə
 luaka lu=luː a=ɒ k=k a=ə
 luallen lu=luː al=æl len=ən
@@ -58961,6 +59277,10 @@ lubas lu=luː b=b a=ə s=z
 lubavitch lu=luː b=b a=ə vi=vɪ tch=tʃ
 lubavitcher lu=luː b=b a=ə vi=vɪ tch=tʃ er=ɜː
 lubavitchers lu=luː b=b a=ə vi=vɪ tche=tʃ rs=ɜːz
+lubben lu=lʌ bb=b en=ən
+lubber lu=lʌ bb=b er=ɜː
+lubbers lu=lʌ bbe=b rs=ɜːz
+lubbock lu=lʌ bb=b o=ə ck=k
 lube lu=luː be=b
 lubeck lu=luː b=b eck=ɛk
 lubell lu=luː b=b ell=ɛl
@@ -59088,6 +59408,7 @@ ludwigshafen l=l u=ə d=d w=w ig=ɪɡ sh=ʃ a=ə f=f en=ən
 ludwin lu=lʌ d=d w=w in=ɪn
 ludy l=l ud=uːd y=iː
 lue lue=luː
+luebbe lue=luː bbe=b
 luebke lue=luː b=b ke=k
 lueck lu=luː e=ɪ ck=k
 luecke lue=luː cke=k
@@ -59512,7 +59833,7 @@ lyttle l=l y=ɪ t=t tle=əl
 lytton l=l y=ɪ tt=t o=ə n=n
 lyubimov l=l yu=juː b=b i=ə mo=mɒ v=v
 lyvers l=l y=aɪ ve=v rs=ɜːz
-ma ma=mɒ
+ma m=m a=ɒ
 maack maa=mɒ ck=k
 maaco maa=meɪ c=k o=əʊ
 maag maa=mɒ g=ɡ
@@ -59751,6 +60072,8 @@ madaris m=m ada=æd r=ɜː is=ɪs
 maday ma=mɒ d=d ay=eɪ
 madcap m=m ad=æd c=k ap=æp
 madd m=m add=æd
+maddalena ma=mɒ dd=d a=ɒ l=l en=ɛn a=ə
+maddamma m=m a=ə dd=d a=ɒ mm=m a=ə
 madden m=m add=æd en=ən
 maddening m=m add=æd en=ən ing=ɪŋ
 maddeningly m=m add=æd en=ən ing=ɪŋ l=l y=iː
@@ -60333,6 +60656,7 @@ malloseismic ma=mɒ llo=ləʊ s=s eis=aɪz m=m ic=ɪk
 mallow m=m all=æl ow=əʊ
 mallows m=m all=æl ows=əʊz
 malloy m=m a=ə ll=l oy=ɔɪ
+mallozzi m=m all=æl o=ɒ zz=z i=iː
 mallrat m=m all=ɔːl ra=ɹæ t=t
 mallrats m=m all=ɔːl ra=ɹæ t=t s=s
 malls m=m all=ɔːl s=z
@@ -61235,6 +61559,7 @@ marquita m=m ar=ɒɹ qu=kw i=iː t=t a=ə
 marr ma=mɒ rr=ɹ
 marra ma=mɒ rr=ɹ a=ə
 marrakech m=m arr=æɹ a=ə ke=kɛ ch=ʃ
+marrazzo ma=mɒ rr=ɹ a=ɒ zz=z o=əʊ
 marred ma=mɒ rre=ɹ d=d
 marren m=m ar=ɒɹ ren=ən
 marrero ma=mɒ rr=ɹ e=ɛ r=ɹ o=əʊ
@@ -61643,6 +61968,7 @@ matala m=m a=ə ta=tɒ l=l a=ə
 matalin ma=mæ t=t a=ə l=l in=ɪn
 matalon ma=mɒ ta=tɒ lo=lɔː n=n
 matamoros ma=mɒ ta=tɒ m=m or=ɔːɹ o=əʊ s=s
+matarazzo ma=mɒ t=t ar=ɒɹ a=ɒ zz=z o=əʊ
 matarese ma=mɒ t=t ar=ɒɹ e=eɪ s=z e=iː
 matas ma=mɒ t=t a=ə s=z
 matassa ma=mɒ ta=tɒ ss=s a=ə
@@ -62088,18 +62414,26 @@ mazurek m=m a=ə z=z u=juː r=ɹ ek=ɛk
 mazurkas m=m a=ə z=z urk=ɜːk a=ə s=z
 mazurowski m=m a=ə z=z ur=ɜː ow=ɔːf s=s k=k i=iː
 mazyck ma=mæ z=z y=ɪ ck=k
+mazza ma=mæ zz=z a=ə
+mazzaferro ma=mæ zz=z a=ə fe=fɛ rr=ɹ o=əʊ
 mazzanti ma=mɒ zz=ts a=ɒ n=n t=t i=iː
 mazzara ma=mɒ zz=ts ar=ɒɹ a=ə
 mazzarella ma=mɒ zz=ts ar=ɒɹ ell=ɛl a=ə
 mazzei ma=mɒ zz=ts e=eɪ i=iː
 mazzella ma=mɒ zz=ts ell=ɛl a=ə
+mazzeo ma=mæ zz=z eo=iːəʊ
 mazzetti ma=mɒ zz=ts e=ɛ tt=t i=iː
+mazzie ma=mæ zz=z ie=iː
 mazziotti ma=mɒ zz=ts io=iːəʊ tt=t i=iː
+mazzo ma=mæ zz=z o=əʊ
 mazzocchi ma=mɒ zz=ts o=əʊ cch=k i=iː
 mazzocco ma=mɒ zz=ts o=əʊ cc=k o=əʊ
 mazzola ma=mɒ zz=ts o=əʊ l=l a=ə
+mazzoli m=m a=ə zz=z o=əʊ l=l i=iː
+mazzolla m=m a=ə zz=z o=əʊ ll=l a=ə
 mazzone ma=mɒ zz=ts o=əʊ ne=niː
 mazzoni ma=mɒ zz=ts o=əʊ n=n i=iː
+mazzorana ma=mæ zzo=z r=ɜː a=ɒ n=n a=ə
 mazzotta ma=mɒ zz=ts o=əʊ tt=t a=ə
 mazzuca ma=mɒ zz=ts u=uː c=k a=ə
 mazzucco ma=mɒ zz=ts u=uː cc=k o=əʊ
@@ -62403,6 +62737,8 @@ mccrudden mc=mə c=k r=ɹ udd=ʌd en=ən
 mccrum mc=mə c=k ru=ɹʌ m=m
 mccrystal mc=mə c=k r=ɹ ys=ɪs t=t a=ə l=l
 mccuan mc=mə c=k u=uː a=ə n=n
+mccubbin mc=mə cu=kʌ bb=b i=ə n=n
+mccubbins mc=mə cu=kʌ bb=b i=ə ns=nz
 mccue mc=mə c=k ue=juː
 mccuen mc=mə c=k ue=juː n=n
 mccuin mc=mə c=k u=uː i=ə n=n
@@ -62587,6 +62923,7 @@ mcghie mc=mə gh=ɡ ie=iː
 mcgibbon mc=mə g=ɡ ibb=ɪb o=ə n=n
 mcgill mc=mə g=ɡ ill=ɪl
 mcgillen mc=mə g=ɡ il=ɪl len=ən
+mcgillicuddy mc=mə g=ɡ ill=ɪl i=ə c=k u=ə dd=d y=iː
 mcgillis mc=mə g=ɡ ill=ɪl i=ə s=s
 mcgillivray mc=mə g=ɡ ill=ɪl i=ə v=v r=ɹ ay=eɪ
 mcgilton mc=mə g=ɡ il=ɪl t=t o=ə n=n
@@ -63163,11 +63500,11 @@ medaris m=m e=eɪ d=d ar=ɒɹ is=ɪs
 medcalf me=mɛ d=d c=k al=æl f=f
 medchem me=mɛ d=d ch=k em=ɛm
 medco me=mɛ d=d c=k o=əʊ
-meddaugh m=m edd=ɛd augh=ɔː
-medders m=m edde=ɛd rs=ɜːz
-meddle m=m edd=ɛd le=əl
-meddlesome m=m edd=ɛd le=əl s=s o=ə me=m
-meddling m=m edd=ɛd l=əl ing=ɪŋ
+meddaugh me=mɛ dd=d augh=ɔː
+medders me=mɛ dde=d rs=ɜːz
+meddle me=mɛ dd=d le=əl
+meddlesome me=mɛ dd=d le=əl s=s o=ə me=m
+meddling me=mɛ dd=d l=əl ing=ɪŋ
 medea m=m e=ə d=d ea=iːə
 medearis me=mɛ d=d ear=ɜː is=ɪs
 medecin me=mɛ d=d e=ɪ ci=sɪ n=n
@@ -63339,9 +63676,9 @@ megawatt me=mɛ g=ɡ a=ə wat=wɒ t=t
 megawatts me=mɛ g=ɡ a=ə wat=wɒ t=t s=s
 megee me=mɛ gee=dʒiː
 meger me=mɛ g=ɡ er=ɜː
-megginson m=m egg=ɛɡ in=ɪn s=s o=ə n=n
-meggison m=m egg=ɛɡ is=ɪs o=ə n=n
-meggs m=m egg=ɛɡ s=z
+megginson me=mɛ gg=ɡ in=ɪn s=s o=ə n=n
+meggison me=mɛ gg=ɡ is=ɪs o=ə n=n
+meggs me=mɛ gg=ɡ s=z
 meghan me=mɛ gh=ɡ a=ə n=n
 meghdar me=mɛ gh=ɡ d=d ar=ɒɹ
 megill me=mɛ gi=dʒə ll=l
@@ -64239,6 +64576,9 @@ mezhdumarodnom me=mɛ zh=z du=duː m=m a=ə r=ɹ od=ɒd n=n o=ə m=m
 mezo me=mɛ z=z o=əʊ
 mezro me=mɛ z=z r=ɹ o=əʊ
 mezvinsky me=mɛ z=z v=v in=ɪn s=s k=k y=iː
+mezzaluna me=mɛ zz=z a=ə lu=luː n=n a=ə
+mezzanine me=mɛ zz=z a=ə n=n i=iː ne=n
+mezzo me=mɛ zz=z o=əʊ
 mfume m=mə f=f u=uː m=m e=eɪ
 mhm m=əm h=h m=əm
 mhoon m=m h=h oo=uː n=n
@@ -64624,6 +64964,7 @@ milano m=m i=iː la=lɒ n=n o=əʊ
 milanowski m=m il=ɪl a=ə n=n ow=ɔːf s=s k=k i=iː
 milardo m=m i=iː l=l ar=ɒɹ d=d o=əʊ
 milas mi=maɪ l=l a=ə s=z
+milazzo m=m i=iː la=lɒ zz=z o=əʊ
 milbank m=m il=ɪl ba=bæ nk=ŋk
 milbauer m=m il=ɪl bau=baʊ er=ɜː
 milberg m=m il=ɪl b=b er=ɜː g=ɡ
@@ -64866,6 +65207,7 @@ mincing mi=mɪ nc=ns ing=ɪŋ
 mincy m=m in=ɪn cy=siː
 mind mi=maɪ n=n d=d
 minda m=m in=ɪn d=d a=ə
+mindboggling mi=maɪ n=n d=d b=b o=ɔː gg=ɡ l=l ing=ɪŋ
 minded mi=maɪ n=n d=d e=ə d=d
 mindedly mi=maɪ n=n d=d e=ɪ d=d l=l y=iː
 mindedness mi=maɪ n=n d=d e=ɪ d=d n=n ess=əs
@@ -65763,6 +66105,7 @@ mogavero m=m o=əʊ ga=ɡɒ ve=vɛ r=ɹ o=əʊ
 mogel m=m o=əʊ g=ɡ el=əl
 mogensen m=m og=ɒɡ e=ɪ n=n s=s en=ən
 moger m=m o=əʊ g=ɡ er=ɜː
+mogg mo=mɒ gg=ɡ
 mogle m=m o=əʊ g=ɡ le=əl
 moglia m=m og=ɒɡ l=l i=iː a=ə
 mogopa m=m o=əʊ g=ɡ o=əʊ p=p a=ə
@@ -65890,6 +66233,7 @@ molloy m=m oll=ɒl oy=ɔɪ
 mollusk m=m oll=ɒl us=əs k=k
 mollusks m=m oll=ɒl us=əs k=k s=s
 molly m=m oll=ɒl y=iː
+mollycoddle m=m oll=ɒl y=iː co=kɒ dd=d le=əl
 molnar m=m o=əʊ l=l na=n r=ɜː
 molner m=m o=əʊ l=l n=n er=ɜː
 molock mo=mɒ l=l o=ə ck=k
@@ -66920,7 +67264,7 @@ mruk m=m ru=ɹʌ k=k
 ms m=m s=ɪz
 mssrs ms=m s=ɛs rs=ɜːz
 mtel m=ɛm te=tɛ l=l
-mu mu=muː
+mu m=m u=uː
 muammar mu=muː amma=æm r=ɜː
 muavenet mu=muː a=ə ve=vɛ n=n e=ɪ t=t
 mucci m=m ucc=uːtʃ i=iː
@@ -67520,6 +67864,11 @@ muzak m=m u=juː z=z ak=æk
 muzik m=m u=juː z=z ik=ɪk
 muzio m=m u=juː z=z io=iːəʊ
 muzyka m=m u=juː z=z y=ɪ k=k a=ə
+muzzey mu=mʌ zz=z ey=iː
+muzzle mu=mʌ zz=z le=əl
+muzzled mu=mʌ zz=z le=əl d=d
+muzzles mu=mʌ zz=z le=əl s=z
+muzzy mu=mʌ zz=z y=iː
 mwanza m=m wa=wɒ n=n z=z a=ə
 my m=m y=aɪ
 myanmar m=m ya=jɒ n=n m=m ar=ɒɹ
@@ -67589,7 +67938,7 @@ mythic m=m y=ɪ th=θ ic=ɪk
 mythical m=m y=ɪ th=θ i=ə c=k a=ə l=l
 mythological m=m y=ɪ th=θ o=ə l=l og=ɒdʒ ic=ɪk a=ə l=l
 myths m=m y=ɪ th=θ s=s
-na na=nɒ
+na n=n a=ɒ
 naab naa=nɒ b=b
 naacp n=ɛn a=eɪ a=eɪ c=siː p=piː
 naan naa=nɒ n=n
@@ -68094,7 +68443,7 @@ nazis na=nɒ z=ts i=iː s=z
 nazism n=n a=æ z=z is=ɪz m=əm
 nazzaro na=nɒ zz=ts ar=ɒɹ o=əʊ
 ndau n=ɛn d=d au=aʊ
-ne ne=niː
+ne n=n e=iː
 neace n=n ea=iː ce=s
 nead n=n ea=iː d=d
 neagle n=n ea=iː g=ɡ le=əl
@@ -69239,6 +69588,8 @@ nockard n=n ock=ɒk ard=ɜːd
 nocturnal n=n oc=ɒk t=t urn=ɜːn a=ə l=l
 nod n=n od=ɒd
 noda n=n o=əʊ d=d a=ə
+nodded no=nɒ dd=d e=ə d=d
+nodding no=nɒ dd=d ing=ɪŋ
 node n=n o=əʊ de=d
 nodes n=n o=əʊ des=dz
 nodine n=n o=əʊ d=d i=iː ne=niː
@@ -69258,6 +69609,7 @@ nofziger n=n of=ɔːf z=z ig=ɪɡ er=ɜː
 noga n=n o=əʊ g=ɡ a=ə
 nogales n=n o=əʊ ga=ɡɒ l=l es=ɛs
 nogawa n=n o=əʊ ga=ɡɒ w=w a=ə
+noggle no=nɒ gg=ɡ le=əl
 nogle n=n o=əʊ g=ɡ le=əl
 noguchi n=n o=əʊ gu=ɡuː ch=tʃ i=iː
 nogueira n=n o=əʊ gu=ɡ ei=eɪ ra=ɹɒ
@@ -69325,6 +69677,7 @@ nona no=nɒ na=nɒ
 nonacademic no=nɒ n=n ac=æk a=ə d=d em=ɛm ic=ɪk
 nonaccrual no=nɒ n=n a=ə cc=k ru=ɹuː a=ə l=l
 nonaccruing no=nɒ n=n a=ə cc=k ru=ɹuː ing=ɪŋ
+nonaggression no=nɒ n=n a=ə gg=ɡ re=ɹ ssi=ɛʃ o=ə n=n
 nonagricultural no=nɒ n=n ag=æɡ ri=ɹɪ cu=kʌ l=l tur=tʃɜː a=ə l=l
 nonalcoholic no=nɒ n=n al=æl c=k o=ə ho=hɒ l=l ic=ɪk
 nonalign no=nɒ n=n a=ə lig=laɪ n=n
@@ -69861,8 +70214,10 @@ noyce n=n oy=ɔɪ ce=s
 noyd n=n oy=ɔɪ d=d
 noyes n=n oye=ɔɪ s=z
 noyola n=n oy=ɔɪ o=əʊ l=l a=ə
+nozzle no=nɒ zz=z le=əl
+nozzles no=nɒ zz=z le=əl s=z
 nth n=ɛn th=θ
-nu nu=nuː
+nu n=n u=uː
 nuala nu=nuː a=ɒ l=l a=ə
 nuance nu=nuː a=ɒ nce=ns
 nuanced nu=nuː a=ɒ n=n ced=st
@@ -70037,6 +70392,10 @@ nuxoll nu=nʌ x=ks o=ə ll=l
 nuys nu=n y=aɪ s=z
 nuzum n=n uz=uːz um=əm
 nuzzi nu=nuː zz=ts i=iː
+nuzzle nu=nʌ zz=z le=əl
+nuzzles nu=nʌ zz=z le=əl s=z
+nuzzling nu=nʌ zz=z l=əl ing=ɪŋ
+nuzzo nu=nuː zz=z o=əʊ
 nvidia n=ɛn vi=vɪ d=d i=iː a=ə
 nvryan n=ɛn v=v ry=ɹaɪ a=ə n=n
 nyack n=n y=aɪ ack=æk
@@ -70046,7 +70405,7 @@ nyce n=n y=aɪ ce=s
 nycor n=n y=aɪ c=k or=ɔːɹ
 nycum n=n y=ɪ c=k um=əm
 nydam n=n y=ɪ d=d a=ə m=m
-nydegger n=n y=aɪ d=d e=ɪ gge=ɡ r=ɜː
+nydegger n=n y=aɪ d=d e=ɪ gg=ɡ er=ɜː
 nydia n=n y=ɪ d=d i=iː a=ə
 nye n=n ye=aɪ
 nyenhuis n=n y=aɪ en=ən h=h ui=uː s=s
@@ -70399,6 +70758,21 @@ oda o=əʊ d=d a=ə
 odaiko o=əʊ dai=deɪ k=k o=əʊ
 odaniel od=ɒd a=ə n=n ie=iː l=l
 oday o=əʊ d=d ay=eɪ
+odd o=ɒ dd=d
+oddball o=ɒ dd=d bal=bɔː l=l
+oddballs o=ɒ dd=d bal=bɔː ls=lz
+odden o=ɒ dd=d en=ən
+odder o=ɒ dd=d er=ɜː
+oddest o=ɒ dd=d e=ə s=s t=t
+oddi o=ɒ dd=d i=iː
+oddities o=ɒ dd=d i=ə t=t ies=iːz
+oddity o=ɒ dd=d i=ə t=t y=iː
+oddler o=ɒ dd=d l=l er=ɜː
+oddly o=ɒ dd=d l=l y=iː
+odds o=ɒ dd=d s=z
+oddsmaker o=ɒ dd=d s=z m=m ak=eɪk er=ɜː
+oddsmakers o=ɒ dd=d s=z m=m ake=eɪk rs=ɜːz
+oddy o=ɒ dd=d y=iː
 ode o=əʊ de=d
 odea od=ɒd ea=iːə
 oded o=əʊ d=d e=ɛ d=d
@@ -70557,7 +70931,7 @@ oftel of=ɒf te=tɛ l=l
 often of=ɔːf ten=ən
 oftener of=ɔːf ten=ən er=ɜː
 oftentimes of=ɔːf ten=ən t=t ime=aɪm s=z
-og og=ɒɡ
+og o=ɒ g=ɡ
 ogan o=əʊ g=ɡ a=ə n=n
 ogara o=əʊ g=ɡ ar=ɒɹ a=ɒ
 ogata o=əʊ ga=ɡɒ ta=tɒ
@@ -70565,6 +70939,7 @@ ogawa o=əʊ ga=ɡɒ wa=wɒ
 ogborn og=ɒɡ bor=bɜː n=n
 ogburn og=ɒɡ b=b urn=ɜːn
 ogden og=ɒɡ d=d en=ən
+ogg o=ɒ gg=ɡ
 ogier o=əʊ g=ɡ i=iː er=ɜː
 ogilvie og=ɒdʒ il=ɪl v=v ie=iː
 ogilvy o=əʊ g=ɡ i=ə l=l v=v y=iː
@@ -71007,7 +71382,7 @@ ooze oo=uː ze=z
 oozed oo=uː ze=z d=d
 oozes oo=uː z=z es=ɪz
 oozing oo=uː z=z ing=ɪŋ
-op op=ɒp
+op o=ɒ p=p
 opacity o=əʊ pa=pæ ci=sə t=t y=iː
 opal o=əʊ p=p a=ə l=l
 opalina o=əʊ pa=pɒ l=l i=iː n=n a=ə
@@ -71168,7 +71543,7 @@ opus o=əʊ p=p us=əs
 oquendo o=əʊ qu=kw en=ɛn d=d o=əʊ
 oquin o=əʊ qu=kw i=iː n=n
 oquinn o=əʊ qu=kw i=iː nn=n
-or or=ɔːɹ
+or o=ɔː r=ɹ
 ora or=ɔːɹ a=ə
 orabel or=ɔːɹ a=ɒ be=bɛ l=l
 orabelle or=ɔːɹ a=ə b=b e=ə lle=l
@@ -71512,7 +71887,7 @@ oryx or=ɔːɹ y=ɪ x=ks
 orzech or=ɔːɹ z=z ec=ɪ h=h
 orzechowski or=ɔːɹ z=z ec=ɪ h=h ow=ɔːf s=s k=k i=iː
 orzel or=ɔːɹ z=z el=əl
-os os=ɒs
+os o=ɒ s=s
 osage o=əʊ s=s age=eɪdʒ
 osages o=əʊ sa=seɪ ge=dʒə s=z
 osaka o=əʊ sa=sɒ k=k a=ə
@@ -72480,7 +72855,9 @@ ozols o=əʊ z=z o=əʊ ls=lz
 ozone o=əʊ z=z o=əʊ ne=n
 ozora o=ə z=z or=ɔːɹ a=ə
 ozuna o=əʊ zu=zuː n=n a=ə
-pa pa=pɒ
+ozzie o=ɒ zz=z ie=iː
+ozzy o=ɒ zz=z y=iː
+pa p=p a=ɒ
 paap paa=pɒ p=p
 paape paa=pɒ pe=p
 paar pa=p ar=ɒɹ
@@ -72646,6 +73023,7 @@ pain p=p ain=eɪn
 paine p=p aine=eɪn
 pained p=p aine=eɪn d=d
 painesville p=p aine=eɪn s=z v=v ille=ɪl
+painewebber p=p aine=eɪn we=wɛ bb=b er=ɜː
 painful p=p ain=eɪn f=f ul=əl
 painfully p=p ain=eɪn ful=fə l=l y=iː
 painkiller p=p ain=eɪn k=k ill=ɪl er=ɜː
@@ -72714,6 +73092,7 @@ palauans p=p a=ə lau=laʊ a=ə ns=nz
 palay pa=peɪ l=l ay=eɪ
 palazina p=p al=æl a=ə z=z i=iː n=n a=ə
 palazzi pa=pɒ la=lɒ zz=ts i=iː
+palazzo p=p a=ə la=lɒ zz=z o=əʊ
 palazzola pa=pɒ la=lɒ zz=ts o=əʊ l=l a=ə
 palazzolo pa=pɒ la=lɒ zz=ts o=əʊ l=l o=əʊ
 palca p=p al=æl c=k a=ə
@@ -72945,6 +73324,7 @@ panorama pa=pæ nor=nɜː am=æm a=ə
 panoramic pa=pæ nor=nɜː am=æm ic=ɪk
 panos pa=pɒ n=n o=əʊ s=s
 panoz pa=pæ no=nɒ z=z
+panozzo p=p a=ə no=nɒ zz=z o=əʊ
 panphila p=p an=æn ph=f il=ɪl a=ə
 pans p=p an=æn s=z
 pansies p=p an=æn s=z ies=iːz
@@ -73006,6 +73386,8 @@ papalia pa=pɒ pa=pɒ l=l i=iː a=ə
 papandrea pa=pɒ pa=pɒ n=n d=d re=ɹiː a=ə
 papandreou p=p a=ə p=p an=æn d=d re=ɹiː ou=uː
 papania pa=pɒ pa=pɒ n=n i=iː a=ə
+paparazzi pa=pɒ p=p ar=ɒɹ a=ɔː zz=z i=iː
+paparazzis pa=pɒ p=p ar=ɒɹ a=ɔː zz=z i=iː s=z
 paparella pa=pɒ p=p ar=ɒɹ ell=ɛl a=ə
 papas pa=pɒ p=p a=ə s=z
 papaw p=p a=ɔː p=p aw=ɔː
@@ -73936,6 +74318,8 @@ peavey p=p ea=iː v=v ey=iː
 peavler p=p ea=iː v=v l=l er=ɜː
 peavy p=p ea=iː v=v y=iː
 peay pea=p y=iː
+pebble pe=pɛ bb=b le=əl
+pebbles pe=pɛ bb=b le=əl s=z
 pebereau pe=pɛ b=b er=ɜː eau=əʊ
 pebley pe=pɛ b=b l=l ey=iː
 pecan p=p e=ə ca=kɒ n=n
@@ -73983,15 +74367,15 @@ pedant pe=pɛ d=d a=ə n=n t=t
 pedantic p=p e=ə d=d an=æn t=t ic=ɪk
 pedantry pe=pɛ d=d a=ə n=n t=t r=ɹ y=iː
 pedants pe=pɛ d=d a=ə n=n t=t s=s
-peddicord p=p edd=ɛd ic=ɪk or=ɔːɹ d=d
-peddie p=p edd=ɛd ie=iː
-peddle p=p edd=ɛd le=əl
-peddled p=p edd=ɛd le=əl d=d
-peddler p=p edd=ɛd l=l er=ɜː
-peddlers p=p edd=ɛd le=l rs=ɜːz
-peddles p=p edd=ɛd le=əl s=z
-peddling p=p edd=ɛd l=əl ing=ɪŋ
-peddy p=p edd=ɛd y=iː
+peddicord pe=pɛ dd=d ic=ɪk or=ɔːɹ d=d
+peddie pe=pɛ dd=d ie=iː
+peddle pe=pɛ dd=d le=əl
+peddled pe=pɛ dd=d le=əl d=d
+peddler pe=pɛ dd=d l=l er=ɜː
+peddlers pe=pɛ dd=d le=l rs=ɜːz
+peddles pe=pɛ dd=d le=əl s=z
+peddling pe=pɛ dd=d l=əl ing=ɪŋ
+peddy pe=pɛ dd=d y=iː
 peden pe=pɛ d=d en=ən
 pedersen pe=pɛ d=d er=ɜː s=s en=ən
 pederson pe=pɛ d=d er=ɜː s=s o=ə n=n
@@ -74075,12 +74459,12 @@ peg pe=pɛ g=ɡ
 pegasus pe=pɛ g=ɡ a=ə s=s us=əs
 pegboard pe=pɛ g=ɡ b=b oar=ɔːɹ d=d
 pegboards pe=pɛ g=ɡ b=b oar=ɔːɹ ds=dz
-pegg p=p egg=ɛɡ
-pegged p=p egge=ɛɡ d=d
-peggie p=p egg=ɛɡ ie=iː
-pegging p=p egg=ɛɡ ing=ɪŋ
-peggs p=p egg=ɛɡ s=z
-peggy p=p egg=ɛɡ y=iː
+pegg pe=pɛ gg=ɡ
+pegged pe=pɛ gge=ɡ d=d
+peggie pe=pɛ gg=ɡ ie=iː
+pegging pe=pɛ gg=ɡ ing=ɪŋ
+peggs pe=pɛ gg=ɡ s=z
+peggy pe=pɛ gg=ɡ y=iː
 peglow pe=pɛ g=ɡ l=l ow=əʊ
 pegmatite pe=pɛ g=ɡ m=m a=ə t=t ite=aɪt
 pegram pe=pɛ g=ɡ r=ɹ am=æm
@@ -74404,6 +74788,7 @@ peralta p=p er=ɜː a=ɒ l=l t=t a=ə
 peras pe=pɛ r=ɹ a=ə s=s
 peratis p=p er=ɜː a=ɒ t=t is=ɪs
 peraza p=p er=ɜː az=ɒz a=ə
+perazzo p=p er=ɜː a=ɒ zz=z o=əʊ
 perc p=p er=ɜː c=k
 perce p=p erce=ɜːs
 perceive p=p erce=ɜːs i=iː ve=v
@@ -74925,6 +75310,7 @@ petrin pe=pɛ t=t r=ɹ in=ɪn
 petrina pe=pɛ t=t r=ɹ i=iː n=n a=ə
 petrini pe=pɛ t=t r=ɹ i=iː n=n i=iː
 petrino pe=pɛ t=t r=ɹ i=iː n=n o=əʊ
+petrizzo pe=pɛ t=t r=ɹ i=iː zz=z o=əʊ
 petro pe=pɛ t=t r=ɹ o=əʊ
 petrobras pe=pɛ t=t r=ɹ ob=ɒb r=ɹ a=ə s=s
 petrocelli pe=pɛ t=t r=ɹ o=əʊ ce=tʃɛ ll=l i=iː
@@ -75038,6 +75424,7 @@ pewter p=p ew=juː t=t er=ɜː
 pez p=p ez=ɛz
 pezeshkan p=p e=ə ze=zɛ sh=ʃ k=k a=ə n=n
 pezim p=p ez=ɛz i=iː m=m
+pezza pe=pɛ zz=z a=ə
 pezzella pe=pɛ zz=ts ell=ɛl a=ə
 pezzullo pe=pɛ zz=ts u=uː llo=ləʊ
 phagan ph=f a=eɪ g=ɡ a=ə n=n
@@ -75338,7 +75725,7 @@ physiologically ph=f y=ɪ s=z i=iː o=ə l=l og=ɒdʒ ica=ɪk ll=l y=iː
 physiologist ph=f y=ɪ s=z i=iː ol=ɒl o=ə gi=dʒɪ s=s t=t
 physiology ph=f y=ɪ s=z i=iː ol=ɒl o=ə gy=dʒiː
 phytogeography ph=f y=aɪ t=t o=əʊ ge=dʒiː og=ɒɡ r=ɹ a=ə ph=f y=iː
-pi pi=paɪ
+pi p=p i=aɪ
 pia p=p i=iː a=ə
 piacente p=p i=iː a=ɒ ce=tʃɛ n=n t=t e=iː
 piacentini p=p i=iː a=ɒ ce=tʃɛ n=n t=t i=iː n=n i=iː
@@ -75353,6 +75740,8 @@ piasio p=p i=iː as=æs io=iːəʊ
 piatek p=p i=iː a=ɒ te=tɛ k=k
 piatkowski p=p i=iː a=ə t=t k=k ow=ɔːf s=s k=k i=iː
 piatt pi=paɪ a=ə tt=t
+piazza p=p i=iː a=æ zz=z a=ə
+piazzolla p=p i=iː a=ə zz=z oll=ɒl a=ə
 pic p=p ic=ɪk
 pica pi=paɪ c=k a=ə
 picabo p=p i=ə ca=kɒ b=b o=əʊ
@@ -75846,6 +76235,7 @@ piro pi=pɪ r=ɹ o=əʊ
 pirog pi=p r=ɜː og=ɒɡ
 pirone pi=pɪ r=ɹ o=əʊ ne=n
 pirouettes pi=pɪ r=ɹ oue=uː tte=ɛt s=s
+pirozzi pi=pɪ ro=ɹɒ zz=z i=iː
 pirrello p=p irr=ɪɹ ell=ɛl o=əʊ
 pirro p=p irr=ɪɹ o=əʊ
 pirrone p=p irr=ɪɹ o=əʊ ne=niː
@@ -75966,11 +76356,13 @@ pizana p=p i=iː z=z an=æn a=ə
 pizano p=p i=iː za=zɒ n=n o=əʊ
 pizarro pi=pɪ za=zɒ rr=ɹ o=əʊ
 pizatti pi=pɪ za=zɒ tt=t i=iː
+pizazz pi=pɪ z=z a=æ zz=z
 pizer p=p iz=aɪz er=ɜː
 pizza p=p i=iː zz=ts a=ə
 pizzano p=p i=iː zz=ts a=ɒ n=n o=əʊ
 pizzas p=p i=iː zz=ts a=ə s=z
 pizzazier p=p izz=ɪz a=æ z=z ier=jɜː
+pizzazz p=p izz=ɪz a=æ zz=z
 pizzeria p=p i=iː zz=ts er=ɜː i=iː a=ə
 pizzerias p=p i=iː zz=ts er=ɜː i=iː a=ə s=z
 pizzi p=p izz=ɪz i=iː
@@ -76293,6 +76685,8 @@ ploch p=p l=l och=ɒk
 plocher p=p l=l och=ɒk er=ɜː
 plock p=p loc=lɒ k=k
 plod p=p l=l od=ɒd
+plodded p=p l=l o=ɒ dd=d e=ɪ d=d
+plodding p=p l=l o=ɒ dd=d ing=ɪŋ
 ploeger p=p l=l oe=əʊ g=ɡ er=ɜː
 ploetz p=p l=l oe=əʊ tz=ts
 plog p=p l=l og=ɒɡ
@@ -77036,6 +77430,7 @@ porpoise p=p or=ɔːɹ p=p oi=ə se=s
 porpoises p=p or=ɔːɹ p=p oi=ə s=s es=əz
 porr p=p orr=ɔːɹ
 porras p=p orr=ɔːɹ a=ɒ s=z
+porrazzo p=p orr=ɔːɹ a=ɒ zz=z o=əʊ
 porreca p=p orr=ɔːɹ ec=ɛk a=ə
 porretta p=p orr=ɔːɹ e=ɛ tt=t a=ə
 porritt p=p orr=ɔːɹ itt=ɪt
@@ -77393,6 +77788,7 @@ pozniak po=pɒ z=z n=n i=iː ak=æk
 poznikov po=pɒ z=z n=n ik=ɪk o=ɒ v=v
 pozo p=p o=əʊ z=z o=əʊ
 pozos p=p o=əʊ z=z o=əʊ s=s
+pozzi po=pɒ zz=z i=iː
 ppm p=piː p=piː m=ɛm
 prab p=p r=ɹ ab=æb
 pracht p=p r=ɹ ac=æk ht=t
@@ -77494,6 +77890,7 @@ prearranged p=p r=ɹ ear=iː r=ɜː a=eɪ nge=ndʒ d=d
 prearranges p=p r=ɹ ear=iː r=ɜː a=eɪ n=n ge=dʒə s=z
 prearranging p=p r=ɹ ear=iː r=ɜː a=eɪ n=n gi=dʒɪ ng=ŋ
 preas p=p r=ɹ eas=iːz
+prebble p=p re=ɹɛ bb=b le=əl
 prebe p=p re=ɹiː be=b
 prebiotic p=p re=ɹiː bi=baɪ o=ɔː t=t ic=ɪk
 preble p=p r=ɹ eb=ɛb le=əl
@@ -77958,6 +78355,7 @@ preyista p=p r=ɹ e=eɪ yi=ɪ s=s t=t a=ə
 preyistas p=p r=ɹ e=eɪ yi=ɪ s=s t=t a=ə s=z
 preziosi p=p r=ɹ ez=ɛz io=iːəʊ s=s i=iː
 prezioso p=p r=ɹ ez=ɛz io=iːəʊ s=s o=əʊ
+prezzano p=p re=ɹɛ zz=z a=ɒ n=n o=əʊ
 pri p=p ri=ɹaɪ
 priam p=p ri=ɹaɪ am=æm
 pribble p=p r=ɹ ibb=ɪb le=əl
@@ -78269,6 +78667,8 @@ procurer p=p r=ɹ o=əʊ c=k u=jʊ r=ɹ er=ɜː
 procuring p=p r=ɹ o=əʊ c=k u=jʊ r=ɹ ing=ɪŋ
 procyte p=p r=ɹ o=əʊ cy=saɪ te=t
 prod p=p r=ɹ od=ɒd
+prodded p=p ro=ɹɒ dd=d e=ɪ d=d
+prodding p=p ro=ɹɒ dd=d ing=ɪŋ
 prodi p=p r=ɹ o=əʊ d=d i=iː
 prodigal p=p r=ɹ od=ɒd ig=ɪɡ a=ə l=l
 prodigies p=p r=ɹ od=ɒd i=ə gie=dʒiː s=z
@@ -78877,8 +79277,8 @@ puck pu=pʌ ck=k
 pucker pu=pʌ ck=k er=ɜː
 puckett pu=pʌ ck=k e=ɪ tt=t
 puckish pu=pʌ ck=k ish=ɪʃ
-puddle p=p udd=ʌd le=əl
-puddles p=p udd=ʌd le=əl s=z
+puddle pu=pʌ dd=d le=əl
+puddles pu=pʌ dd=d le=əl s=z
 puder p=p u=juː d=d er=ɜː
 pudgie p=p udg=ʌdʒ ie=iː
 pudgies p=p udg=ʌdʒ ies=iːz
@@ -79186,6 +79586,14 @@ puusepp pu=p u=uː s=z e=ə pp=p
 puza p=p uz=uːz a=ə
 puzio p=p uz=uːz io=iːəʊ
 puzo p=p uz=uːz o=əʊ
+puzzle pu=pʌ zz=z le=əl
+puzzled pu=pʌ zz=z le=əl d=d
+puzzlemaster pu=pʌ zz=z le=əl m=m as=æs t=t er=ɜː
+puzzlement pu=pʌ zz=z le=əl m=m en=ən t=t
+puzzler pu=pʌ zz=z l=l er=ɜː
+puzzles pu=pʌ zz=z le=əl s=z
+puzzling pu=pʌ zz=z l=əl ing=ɪŋ
+puzzo p=p u=uː zz=z o=əʊ
 pyatt p=p y=aɪ a=ə tt=t
 pyburn p=p y=ɪ b=b urn=ɜːn
 pye p=p ye=aɪ
@@ -79592,7 +80000,7 @@ quotes qu=kw o=əʊ te=t s=s
 quoth qu=kw o=əʊ th=θ
 quoting qu=kw o=əʊ t=t ing=ɪŋ
 quotron qu=kw o=əʊ t=t ro=ɹɒ n=n
-ra ra=ɹɒ
+ra r=ɹ a=ɒ
 raab raa=ɹɒ b=b
 raabe raa=ɹɒ be=b
 raad raa=ɹɒ d=d
@@ -79603,7 +80011,10 @@ rab r=ɹ ab=æb
 rabago ra=ɹɒ ba=bɒ g=ɡ o=əʊ
 rabalais r=ɹ ab=æb a=ə lais=leɪ
 rabb r=ɹ abb=æb
+rabbani r=ɹ a=ə bb=b an=æn i=iː
 rabbi r=ɹ abb=æb i=aɪ
+rabbinic r=ɹ a=ə bb=b in=ɪn ic=ɪk
+rabbinical r=ɹ a=ə bb=b in=ɪn ic=ɪk a=ə l=l
 rabbis r=ɹ abb=æb i=aɪ s=z
 rabbit r=ɹ abb=æb i=ə t=t
 rabbitears r=ɹ abb=æb it=ɪt ea=iː r=ɹ s=z
@@ -80139,6 +80550,7 @@ rand r=ɹ an=æn d=d
 randa ra=ɹɒ n=n d=d a=ə
 randal r=ɹ an=æn d=d a=ə l=l
 randall r=ɹ an=æn d=d a=ə ll=l
+randazzo ra=ɹɒ n=n da=dɒ zz=z o=əʊ
 randel r=ɹ an=æn d=d el=əl
 randell r=ɹ an=æn d=d ell=ɛl
 rander r=ɹ an=æn d=d er=ɜː
@@ -80561,6 +80973,8 @@ razorbacks r=ɹ azo=eɪz r=ɜː b=b ack=æk s=s
 razors r=ɹ az=eɪz ors=ɜːz
 razr ra=ɹæ z=z r=ɹ
 razzano ra=ɹɒ zz=ts a=ɒ n=n o=əʊ
+razzle ra=ɹæ zz=z le=əl
+razzmatazz ra=ɹæ zz=z m=m a=ə ta=tæ zz=z
 re r=ɹ e=eɪ
 rea re=ɹ a=eɪ
 reabsorb re=ɹiː a=ə bs=bz or=ɔːɹ b=b
@@ -80770,6 +81184,7 @@ rebar re=ɹiː b=b ar=ɒɹ
 rebate re=ɹiː b=b ate=eɪt
 rebated re=ɹiː b=b at=eɪt e=ɪ d=d
 rebates re=ɹiː b=b ate=eɪt s=s
+rebbe re=ɹiː bb=b e=ə
 rebecca r=ɹ e=ə be=bɛ cc=k a=ə
 rebeck re=ɹiː b=b eck=ɛk
 rebeka r=ɹ e=ɪ b=b e=iː k=k a=ə
@@ -84128,6 +84543,14 @@ rodak r=ɹ o=əʊ d=d a=ə k=k
 rodale r=ɹ o=əʊ d=d ale=eɪl
 rodarte r=ɹ od=ɒd ar=ɒɹ te=t
 rodas r=ɹ o=əʊ d=d a=ə s=z
+rodd ro=ɹɒ dd=d
+rodden ro=ɹɒ dd=d en=ən
+roddenberry ro=ɹɒ dd=d en=ən b=b err=ɛɹ y=iː
+roddey ro=ɹɒ dd=d ey=iː
+roddick ro=ɹɒ dd=d ick=ɪk
+roddie ro=ɹɒ dd=d ie=iː
+rodding ro=ɹɒ dd=d ing=ɪŋ
+roddy ro=ɹɒ dd=d y=iː
 rode r=ɹ o=əʊ de=d
 rodebaugh r=ɹ od=ɒd e=ɪ b=b augh=ɔː
 rodefer r=ɹ od=ɒd e=ɪ f=f er=ɜː
@@ -84243,6 +84666,9 @@ rogernomics r=ɹ o=əʊ g=ɡ er=ɜː n=n om=ɒm ic=ɪk s=s
 rogers r=ɹ oge=ɒdʒ rs=ɜːz
 rogerson r=ɹ og=ɒɡ er=ɜː s=s o=ə n=n
 rogge ro=ɹɒ gge=ɡ
+roggenbuck ro=ɹɒ gg=ɡ e=ɪ n=n b=b u=ə ck=k
+roggenkamp ro=ɹɒ gg=ɡ e=ɪ n=n k=k am=æm p=p
+roggow ro=ɹɒ gg=ɡ ow=əʊ
 rogin r=ɹ o=əʊ g=ɡ in=ɪn
 roginski r=ɹ o=ə g=ɡ in=ɪn s=s k=k i=iː
 rogness r=ɹ og=ɒɡ n=n e=ɪ ss=s
@@ -84288,6 +84714,7 @@ rohrman r=ɹ o=ɔː hr=ɹ m=m a=ə n=n
 rohrs r=ɹ o=ɔː hr=ɹ s=z
 rohs r=ɹ oh=əʊ s=z
 rohstoff r=ɹ oh=əʊ s=s t=t off=ɔːf
+rohwedder r=ɹ oh=əʊ w=w e=ɪ dd=d er=ɜː
 rohweder r=ɹ oh=əʊ w=w e=ɪ d=d er=ɜː
 rohwer r=ɹ oh=əʊ w=w er=ɜː
 rohypnol r=ɹ o=əʊ hy=haɪ p=p n=n o=ɔː l=l
@@ -84999,7 +85426,9 @@ rozman ro=ɹɒ z=z m=m a=ə n=n
 roznowski r=ɹ o=ə z=z n=n ow=ɔːf s=s k=k i=iː
 rozsa r=ɹ o=əʊ z=z s=s a=ə
 rozycki r=ɹ o=ə z=z y=ɪ c=ts k=k i=iː
-ru ru=ɹuː
+rozzell ro=ɹɒ zz=z e=ə ll=l
+rozzi ro=ɹɒ zz=z i=iː
+ru r=ɹ u=uː
 rua ru=ɹuː a=ə
 ruam ru=ɹuː a=ə m=m
 ruane ru=ɹuː ane=eɪn
@@ -85010,6 +85439,18 @@ ruback ru=ɹuː b=b ack=æk
 rubalcaba ru=ɹuː ba=bɒ l=l ca=kɒ b=b a=ə
 rubalcava ru=ɹuː ba=bɒ l=l ca=kɒ v=v a=ə
 rubano ru=ɹuː ba=bɒ n=n o=əʊ
+rubbed ru=ɹʌ bbe=b d=d
+rubber ru=ɹʌ bb=b er=ɜː
+rubberize ru=ɹʌ bb=b er=ɜː ize=aɪz
+rubberized ru=ɹʌ bb=b er=ɜː ize=aɪz d=d
+rubbermaid ru=ɹʌ bb=b er=ɜː mai=meɪ d=d
+rubbers ru=ɹʌ bbe=b rs=ɜːz
+rubbery ru=ɹʌ bb=b er=ɜː y=iː
+rubbia ru=ɹʌ bb=b i=iː a=ə
+rubbing ru=ɹʌ bb=b ing=ɪŋ
+rubbish ru=ɹʌ bb=b ish=ɪʃ
+rubble ru=ɹʌ bb=b le=əl
+rubbo ru=ɹuː bb=b o=əʊ
 rube ru=ɹuː be=b
 rubeck ru=ɹuː b=b eck=ɛk
 rubel ru=ɹuː b=b el=əl
@@ -85129,6 +85570,7 @@ ruef rue=ɹuː f=f
 rueff rue=ɹuː ff=f
 rueful rue=ɹuː f=f ul=əl
 ruefully rue=ɹuː ful=fə l=l y=iː
+ruegg rue=ɹuː gg=ɡ
 ruehle rue=ɹuː h=h le=əl
 ruel rue=ɹuː l=l
 ruelas rue=ɹuː l=l a=ə s=z
@@ -85464,6 +85906,7 @@ ruyle ru=ɹ yle=aɪl
 ruzek r=ɹ uz=uːz ek=ɛk
 ruzich ru=ɹʌ z=z ic=ɪ h=h
 ruzicka r=ɹ uz=uːz ick=ɪk a=ə
+ruzzo ru=ɹuː zz=z o=əʊ
 ryal r=ɹ y=iː a=ɒ l=l
 ryall r=ɹ y=iː a=ɒ ll=l
 ryals r=ɹ y=iː a=ɒ ls=lz
@@ -85531,7 +85974,7 @@ ryuzo ry=ɹaɪ uz=uːz o=əʊ
 ryzhkov ry=ɹaɪ zh=z ko=kɒ v=v
 rzasa r=ɜː za=zɒ s=s a=ə
 rzepka r=ɜː ze=zɛ p=p k=k a=ə
-sa sa=sɒ
+sa s=s a=ɒ
 saab saa=sɒ b=b
 saad saa=sɒ d=d
 saal saa=sɒ l=l
@@ -85563,6 +86006,8 @@ sabb s=s abb=æb
 sabbagh s=s abb=æb a=ə gh=ɡ
 sabbath s=s abb=æb a=ə th=θ
 sabbaths s=s abb=æb a=ə th=θ s=s
+sabbatical s=s a=ə bb=b at=æt ic=ɪk a=ə l=l
+sabbaticals s=s a=ə bb=b at=æt ic=ɪk a=ə ls=lz
 sabedra s=s a=ə be=bɛ d=d r=ɹ a=ə
 sabel sa=sɒ be=bɛ l=l
 sabella s=s a=ə b=b ell=ɛl a=ə
@@ -85646,6 +86091,7 @@ sada sa=sɒ d=d a=ə
 sadaka s=s a=ə da=dɒ k=k a=ə
 sadako sa=sɒ da=dɒ k=k o=əʊ
 sadat sa=sɒ da=dɒ t=t
+saddam sa=sɒ dd=d a=ə m=m
 sadden s=s add=æd en=ən
 saddened s=s add=æd ene=ən d=d
 saddening s=s add=æd en=ən ing=ɪŋ
@@ -86908,6 +87354,7 @@ scavengers s=s ca=kæ v=v e=ə nge=ndʒ rs=ɜːz
 scavenging s=s ca=kæ v=v en=ən gi=dʒɪ ng=ŋ
 scavo s=s ca=kɒ v=v o=əʊ
 scavone s=s c=k a=ə v=v o=əʊ ne=n
+scavuzzo s=s ca=kɒ v=v u=uː zz=z o=əʊ
 scearce sc=s ear=ɜː ce=s
 scenario sc=s e=ɪ n=n ar=ɛɹ io=iːəʊ
 scenarios sc=s e=ɪ n=n ar=ɛɹ i=iː os=əʊz
@@ -87045,7 +87492,7 @@ scheible s=s ch=k ei=aɪ b=b le=əl
 scheibner sch=ʃ ei=aɪ b=b n=n er=ɜː
 scheid sch=ʃ ei=aɪ d=d
 scheidecker sch=ʃ ei=aɪ d=d e=ɪ ck=k er=ɜː
-scheidegger sch=ʃ ei=aɪ d=d e=ɪ gge=ɡ r=ɜː
+scheidegger sch=ʃ ei=aɪ d=d e=ɪ gg=ɡ er=ɜː
 scheidel sch=ʃ ei=aɪ d=d el=əl
 scheider sch=ʃ ei=aɪ d=d er=ɜː
 scheiderer sch=ʃ ei=aɪ d=d er=ɜː er=ɜː
@@ -87686,7 +88133,7 @@ schwartzkopf sch=ʃ wa=wɔː r=ɹ tz=ts k=k o=ɔː p=p f=f
 schwartzman sch=ʃ wa=wɔː r=ɹ tz=ts m=m a=ə n=n
 schwarz sch=ʃ wa=wɔː r=ɹ z=ts
 schwarze sch=ʃ wa=wɔː r=ɹ ze=ts
-schwarzenegger sch=ʃ wa=wɔː r=ɹ z=z en=ən e=eɪ gge=ɡ r=ɜː
+schwarzenegger sch=ʃ wa=wɔː r=ɹ z=z en=ən e=eɪ gg=ɡ er=ɜː
 schwarzer sch=ʃ wa=wɔː r=ɹ z=ts er=ɜː
 schwarzkopf sch=ʃ wa=wɔː r=ɹ z=ts k=k o=ɔː p=p f=f
 schwarzman sch=ʃ wa=wɔː r=ɹ z=ts m=m a=ə n=n
@@ -87747,6 +88194,7 @@ schwisow sch=ʃ w=w is=ɪs ow=əʊ
 schwoerer sch=ʃ w=w o=əʊ er=ɜː er=ɜː
 sci sc=s i=iː
 sciacca s=s ci=k a=ɔː cc=k a=ɒ
+scialabba s=s ci=k a=ɔː la=lɒ bb=b a=ʌ
 sciaroni sc=s ia=iː r=ɜː o=əʊ n=n i=iː
 sciarra sc=s i=iː a=ɒ rr=ɹ a=ɒ
 sciclone sc=s ic=ɪk l=l o=əʊ ne=niː
@@ -87780,12 +88228,15 @@ scobee s=s c=k ob=ɒb ee=iː
 scobey s=s c=k o=əʊ b=b ey=iː
 scobie s=s c=k ob=ɒb ie=iː
 scoby s=s c=k o=əʊ b=b y=iː
+scocozza s=s co=kɒ co=kɒ zz=z a=ə
 scoff s=s c=k off=ɔːf
 scoffed s=s c=k off=ɔːf ed=t
 scoffield s=s c=k off=ɔːf ie=iː l=l d=d
 scofflaws s=s co=kɒ ff=f l=l aw=ɔː s=z
 scoffs s=s c=k off=ɔːf s=s
 scofield s=s c=k o=əʊ f=f ie=iː l=l d=d
+scoggin s=s co=kɒ gg=ɡ in=ɪn
+scoggins s=s co=kɒ gg=ɡ in=ɪn s=z
 scogin s=s c=k o=əʊ g=ɡ in=ɪn
 scohier s=s c=k oh=əʊ ier=jɜː
 scola s=s c=k o=əʊ l=l a=ə
@@ -88003,6 +88454,9 @@ scrivens s=s c=k r=ɹ iv=aɪv e=ə ns=nz
 scriver s=s c=k r=ɹ iv=aɪv er=ɜː
 scrivner s=s c=k ri=ɹɪ v=v n=n er=ɜː
 scrod s=s c=k r=ɹ od=ɒd
+scroggin s=s c=k ro=ɹɒ gg=ɡ in=ɪn
+scroggins s=s c=k ro=ɹɒ gg=ɡ in=ɪn s=z
+scroggs s=s c=k ro=ɹɒ gg=ɡ s=z
 scrogham s=s c=k r=ɹ og=ɒɡ h=h a=ə m=m
 scroll s=s c=k rol=ɹəʊ l=l
 scrolling s=s c=k rol=ɹəʊ l=l ing=ɪŋ
@@ -88014,6 +88468,11 @@ scrounge s=s c=k r=ɹ ou=aʊ nge=ndʒ
 scrounged s=s c=k r=ɹ ou=aʊ nge=ndʒ d=d
 scrounging s=s c=k r=ɹ ou=aʊ n=n gi=dʒɪ ng=ŋ
 scrub s=s c=k r=ɹ ub=ʌb
+scrubbed s=s c=k ru=ɹʌ bbe=b d=d
+scrubber s=s c=k ru=ɹʌ bb=b er=ɜː
+scrubbers s=s c=k ru=ɹʌ bbe=b rs=ɜːz
+scrubbing s=s c=k ru=ɹʌ bb=b ing=ɪŋ
+scrubby s=s c=k ru=ɹʌ bb=b y=iː
 scruffy s=s c=k r=ɹ uff=ʌf y=iː
 scruggs s=s c=k r=ɹ ugg=ʌɡ s=z
 scrunch s=s c=k ru=ɹʌ n=n ch=tʃ
@@ -88032,7 +88491,7 @@ scrutton s=s c=k r=ɹ utt=ʌt o=ə n=n
 scs s=ɛs c=siː s=ɛs
 scuba s=s c=k u=uː b=b a=ə
 scud s=s cu=kʌ d=d
-scudder s=s c=k udd=ʌd er=ɜː
+scudder s=s cu=kʌ dd=d er=ɜː
 scuderi s=s c=k ud=uːd e=ɛ r=ɹ i=iː
 scuds s=s cu=kʌ ds=dz
 scuff s=s cu=kʌ ff=f
@@ -88233,6 +88692,7 @@ sebastiane s=s e=ə b=b as=æs t=t ia=iː ne=ɛn
 sebastiani s=s e=ə b=b as=æs t=t i=iː a=ɒ n=n i=iː
 sebastianis s=s e=ə b=b as=æs t=t i=iː a=ɒ n=n i=iː s=z
 sebastopol se=sɛ ba=bɒ s=s t=t o=ə p=p o=ɔː l=l
+sebby se=sɛ bb=b y=iː
 sebek s=s eb=ɛb e=ɪ k=k
 seber s=s e=iː b=b er=ɜː
 sebert s=s eb=ɛb er=ɜː t=t
@@ -89195,6 +89655,7 @@ sha sh=ʃ a=ɒ
 shaak sha=ʃ a=ɒ k=k
 shaath sha=ʃ a=ɒ th=θ
 shabad sh=ʃ a=ə b=b ad=æd
+shabazz sh=ʃ a=ɒ ba=bɒ zz=z
 shabby sh=ʃ abb=æb y=iː
 shaber sh=ʃ abe=eɪb r=ɜː
 shack sh=ʃ ack=æk
@@ -90036,6 +90497,7 @@ shocks sh=ʃ ock=ɒk s=s
 shockwave sh=ʃ ock=ɒk w=w ave=eɪv
 shockwaves sh=ʃ ock=ɒk w=w ave=eɪv s=z
 shod sh=ʃ od=ɒd
+shoddy sh=ʃ o=ɒ dd=d y=iː
 shoe sh=ʃ oe=uː
 shoebox sh=ʃ oe=əʊ bo=bɒ x=ks
 shoehorn sh=ʃ oe=uː h=h or=ɔːɹ n=n
@@ -90222,6 +90684,7 @@ showa sh=ʃ ow=əʊ a=ə
 showalter sh=ʃ ow=əʊ a=ə l=l t=t er=ɜː
 showbiz sh=ʃ ow=əʊ bi=bɪ z=z
 showboat sh=ʃ ow=əʊ b=b oat=əʊt
+showbuzz sh=ʃ ow=əʊ bu=bʌ zz=z
 showcase sh=ʃ ow=əʊ c=k ase=eɪs
 showcased sh=ʃ ow=əʊ ca=keɪ sed=st
 showcases sh=ʃ ow=əʊ ca=keɪ s=s es=ɪz
@@ -90313,6 +90776,8 @@ shrouds sh=ʃ r=ɹ ou=aʊ ds=dz
 shrout sh=ʃ r=ɹ ou=aʊ t=t
 shroyer sh=ʃ r=ɹ oy=ɔɪ er=ɜː
 shrub sh=ʃ r=ɹ ub=ʌb
+shrubbery sh=ʃ ru=ɹʌ bb=b er=ɜː y=iː
+shrubby sh=ʃ ru=ɹʌ bb=b y=iː
 shrublike sh=ʃ r=ɹ ub=ʌb l=l ike=aɪk
 shrubs sh=ʃ ru=ɹʌ bs=bz
 shrug sh=ʃ r=ɹ ug=ʌɡ
@@ -90427,8 +90892,8 @@ siamese si=saɪ a=ə m=m ese=iːz
 sian s=s i=iː a=ɒ n=n
 siano s=s i=iː a=ɒ n=n o=əʊ
 sib si=sɪ b=b
-sibbie s=s ibb=ɪb ie=iː
-sibby s=s ibb=ɪb y=iː
+sibbie si=sɪ bb=b ie=iː
+sibby si=sɪ bb=b y=iː
 sibelle si=sɪ b=b elle=ɛl
 siberia s=s ib=aɪb e=ɪ r=ɹ i=iː a=ə
 siberian s=s ib=aɪb e=ɪ r=ɹ i=iː a=ə n=n
@@ -90472,15 +90937,16 @@ siconolfi s=s i=iː c=k o=əʊ n=n o=əʊ l=l f=f i=iː
 sicotte si=sɪ c=k o=ɔː tte=t
 sid si=sɪ d=d
 sidak si=sɪ d=d ak=æk
-siddall s=s idd=ɪd a=ə ll=l
-siddeley s=s idde=ɪd le=əl y=iː
-siddell s=s idd=ɪd e=ə ll=l
-sidden s=s idd=ɪd en=ən
-siddens s=s idd=ɪd e=ə ns=nz
-siddhartha s=s iddh=ɪd ar=ɒɹ th=t a=ʌ
-siddig s=s idd=ɪd ig=ɪɡ
-siddle s=s idd=ɪd le=əl
-siddons s=s idd=ɪd o=ə ns=nz
+siddall si=sɪ dd=d a=ə ll=l
+siddeley si=sɪ dde=d le=əl y=iː
+siddell si=sɪ dd=d e=ə ll=l
+sidden si=sɪ dd=d en=ən
+siddens si=sɪ dd=d e=ə ns=nz
+siddhartha si=sɪ ddh=d ar=ɒɹ th=t a=ʌ
+siddig si=sɪ dd=d ig=ɪɡ
+siddiqui s=s i=iː dd=d i=iː qu=kw i=iː
+siddle si=sɪ dd=d le=əl
+siddons si=sɪ dd=d o=ə ns=nz
 side s=s ide=aɪd
 sidearm s=s ide=aɪd ar=ɒɹ m=m
 sidearms s=s ide=aɪd ar=ɒɹ ms=mz
@@ -90627,9 +91093,9 @@ sigafoos si=sɪ g=ɡ a=ə f=f oo=uː s=z
 sigala s=s i=iː ga=ɡɒ l=l a=ə
 sigel si=sɪ g=ɡ el=əl
 sigfreda s=s i=iː g=ɡ f=f re=ɹɛ d=d a=ə
-sigg s=s igg=ɪɡ
+sigg si=sɪ gg=ɡ
 siggers si=sɪ gge=ɡ rs=ɜːz
-siggins s=s igg=ɪɡ in=ɪn s=z
+siggins si=sɪ gg=ɡ in=ɪn s=z
 sigh sigh=saɪ
 sighed sighe=saɪ d=d
 sighing sigh=saɪ ing=ɪŋ
@@ -91676,6 +92142,7 @@ slog s=s l=l og=ɒɡ
 slogan s=s l=l o=əʊ g=ɡ a=ə n=n
 slogans s=s l=l o=əʊ g=ɡ a=ə ns=nz
 slogged s=s l=l o=ɒ gge=ɡ d=d
+slogging s=s l=l o=ɒ gg=ɡ ing=ɪŋ
 slokum s=s l=l o=əʊ k=k um=əm
 sloma s=s l=l o=əʊ m=m a=ə
 sloman s=s l=l o=əʊ m=m a=ə n=n
@@ -91931,6 +92398,8 @@ smitty s=s mit=mɪ t=t y=iː
 smoak s=s m=m oa=əʊ k=k
 smock s=s m=m ock=ɒk
 smog s=s m=m og=ɒɡ
+smoggiest s=s mo=mɒ gg=ɡ i=iː e=ə s=s t=t
+smoggy s=s m=m o=ɔː gg=ɡ y=iː
 smoke s=s m=m o=əʊ ke=k
 smoked s=s m=m o=əʊ ked=kt
 smokejumper s=s m=m o=əʊ ke=k ju=dʒʌ m=m p=p er=ɜː
@@ -92069,6 +92538,8 @@ snatches s=s nat=næ ch=tʃ es=ɪz
 snatching s=s nat=næ ch=tʃ ing=ɪŋ
 snavely s=s n=n ave=eɪv l=l y=iː
 snay s=s n=n ay=eɪ
+snazzier s=s n=n a=æ zz=z i=iː er=ɜː
+snazzy s=s n=n a=æ zz=z y=iː
 snead s=s n=n ea=iː d=d
 sneak s=s n=n ea=iː k=k
 sneaked s=s n=n ea=iː ked=kt
@@ -92153,6 +92624,8 @@ snobbery s=s n=n obb=ɒb er=ɜː y=iː
 snobbish s=s n=n obb=ɒb ish=ɪʃ
 snobby s=s n=n obb=ɒb y=iː
 snobs s=s n=n ob=ɒb s=z
+snodderly s=s no=nɒ dd=d er=ɜː l=l y=iː
+snoddy s=s no=nɒ dd=d y=iː
 snodgrass s=s n=n od=ɒd g=ɡ r=ɹ ass=æs
 snog s=s n=n o=ɔː g=ɡ
 snohomish s=s no=nɒ h=h o=ə m=m ish=ɪʃ
@@ -92221,6 +92694,8 @@ snowstorm s=s n=n ow=əʊ s=s t=t or=ɔːɹ m=m
 snowstorms s=s n=n ow=əʊ s=s t=t or=ɔːɹ ms=mz
 snowy s=s n=n ow=əʊ y=iː
 snub s=s n=n ub=ʌb
+snubbed s=s nu=nʌ bbe=b d=d
+snubbing s=s nu=nʌ bb=b ing=ɪŋ
 snubs s=s n=n ub=ʌb s=z
 snuck s=s n=n uck=ʌk
 snuff s=s n=n uff=ʌf
@@ -92340,6 +92815,8 @@ soda s=s o=əʊ d=d a=ə
 sodano s=s o=əʊ da=dɒ n=n o=əʊ
 sodaro s=s o=əʊ d=d ar=ɒɹ o=əʊ
 sodas s=s o=əʊ d=d a=ə s=z
+sodden so=sɒ dd=d en=ən
+sodders so=sɒ dde=d rs=ɜːz
 sodecom s=s o=əʊ d=d e=ə co=kɒ m=m
 soden s=s o=əʊ d=d en=ən
 soder s=s o=əʊ d=d er=ɜː
@@ -92401,6 +92878,7 @@ softspoken s=s of=ɔːf t=t s=s p=p o=əʊ k=k en=ən
 software s=s of=ɔːf t=t w=w are=ɛɹ
 softwood s=s of=ɔːf t=t w=w ood=ʊd
 sogang s=s o=əʊ g=ɡ ang=æŋ
+soggy so=sɒ gg=ɡ y=iː
 sogo s=s o=əʊ g=ɡ o=əʊ
 sohio s=s o=əʊ hi=haɪ o=əʊ
 sohl s=s o=əʊ hl=l
@@ -92442,6 +92920,7 @@ solares s=s o=əʊ l=l ar=ɒɹ es=ɛs
 solari s=s o=əʊ l=l ar=ɒɹ i=iː
 solaris s=s o=əʊ l=l ar=ɛɹ is=ɪs
 solarz s=s o=əʊ l=l ar=ɒɹ z=z
+solazzo s=s o=əʊ la=lɒ zz=z o=əʊ
 solberg s=s o=əʊ l=l b=b er=ɜː g=ɡ
 solchaga s=s o=əʊ l=l ch=tʃ a=ɒ g=ɡ a=ə
 sold s=s o=əʊ l=l d=d
@@ -93765,6 +94244,10 @@ spyglass s=s p=p y=aɪ g=ɡ l=l ass=æs
 spying s=s p=p y=aɪ ing=ɪŋ
 spyker s=s p=p y=aɪ k=k er=ɜː
 spyware s=s p=p y=aɪ w=w are=ɛɹ
+squabble sq=sk ua=wɒ bb=b le=əl
+squabbled sq=sk ua=wɒ bb=b le=əl d=d
+squabbles sq=sk ua=wɒ bb=b le=əl s=z
+squabbling sq=sk ua=wɒ bb=b l=əl ing=ɪŋ
 squad sq=sk ua=wɒ d=d
 squadron sq=sk ua=wɒ d=d r=ɹ o=ə n=n
 squadrons sq=sk ua=wɒ d=d r=ɹ o=ə ns=nz
@@ -93816,12 +94299,12 @@ squeezing s=s qu=kw ee=iː z=z ing=ɪŋ
 squelch sq=sk ue=wɛ l=l ch=tʃ
 squelched sq=sk ue=wɛ l=l ch=tʃ ed=t
 squelching sq=sk ue=wɛ l=l ch=tʃ ing=ɪŋ
-squibb s=s qu=kw ibb=ɪb
+squibb sq=sk ui=wɪ bb=b
 squid sq=sk ui=wɪ d=d
 squier s=s qu=kw i=aɪ er=ɜː
 squiers s=s qu=kw ie=aɪ rs=ɜːz
-squiggle s=s qu=kw igg=ɪɡ le=əl
-squiggles s=s qu=kw igg=ɪɡ le=əl s=z
+squiggle sq=sk ui=wɪ gg=ɡ le=əl
+squiggles sq=sk ui=wɪ gg=ɡ le=əl s=z
 squillace s=s qu=kw ill=ɪl a=ə ce=s
 squillacote s=s qu=kw ill=ɪl a=ə c=k o=əʊ te=t
 squillante s=s qu=kw i=iː ll=l a=ɒ n=n t=t e=eɪ
@@ -94456,6 +94939,7 @@ stearn s=s t=t ear=ɜː n=n
 stearne s=s t=t ear=ɜː ne=n
 stearns s=s t=t ear=ɜː ns=nz
 stears s=s t=t ea=iː r=ɹ s=z
+stebbins s=s te=tɛ bb=b in=ɪn s=z
 steber s=s t=t e=iː b=b er=ɜː
 stebner s=s t=t eb=ɛb n=n er=ɜː
 stec s=s t=t ec=ɛk
@@ -95101,6 +95585,7 @@ stocky s=s t=t ock=ɒk y=iː
 stockyard s=s t=t ock=ɒk ya=jɒ r=ɹ d=d
 stockyards s=s t=t ock=ɒk ya=jɒ r=ɹ ds=dz
 stocum s=s t=t o=əʊ c=k um=əm
+stoddard s=s t=t o=ɒ dd=d ard=ɜːd
 stodola s=s t=t o=əʊ d=d o=əʊ la=lɒ
 stodolsky s=s t=t o=ə d=d o=ɔː l=l s=s k=k y=iː
 stoeber s=s t=t oe=əʊ b=b er=ɜː
@@ -95716,6 +96201,7 @@ strove s=s t=t r=ɹ o=əʊ ve=v
 strow s=s t=t r=ɹ ow=əʊ
 strozier s=s t=t r=ɹ o=əʊ z=z i=iː er=ɜː
 strub s=s t=t r=ɹ ub=ʌb
+strubbe s=s t=t ru=ɹʌ bbe=b
 strube s=s t=t ru=ɹuː be=b
 strubel s=s t=t ru=ɹuː b=b el=əl
 struble s=s t=t ru=ɹuː b=b le=əl
@@ -95755,6 +96241,16 @@ stuard s=s tu=tuː ard=ɜːd
 stuart s=s tua=tuː r=ɜː t=t
 stuarts s=s tua=tuː r=ɜː t=t s=s
 stub s=s t=t ub=ʌb
+stubbe s=s tu=tʌ bbe=b
+stubbed s=s tu=tʌ bbe=b d=d
+stubbins s=s tu=tʌ bb=b in=ɪn s=z
+stubble s=s tu=tʌ bb=b le=əl
+stubblefield s=s tu=tʌ bb=b le=əl f=f ie=iː l=l d=d
+stubborn s=s tu=tʌ bbo=b rn=ɜːn
+stubbornly s=s tu=tʌ bbo=b rn=ɜːn l=l y=iː
+stubbornness s=s tu=tʌ bbo=b rn=ɜːn n=n ess=əs
+stubbs s=s tu=tʌ bb=b s=z
+stubby s=s tu=tʌ bb=b y=iː
 stuber s=s tu=tuː b=b er=ɜː
 stubs s=s t=t ub=ʌb s=z
 stucco s=s tu=tʌ cc=k o=əʊ
@@ -95928,7 +96424,7 @@ styrofoam s=s t=t y=aɪ r=ɹ o=ə f=f oa=əʊ m=m
 styron s=s t=t y=aɪ r=ɹ o=ɔː n=n
 stys s=s t=t ys=ɪs
 styx s=s t=t y=ɪ x=ks
-su su=suː
+su s=s u=uː
 suard su=suː ar=ɒɹ d=d
 suarez s=s ua=wɒ r=ɹ ez=ɛz
 suata su=suː a=ɒ t=t a=ə
@@ -97140,7 +97636,7 @@ swiveling s=s wi=wɪ v=v el=əl ing=ɪŋ
 swivels s=s wi=wɪ v=v e=ə ls=lz
 swoboda s=s w=w o=əʊ b=b o=əʊ d=d a=ə
 swofford s=s w=w o=ɒ ff=f ord=ɜːd
-swogger s=s w=w o=ɒ gge=ɡ r=ɜː
+swogger s=s w=w o=ɒ gg=ɡ er=ɜː
 swollen s=s w=w o=əʊ l=l len=ən
 swonger s=s w=w ong=ɔːŋ er=ɜː
 swoon s=s w=w oo=uː n=n
@@ -97355,7 +97851,7 @@ systran s=s y=aɪ s=s t=t r=ɹ an=æn
 sytsma sy=sɪ t=t s=s m=m a=ə
 syverson sy=sɪ v=v er=ɜː s=s o=ə n=n
 syvertsen sy=sɪ v=v er=ɜː t=t s=s en=ən
-ta ta=tɒ
+ta t=t a=ɒ
 taaffe taa=tɒ ffe=f
 tab t=t ab=æb
 tabacalera t=t a=ə b=b ac=æk a=ə l=l e=ɛ r=ɹ a=ə
@@ -97368,6 +97864,7 @@ tabasco t=t a=ə b=b as=æs c=k o=əʊ
 tabb t=t abb=æb
 tabbert t=t abb=æb er=ɜː t=t
 tabbing t=t abb=æb ing=ɪŋ
+tabbouleh t=t a=ə bb=b ou=uː l=l eh=eɪ
 tabby t=t abb=æb y=iː
 taber t=t abe=eɪb r=ɜː
 tabernacle t=t ab=æb er=ɜː n=n ac=æk le=əl
@@ -97441,6 +97938,7 @@ tada ta=tɒ d=d a=ə
 tadashi ta=tɒ da=dɒ sh=ʃ i=iː
 tadd t=t add=æd
 taddei t=t add=æd ei=aɪ
+taddeo ta=tɒ dd=d eo=iːəʊ
 taddy t=t add=æd y=iː
 tadeusz t=t ad=æd e=iː us=uː z=z
 tadic t=t ad=æd ic=ɪk
@@ -98136,6 +98634,11 @@ teate t=t e=iː ate=eɪt
 teater t=t ea=iː t=t er=ɜː
 teatro t=t ea=iː t=t r=ɹ o=əʊ
 teats t=t ea=iː t=t s=s
+tebbe te=tɛ bbe=b
+tebben te=tɛ bb=b en=ən
+tebbetts te=tɛ bb=b e=ɪ tt=t s=s
+tebbit te=tɛ bb=b it=ɪt
+tebbs te=tɛ bb=b s=z
 tebeau t=t e=ɪ b=b eau=əʊ
 tebelskis t=t e=ə be=bɛ l=l s=s k=k i=iː s=s
 tebo t=t eb=ɛb o=əʊ
@@ -99877,6 +100380,8 @@ tobiason t=t o=ə bi=baɪ a=ə s=s o=ə n=n
 tobie t=t o=əʊ b=b ie=iː
 tobin t=t o=əʊ b=b in=ɪn
 tobler t=t o=əʊ b=b le=əl r=ɜː
+toboggan t=t o=ə bo=bɒ gg=ɡ a=ə n=n
+toboggans t=t o=ə bo=bɒ gg=ɡ a=ə ns=nz
 tobolski t=t o=ə b=b o=əʊ l=l s=s k=k i=iː
 tobu t=t o=əʊ bu=buː
 toby t=t o=əʊ b=b y=iː
@@ -99889,6 +100394,11 @@ toda t=t o=əʊ d=d a=ə
 todaro t=t o=əʊ d=d ar=ɒɹ o=əʊ
 today t=t o=ə d=d ay=eɪ
 todays t=t o=ə d=d ays=eɪz
+todd t=t o=ɒ dd=d
+toddle t=t o=ɒ dd=d le=əl
+toddler t=t o=ɒ dd=d l=l er=ɜː
+toddlers t=t o=ɒ dd=d le=l rs=ɜːz
+toddling t=t o=ɒ dd=d l=l ing=ɪŋ
 todhunter t=t od=ɒd hu=hʌ n=n t=t er=ɜː
 todisco t=t o=əʊ d=d i=iː s=s c=k o=əʊ
 todman t=t od=ɒd m=m a=ə n=n
@@ -99918,6 +100428,9 @@ toga t=t o=əʊ g=ɡ a=ə
 together t=t o=ə g=ɡ e=ɛ the=ð r=ɜː
 togetherness t=t o=ə g=ɡ e=ɛ the=ð rn=ɜːn ess=əs
 togethers t=t o=ə g=ɡ e=ɛ the=ð rs=ɜːz
+toggle t=t o=ɒ gg=ɡ le=əl
+toggled t=t o=ɒ gg=ɡ le=əl d=d
+toggling t=t o=ɒ gg=ɡ l=l ing=ɪŋ
 tognino t=t og=ɒɡ n=n i=iː n=n o=əʊ
 togo t=t o=əʊ g=ɡ o=əʊ
 togs t=t og=ɒɡ s=z
@@ -100523,6 +101036,7 @@ toystore t=t oy=ɔɪ s=s t=t ore=ɔːɹ
 toystores t=t oy=ɔɪ s=s t=t ore=ɔːɹ s=z
 tozer t=t o=əʊ z=z er=ɜː
 tozier t=t o=əʊ z=z i=iː er=ɜː
+tozzi t=t o=ɒ zz=z i=iː
 traber t=t ra=ɹeɪ b=b er=ɜː
 trabert t=t r=ɹ ab=æb er=ɜː t=t
 trabucco t=t ra=ɹɒ bu=buː cc=k o=əʊ
@@ -101086,6 +101600,7 @@ trevor t=t r=ɹ evo=ɛv r=ɜː
 trew t=t rew=ɹuː
 trexler t=t re=ɹɛ x=ks l=l er=ɜː
 trezise t=t r=ɹ ez=ɛz ise=aɪz
+trezza t=t re=ɹɛ zz=z a=ə
 tri t=t ri=ɹaɪ
 triad t=t ri=ɹaɪ ad=æd
 triads t=t ri=ɹaɪ ad=æd s=z
@@ -101304,6 +101819,7 @@ troche t=t ro=ɹɒ che=tʃ
 trochmann t=t ro=ɹɒ ch=tʃ m=m ann=æn
 trocki t=t roc=ɹɒ k=k i=iː
 trod t=t r=ɹ od=ɒd
+trodden t=t ro=ɹɒ dd=d en=ən
 troeger t=t r=ɹ oe=əʊ g=ɡ er=ɜː
 troendle t=t r=ɹ oe=əʊ n=n d=d le=əl
 troester t=t r=ɹ oe=əʊ s=s t=t er=ɜː
@@ -101540,6 +102056,7 @@ try t=t ry=ɹaɪ
 tryart t=t ry=ɹaɪ ar=ɒɹ t=t
 tryba t=t r=ɹ y=ɪ b=b a=ə
 trybus t=t r=ɹ y=ɪ b=b us=ɪs
+trygg t=t r=ɹ y=ɪ gg=ɡ
 trygstad t=t r=ɹ y=ɪ g=ɡ s=s t=t a=ə d=d
 trygve t=t r=ɹ y=ɪ g=ɡ v=v e=iː
 trying t=t ry=ɹaɪ ing=ɪŋ
@@ -101576,10 +102093,13 @@ tsunami t=t su=suː na=nɒ m=m i=iː
 tsuneo t=t su=suː n=n eo=iːəʊ
 tsurumi t=t su=suː ru=ɹuː m=m i=iː
 tsutomu t=t s=s ut=uːt o=əʊ mu=muː
-tu tu=tuː
+tu t=t u=uː
 tub t=t ub=ʌb
 tuba tu=tuː b=b a=ə
 tubal tu=tuː b=b a=ə l=l
+tubb tu=tʌ bb=b
+tubbs tu=tʌ bb=b s=z
+tubby tu=tʌ bb=b y=iː
 tube tu=tuː be=b
 tuber tu=tuː b=b er=ɜː
 tuberculosis t=t u=ə b=b er=ɜː c=k u=jə l=l o=əʊ s=s is=ɪs
@@ -101906,6 +102426,8 @@ tuzla t=t uz=uːz l=l a=ə
 tuzzolino tu=tuː zz=ts o=əʊ l=l i=iː n=n o=əʊ
 tvedt t=t ve=vɛ d=d t=t
 tveit t=t ve=v i=iː t=t
+twaddell t=t wa=wɒ dd=d ell=ɛl
+twaddle t=t wa=wɒ dd=d le=əl
 twain t=t w=w ain=eɪn
 twang t=t wa=wɒ ng=ŋ
 twangy t=t wa=wɒ n=n gy=dʒiː
@@ -102203,7 +102725,7 @@ ulundi u=juː l=l un=ʌn d=d i=iː
 ulva u=uː l=l v=v a=ə
 ulvert ul=ʌl v=v er=ɜː t=t
 ulysses u=juː l=l y=ɪ ss=s e=iː s=z
-um um=ʌm
+um u=ʌ m=m
 uma u=juː m=m a=ə
 umana u=uː ma=mɒ n=n a=ə
 umansky um=əm an=æn s=s k=k y=iː
@@ -102238,7 +102760,7 @@ umpteen um=ʌm p=p t=t ee=iː n=n
 umpteenth um=ʌm p=p t=t ee=iː n=n th=θ
 umscheid um=ʌm sch=ʃ ei=aɪ d=d
 umstead um=ʌm s=s t=t ead=ɛd
-un un=ʌn
+un u=ʌ n=n
 una u=uː n=n a=ə
 unabashed un=ʌn a=ə b=b ash=æʃ ed=t
 unabashedly un=ʌn a=ə b=b ash=æʃ e=ɪ d=d l=l y=iː
@@ -102254,6 +102776,7 @@ unaccountably un=ʌn a=ə cc=k ou=aʊ n=n t=t a=ə b=b l=l y=iː
 unaccounted un=ʌn a=ə cc=k ou=aʊ n=n t=t e=ɪ d=d
 unaccredited un=ʌn a=ə cc=k re=ɹɛ di=dɪ t=t e=ɪ d=d
 unaccustomed un=ʌn ac=ə cu=kʌ s=s t=t o=ə me=m d=d
+unaddressed un=ʌn a=ə dd=d r=ɹ ess=ɛs ed=t
 unadorn un=ʌn a=ə d=d or=ɔːɹ n=n
 unadorned un=ʌn a=ə d=d or=ɔːɹ ne=n d=d
 unadulterated un=ʌn a=ə du=dʌ l=l t=t er=ɜː at=eɪt e=ɪ d=d
@@ -103288,7 +103811,7 @@ unwritten u=ə n=n wr=ɹ itt=ɪt en=ən
 unz un=ʌn z=z
 unzip u=ə n=n z=z ip=ɪp
 unzipped u=ə n=n z=z ipp=ɪp ed=t
-up up=ʌp
+up u=ʌ p=p
 upbeat up=ʌp b=b ea=iː t=t
 upbraid up=ʌp b=b rai=ɹeɪ d=d
 upbraided u=ə p=p b=b rai=ɹeɪ d=d e=ɪ d=d
@@ -103585,6 +104108,7 @@ uzelac u=ə ze=zɛ l=l a=ə c=k
 uzi uz=uːz i=iː
 uzis uz=uːz i=iː s=z
 uzmack uz=uːz m=m ack=æk
+uzzell u=uː zz=z ell=ɛl
 vaal vaa=vɒ l=l
 vaca v=v ac=æk a=ə
 vacancies va=veɪ c=k a=ə nc=ns ies=iːz
@@ -103821,6 +104345,7 @@ vanatta va=vɒ na=nɒ tt=t a=ə
 vanatter va=vɒ nat=næ t=t er=ɜː
 vanauken v=v an=æn au=aʊ k=k en=ən
 vanausdall v=v an=æn au=aʊ s=s d=d a=ə ll=l
+vanbebber v=v an=æn be=bɛ bb=b er=ɜː
 vanbeek v=v an=æn b=b ee=iː k=k
 vanbenschoten v=v an=æn be=bɛ n=n sch=ʃ o=ə t=t en=ən
 vanbergen v=v an=æn b=b er=ɜː g=ɡ en=ən
@@ -104771,7 +105296,7 @@ vexed ve=vɛ x=ks ed=t
 vexes ve=vɛ x=ks es=ɪz
 vexing ve=vɛ x=ks ing=ɪŋ
 vezina v=v ez=ɛz i=iː n=n a=ə
-vi vi=vaɪ
+vi v=v i=aɪ
 via vi=vaɪ a=ə
 viability vi=vaɪ a=ə b=b il=ɪl i=ə t=t y=iː
 viable vi=vaɪ a=ə b=b le=əl
@@ -105493,7 +106018,7 @@ vonnie v=v onn=ɒn ie=iː
 vonny v=v onn=ɒn y=iː
 vonruden v=v o=ɒ n=n r=ɹ ud=uːd en=ən
 vons v=v o=ɒ ns=nz
-vonseggern v=v o=ɒ n=n s=s e=ɪ gge=ɡ rn=ɜːn
+vonseggern v=v o=ɒ n=n s=s e=ɪ gg=ɡ er=ɜː n=n
 vonstein v=v o=ɒ n=n s=s t=t ei=aɪ n=n
 vontobel v=v o=ɒ n=n t=t o=əʊ b=b el=əl
 voodoo v=v oo=uː d=d oo=uː
@@ -105610,7 +106135,7 @@ vy v=v y=aɪ
 vyacheslav v=v ya=jɒ ch=tʃ e=ə s=s la=lɒ v=v
 vyas v=v ya=jɒ s=s
 vying v=v y=aɪ ing=ɪŋ
-wa wa=wɒ
+wa w=w a=ɒ
 waack waa=wɒ ck=k
 waag waa=wɒ g=ɡ
 waage wa=wɒ age=ɪdʒ
@@ -105646,6 +106171,13 @@ wactlar wa=wɒ c=k t=t lar=lɜː
 wad wa=wɒ d=d
 wada wa=wɒ d=d a=ə
 wadas wa=wɒ d=d a=ə s=z
+wadded wa=wɒ dd=d e=ɪ d=d
+waddell wa=wɒ dd=d ell=ɛl
+waddie wa=wɒ dd=d ie=iː
+waddill wa=wɔː dd=d ill=ɪl
+waddington wa=wɒ dd=d ing=ɪŋ t=t o=ə n=n
+waddle wa=wɒ dd=d le=əl
+waddy wa=wɒ dd=d y=iː
 wade w=w ade=eɪd
 waded w=w a=eɪ d=d e=ɪ d=d
 wadel w=w ade=eɪd l=əl
@@ -106522,6 +107054,11 @@ weavil w=w ea=iː v=v i=ə l=l
 weaving w=w ea=iː v=v ing=ɪŋ
 weavings w=w ea=iː vi=vɪ ngs=ŋz
 web we=wɛ b=b
+webb we=wɛ bb=b
+webbed we=wɛ bbe=b d=d
+webber we=wɛ bb=b er=ɜː
+webbing we=wɛ bb=b ing=ɪŋ
+webbs we=wɛ bb=b s=z
 weber we=wɛ b=b er=ɜː
 weberg we=wɛ b=b er=ɜː g=ɡ
 webers we=wɛ be=b rs=ɜːz
@@ -108366,6 +108903,7 @@ woessner w=w oe=əʊ ss=s n=n er=ɜː
 woeste w=w oe=əʊ s=s te=t
 wofford w=w o=ɒ ff=f ord=ɜːd
 wogan w=w o=əʊ g=ɡ a=ə n=n
+woggle w=w o=ɔː gg=ɡ le=əl
 wogoman w=w o=əʊ g=ɡ o=əʊ m=m a=ə n=n
 wohl w=w o=əʊ hl=l
 wohler w=w o=əʊ hl=l er=ɜː
@@ -108513,6 +109051,7 @@ woodchucks w=w ood=ʊd ch=tʃ uck=ʌk s=s
 woodcliff w=w ood=ʊd c=k l=l iff=ɪf
 woodcock w=w ood=ʊd c=k ock=ɒk
 woodcox w=w ood=ʊd co=kɒ x=ks
+wooddell woo=wʊ dd=d e=ə ll=l
 wooded w=w ood=ʊd e=ɪ d=d
 woodell woo=wʊ del=də l=l
 wooden w=w ood=ʊd en=ən
@@ -109010,8 +109549,10 @@ wysiwig w=w y=ɪ s=z i=iː w=w ig=ɪɡ
 wysong w=w ys=ɪs ong=ɔːŋ
 wyss w=w y=ɪ ss=s
 wythe w=w y=aɪ the=ð
-ya ya=jɒ
+ya y=j a=ɒ
 yaacov yaa=jɒ c=k o=əʊ v=v
+yabba ya=jæ bb=b a=ə
+yabbadabbadoo ya=jæ bb=b a=ə d=d abb=æb a=ə d=d oo=uː
 yablon ya=jæ b=b l=l o=ə n=n
 yablonski ya=jə b=b l=l o=ɒ n=n s=s k=k i=iː
 yablonsky ya=jə b=b l=l o=ɒ n=n s=s k=k y=iː
@@ -109029,6 +109570,7 @@ yacktman ya=jæ ck=k t=t m=m a=ə n=n
 yacono ya=jæ c=k o=ə n=n o=əʊ
 yacos ya=jɒ c=k o=əʊ s=s
 yacoub ya=jæ c=k ou=aʊ b=b
+yadda ya=jɒ dd=d a=ə
 yadon ya=jæ d=d o=ə n=n
 yaffe ya=jæ ffe=f
 yagi ya=jɒ g=ɡ i=iː
@@ -109168,6 +109710,7 @@ yaworski ya=jə wor=wɜː s=s k=k i=iː
 yax ya=jæ x=ks
 yazoo ya=jɒ z=z oo=uː
 yazov ya=jæ z=z o=ɒ v=v
+yazzie ya=jæ zz=z ie=iː
 ybanez y=iː b=b an=æn e=ɪ z=z
 ybarbo y=iː b=b ar=ɒɹ b=b o=əʊ
 ybarra y=iː ba=bɒ rr=ɹ a=ə
@@ -109175,6 +109718,7 @@ ydstie y=ɪ d=d s=s t=t ie=iː
 yeadon yea=jɛ d=d o=ə n=n
 yeck ye=jɛ ck=k
 yeckley ye=jɛ ck=k l=l ey=iː
+yedda ye=jɛ dd=d a=ə
 yedinak ye=jɛ d=d in=ɪn ak=æk
 yediyat ye=jɛ di=dɪ ya=jæ t=t
 yeh yeh=jɛ
@@ -109241,7 +109785,7 @@ yglesias y=iː g=ɡ l=l e=eɪ s=s i=iː a=ə s=s
 ylvisaker y=ɪ l=l vi=vɪ sa=sɒ k=k er=ɜː
 ynez y=iː n=n ez=ɛz
 yniguez y=iː n=n i=iː gu=ɡ ez=ɛz
-yo yo=jəʊ
+yo y=j o=əʊ
 yoak yoa=jəʊ k=k
 yoakam yoa=jəʊ k=k a=ə m=m
 yoakum yoa=jəʊ k=k um=əm
@@ -109313,7 +109857,7 @@ ypsilanti yp=ɪp s=s i=ə l=l an=æn t=t i=iː
 yquem y=iː q=kw ue=ə m=m
 ysleta y=iː s=s l=l e=eɪ t=t a=ə
 yttrium y=ɪ tt=t r=ɹ iu=iːə m=m
-yu yu=juː
+yu y=j u=uː
 yuan yu=juː a=ɒ n=n
 yuba yu=juː b=b a=ə
 yucaipa yu=juː c=k ai=aɪ p=p a=ə
@@ -109548,6 +110092,7 @@ zaslavskaya z=z as=æs l=l a=ə v=v s=s ka=k y=aɪ a=ə
 zaslow za=zɒ s=s l=l ow=əʊ
 zastrow z=z as=æs t=t r=ɹ ow=əʊ
 zaucha z=z auc=aʊ h=h a=ə
+zaugg z=z au=ɔː gg=ɡ
 zaun z=z au=ɔː n=n
 zauner z=z au=ɔː n=n er=ɜː
 zavada za=zɒ va=vɒ d=d a=ə
@@ -109595,6 +110140,7 @@ zedong z=z e=eɪ d=d ong=ɔːŋ
 zee z=z ee=iː
 zeeb z=z ee=iː b=b
 zeeble z=z ee=iː b=b le=əl
+zeebrugge z=z ee=iː b=b ru=ɹuː gg=ɡ e=iː
 zeek z=z ee=iː k=k
 zeeland z=z ee=iː l=l a=ə n=n d=d
 zeeman z=z ee=iː m=m a=ə n=n
@@ -109956,6 +110502,7 @@ zoey z=z oe=əʊ y=iː
 zofagart z=z o=əʊ f=f a=ə g=ɡ ar=ɒɹ t=t
 zofran z=z o=əʊ f=f r=ɹ an=æn
 zogby z=z o=ɔː g=ɡ b=b y=iː
+zogg z=z o=ɒ gg=ɡ
 zoghby z=z ogh=əʊ b=b y=iː
 zoh z=z oh=əʊ
 zohn z=z o=əʊ hn=n

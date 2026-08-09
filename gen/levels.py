@@ -68,6 +68,10 @@ CVC_PHONEMES = {
 GRAPHEMES = {
     # trigraphs first - longest match wins
     "igh": "aɪ", "air": "eə", "ear": "ɪə", "tch": "tʃ",
+    # doubled consonants are one sound
+    "bb": "b", "cc": "k", "dd": "d", "ff": "f", "gg": "ɡ", "ll": "l",
+    "mm": "m", "nn": "n", "pp": "p", "rr": "ɹ", "ss": "s", "tt": "t",
+    "zz": "z",
     # consonant digraphs
     "sh": "ʃ", "ch": "tʃ", "th": "θ", "ng": "ŋ", "ck": "k",
     "ph": "f", "wh": "w", "qu": "kw",
@@ -107,6 +111,11 @@ WORD_SOUNDS = {
 def split_graphemes(word: str):
     """Split a word into (letters, sound) pairs, keeping digraphs whole."""
     low = word.lower()
+    # Consonant-le: the -ble/-dle/-tle family ends in its own little
+    # syllable, /əl/. "Rubble" is r-u-bb-le, the way every phonics
+    # programme teaches it.
+    if len(low) >= 4 and low.endswith("le") and low[-3] not in "aeiou":
+        return split_graphemes(word[:-2]) + [(word[-2:], "əl")]
     if len(low) >= 3 and MAGIC_E.search(low):
         head = split_graphemes(word[:-3]) if len(word) > 3 else []
         c = low[-2]
@@ -220,8 +229,10 @@ def decodable(word: str) -> bool:
         return False
     # Magic-e outside the safe rime pattern: "have", "care" - the rule
     # cannot say these, so they are read whole. ("see" and friends are not
-    # magic-e at all - the ee digraph covers them - so they pass through.)
-    if re.search(r"[aeiou][b-df-hj-np-tv-z]+e$", w) and not MAGIC_E.search(w):
+    # magic-e at all - the ee digraph covers them - and consonant-le words
+    # have their own rule, so both pass through.)
+    if (re.search(r"[aeiou][b-df-hj-np-tv-z]+e$", w) and not MAGIC_E.search(w)
+            and not (len(w) >= 4 and w.endswith("le") and w[-3] not in "aeiou")):
         return False
     # "happy", "pony": final y as a vowel sound the table does not model.
     if len(w) > 2 and re.search(r"[b-df-hj-np-tv-z]y$", w):

@@ -286,7 +286,9 @@ def test_true_liars_are_still_shown_whole():
     unknown names with untrustworthy spellings fall back to the cautious
     rules."""
     assert not levels.decodable("one")
-    assert not levels.decodable("zorble")  # unknown magic-e lookalike
+    assert not levels.decodable("zorbe")  # unknown magic-e lookalike
+    # ...but a nonsense consonant-le name reads fine: zor-bul
+    assert levels.decodable("zorble")
 
 
 # ------------------------------------------------------- the level builder
