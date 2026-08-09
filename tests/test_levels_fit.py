@@ -154,6 +154,9 @@ def test_the_gaps_shrink_pass_by_pass(monkeypatch):
     # more passes start wider - the count IS the pacing control
     assert levels._approach_start(4) > levels._approach_start(3) > \
         levels._approach_start(2)
+    # ...each round ends with a breath, so passes read as separate attempts
+    assert segs[2].pad > segs[0].pad
+    assert segs[5].pad > segs[3].pad
     # ...and the FINAL pass has no gaps at all: the sounds touch, joined by
     # crossfades, with one held breath before the whole word answers.
     assert segs[6].pad == 0 and segs[7].pad == 0

@@ -490,6 +490,10 @@ def _approach(voice, parts, pause, passes):
             segs.append(Segment(shown,
                                 _hard_clip(voice, ipa, hold * _sounds_in(ipa)),
                                 pad=gap))
+        # A breath between rounds: each pass is its own attempt, and the
+        # boundary should be audible - within-round gaps alone made one
+        # pass run into the next.
+        segs[-1].pad = gap + 0.5
     segs += _touching(voice, parts)
     return segs
 
