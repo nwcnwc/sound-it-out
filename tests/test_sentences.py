@@ -402,10 +402,16 @@ def test_approach_sounds_compress_with_the_gaps():
 
     segs = levels._approach(UnevenVoice(), levels.word_parts("dm"), 1.5, passes=3)
     per_pass = [segs[i * 2:(i + 1) * 2] for i in range(3)]
-    for r, (d, m) in enumerate(per_pass):
+    for d, m in per_pass[:2]:
         assert len(m.audio) / SR <= 1.11, "long holds are capped"
         assert len(d.audio) / SR == pytest.approx(0.2, abs=0.01), \
-            "short sounds are untouched"
-    # and the cap shrinks pass by pass, like the gaps
+            "short sounds are untouched in the discrete passes"
+    # the cap shrinks pass by pass, and the final touching pass is the
+    # shortest of all - trimmed, crossfaded, no silence inside it
     m_lens = [len(p[1].audio) for p in per_pass]
     assert m_lens[0] > m_lens[1] > m_lens[2]
+    d3, m3 = per_pass[2]
+    assert d3.pad == 0, "no gap inside the touching pass"
+    joined = np.concatenate([d3.audio, m3.audio])
+    assert len(joined) < (len(per_pass[1][0].audio) + len(per_pass[1][1].audio)), \
+        "the touching pass is tighter than the pass before it"

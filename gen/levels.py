@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 
 from gen import openended, wordlists
-from gen.soundout import Segment, cap, whole
+from gen.soundout import SR, Segment, _fade, _xfade, cap, whole
 
 # ---------------------------------------------------------------- content
 
@@ -437,7 +437,7 @@ def _approach(voice, parts, pause, passes):
     """
     segs = []
     start = _approach_start(pause)
-    for r in range(passes):
+    for r in range(passes - 1):
         frac = (passes - 1 - r) / max(1, passes - 1)
         gap = APPROACH_FLOOR * (start / APPROACH_FLOOR) ** frac
         # The SOUNDS compress along with the gaps - that is what blending
@@ -449,6 +449,41 @@ def _approach(voice, parts, pause, passes):
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
             segs.append(Segment(shown, cap(voice.phoneme(ipa), hold), pad=gap))
+    segs += _touching(voice, parts)
+    return segs
+
+
+def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
+    """The final pass: the sounds TOUCH. Shortened, edges trimmed, joined
+    with a crossfade - no silence at all - so the last thing heard before
+    the whole word is almost the word. The highlight still sweeps letter
+    by letter: the merged audio is sliced back apart at each crossfade's
+    midpoint, and the slices concatenate to exactly the merged audio, so
+    sound and light cannot drift.
+    """
+    clips = []
+    for _, ipa in parts:
+        c = cap(voice.phoneme(ipa), hold)
+        e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
+        if e and len(c) > 4 * e:
+            c = c[e:len(c) - e]
+        clips.append(c)
+
+    n = int(SR * xfade_ms / 1000)
+    merged, cuts = clips[0], []
+    for c in clips[1:]:
+        eff = min(n, len(merged), len(c))
+        cuts.append(len(merged) - eff + eff // 2)
+        merged = _xfade(merged, c, n)
+    merged = _fade(merged, 40)
+
+    bounds = [0] + cuts + [len(merged)]
+    segs = []
+    for j in range(len(parts)):
+        shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
+        segs.append(Segment(shown, merged[bounds[j]:bounds[j + 1]]))
+    # a held breath before the whole word answers the blend
+    segs[-1].pad = 0.3
     return segs
 
 

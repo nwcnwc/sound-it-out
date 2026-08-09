@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -144,13 +145,16 @@ def test_the_gaps_shrink_pass_by_pass(monkeypatch):
     pause = 1.5
     segs = levels._approach(StubVoice(), levels.spell("sat"), pause, passes=3)
     assert len(segs) == 9
-    gaps = [segs[i * 3].pad for i in range(3)]
-    assert gaps[0] > gaps[1] > gaps[2]
+    gaps = [segs[i * 3].pad for i in range(2)]
+    assert gaps[0] > gaps[1]
     # WITHIN-word gaps are brisk: a fraction of the between-words pause,
     # never the pause itself - sounding out at 1.5s a beat was a crawl.
     assert abs(gaps[0] - levels._approach_start(pause)) < 1e-6
     assert gaps[0] <= 0.45
-    assert abs(gaps[2] - levels.APPROACH_FLOOR) < 1e-6
+    # ...and the FINAL pass has no gaps at all: the sounds touch, joined by
+    # crossfades, with one held breath before the whole word answers.
+    assert segs[6].pad == 0 and segs[7].pad == 0
+    assert segs[8].pad == pytest.approx(0.3)
 
 
 def test_each_pass_still_sweeps_the_highlight_left_to_right(monkeypatch):
