@@ -409,11 +409,17 @@ def _sounds(voice, letters, reps, pause):
     return segs
 
 
-# The gap never quite reaches zero: the sounds are separate clips, and a few
-# hundredths of a second keeps a seam from clicking. But by the final pass
-# the sounds should all but touch - the closer they land to the blended
-# word, the smaller the leap the child is asked to make.
-APPROACH_FLOOR = 0.05
+# Gaps WITHIN a word are not gaps BETWEEN words. The first approach pass
+# used to inherit the between-words pause (1.5s by default), which made
+# sounding out crawl; a teacher's "s...a...t" beats are a third of a second,
+# not a breath and a half. The opening gap is now a fraction of the pause
+# setting (so the pacing knob still has a say), clamped to stay brisk, and
+# the floor is two hundredths - the sounds all but touch by the final pass.
+APPROACH_FLOOR = 0.02
+
+
+def _approach_start(pause: float) -> float:
+    return min(0.45, max(0.20, pause * 0.2))
 
 
 def _approach(voice, parts, pause, passes):
@@ -430,9 +436,10 @@ def _approach(voice, parts, pause, passes):
     left-to-right sweep at every speed.
     """
     segs = []
+    start = _approach_start(pause)
     for r in range(passes):
         frac = (passes - 1 - r) / max(1, passes - 1)
-        gap = APPROACH_FLOOR * (max(pause, APPROACH_FLOOR * 2) / APPROACH_FLOOR) ** frac
+        gap = APPROACH_FLOOR * (start / APPROACH_FLOOR) ** frac
         # The SOUNDS compress along with the gaps - that is what blending
         # is. It also evens the rhythm: recorded holds range from 0.2s to
         # 2.6s, and uncapped, the highlight camped on the long sounds and

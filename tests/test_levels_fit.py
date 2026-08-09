@@ -146,7 +146,10 @@ def test_the_gaps_shrink_pass_by_pass(monkeypatch):
     assert len(segs) == 9
     gaps = [segs[i * 3].pad for i in range(3)]
     assert gaps[0] > gaps[1] > gaps[2]
-    assert abs(gaps[0] - pause) < 1e-6
+    # WITHIN-word gaps are brisk: a fraction of the between-words pause,
+    # never the pause itself - sounding out at 1.5s a beat was a crawl.
+    assert abs(gaps[0] - levels._approach_start(pause)) < 1e-6
+    assert gaps[0] <= 0.45
     assert abs(gaps[2] - levels.APPROACH_FLOOR) < 1e-6
 
 

@@ -425,7 +425,7 @@ def estimate_seconds(keys=None, reps=3, pause=1.5) -> float:
 
     PH, WORD, LINE = 0.75, 0.55, 2.6
     passes = max(2, reps)
-    gap = pause * 0.4  # mean of the shrinking approach gaps
+    gap = 0.12  # mean of the (now brisk) shrinking approach gaps
 
     def word_cost(w):
         if levels.decodable(w):
