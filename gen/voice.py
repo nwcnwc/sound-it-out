@@ -192,7 +192,7 @@ class VoiceSource:
         # This is what makes every aligned dictionary chunk speakable
         # without anyone recording ten thousand of them.
         from gen import dictionary
-        from gen.soundout import _xfade, cap
+        from gen.soundout import _xfade, cap, content
 
         parts = dictionary.tokens(ipa)
         if len(parts) > 1:
@@ -201,7 +201,9 @@ class VoiceSource:
                 c = self._one_sound(p)
                 if c is None:
                     break
-                clips.append(cap(c, 0.45))
+                # condition each member first: a swelling vowel capped raw
+                # keeps its swell and loses its voice (lollipop's op)
+                clips.append(cap(content(c), 0.45))
             else:
                 out = clips[0]
                 n = int(SR * 0.03)

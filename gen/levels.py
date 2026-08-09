@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 
 from gen import openended, wordlists
-from gen.soundout import SR, Segment, _fade, _xfade, cap, whole
+from gen.soundout import SR, Segment, _fade, _xfade, cap, content, whole
 
 # ---------------------------------------------------------------- content
 
@@ -488,25 +488,38 @@ def _sounds_in(ipa: str) -> int:
 
 
 def _hard_clip(voice, ipa: str, seconds: float):
-    """A sound's clip, capped for the blend, with its stop protected.
+    """A sound's clip, conditioned and capped for the blend.
 
-    Ends-on-a-stop keeps the END of the clip (the burst), and the whole
-    clip is then levelled by PEAK: a stop is mostly closure-silence, so
-    RMS levelling leaves its one burst too quiet to survive next to a
-    levelled sustain, and a burst nobody can hear is a /d/ lost however
-    carefully it was preserved."""
+    Everything is first trimmed to its sustained content. A sound ending
+    in a stop then keeps a window CENTRED ON ITS BURST - located, not
+    assumed, because bursts turn up wherever the person put them - with
+    the sound's body before it and the release after. The burst is
+    levelled by peak only when it IS a burst (peak well above the window's
+    own rms): boosting a window that has no transient just manufactures
+    static, which is what lollipop's op became."""
+    import numpy as np
+
     from gen import dictionary
-    from gen.soundout import STOPS, loud
+    from gen.soundout import STOPS
 
     toks = dictionary.tokens(ipa)
     ends_stop = toks[-1] in STOPS
-    c = cap(voice.phoneme(ipa), seconds, keep="end" if ends_stop else "start")
-    if ends_stop and c.size:
-        import numpy as np
-
+    c = content(voice.phoneme(ipa))
+    n = int(seconds * SR)
+    if not ends_stop:
+        return cap(c, seconds)
+    if len(c) > n:
+        b = int(np.argmax(np.abs(c)))
+        lo = max(0, min(b - int(n * 0.6), len(c) - n))
+        c = c[lo:lo + n].copy()
+        m = min(int(SR * 0.012), len(c))
+        if lo > 0 and m > 1:
+            c[:m] *= np.linspace(0.0, 1.0, m, dtype="float32")
+    if c.size:
         peak = float(np.abs(c).max())
-        if 0.0 < peak < 0.75:
-            c = (c * min(0.85 / peak, 6.0)).astype("float32")
+        wrms = float(np.sqrt(np.mean(c ** 2))) or 1e-6
+        if 0.0 < peak < 0.75 and peak > 4.0 * wrms:
+            c = (c * min(0.85 / peak, 4.0)).astype("float32")
     return c
 
 

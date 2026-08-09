@@ -703,3 +703,30 @@ def build_video(segments: list, theme: Theme, out: Path, loop_pad=1.0):
     plan_job(segments, theme, work, loop_pad)
     render_job_chrome(work)
     return encode_job(work, out)
+
+
+def content(a: np.ndarray, keep_ms=15) -> np.ndarray:
+    """Trim a clip to its sustained content before any window decision.
+
+    Real recordings arrive with slow swells and breathy tails - an /iː/
+    that fades in over half a second reads as silence to a keep-the-start
+    cap, which is how lollipop lost its i. Content is where the energy is:
+    20ms windows above a tenth of the clip's own loudest window (a tenth,
+    not more - a quiet vowel NEXT TO a loud burst must stay), with a
+    little air kept either side."""
+    if a.size < SR // 10:
+        return a
+    w = int(SR * 0.02)
+    n = len(a) // w
+    rms = np.array([float(np.sqrt(np.mean(a[i * w:(i + 1) * w] ** 2)))
+                    for i in range(n)])
+    top = float(rms.max())
+    if top <= 0:
+        return a
+    on = rms > top * 0.10
+    if not on.any():
+        return a
+    i0 = int(np.argmax(on))
+    i1 = n - int(np.argmax(on[::-1]))
+    pad = int(SR * keep_ms / 1000)
+    return a[max(0, i0 * w - pad): min(len(a), i1 * w + pad)]

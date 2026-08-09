@@ -510,7 +510,8 @@ def test_the_touching_pass_never_swallows_a_stop():
         def phoneme(self, ipa):
             if ipa == "d":
                 a = np.zeros(int(SR * 0.2), dtype="float32")
-                a[:int(SR * 0.02)] = 0.9   # the burst, right at the front
+                # the burst, after a realistic 30ms closure
+                a[int(SR * 0.03):int(SR * 0.05)] = 0.9
                 return a
             return np.full(int(SR * 0.45), 0.2, dtype="float32")
 
