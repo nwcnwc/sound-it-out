@@ -160,7 +160,7 @@ def test_the_gaps_shrink_pass_by_pass(monkeypatch):
     # ...and the FINAL pass has no gaps at all: the sounds touch, joined by
     # crossfades, with one held breath before the whole word answers.
     assert segs[6].pad == 0 and segs[7].pad == 0
-    assert segs[8].pad == pytest.approx(0.3)
+    assert segs[8].pad == pytest.approx(0.7)
 
 
 def test_each_pass_still_sweeps_the_highlight_left_to_right(monkeypatch):

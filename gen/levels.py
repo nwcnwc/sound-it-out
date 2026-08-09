@@ -587,8 +587,9 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
     for j in range(len(parts)):
         shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
         segs.append(Segment(shown, merged[bounds[j]:bounds[j + 1]]))
-    # a held breath before the whole word answers the blend
-    segs[-1].pad = 0.3
+    # a held breath before the whole word answers the blend - long enough
+    # for the child to answer FIRST, which is the whole game
+    segs[-1].pad = 0.7
     return segs
 
 
