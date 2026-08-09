@@ -467,12 +467,24 @@ def _approach(voice, parts, pause, passes):
         # 2.6s, and uncapped, the highlight camped on the long sounds and
         # blinked past the short ones - "it highlighted the wrong letters
         # and skipped some", reported on Grandma, whose m dwarfed its d.
+        #
+        # The budget is PER SOUND, not per chunk: a dictionary chunk like
+        # an=/æn/ carries two sounds, and capping it to one sound's length
+        # amputated the second - Grandma again, this time missing her /n/.
         hold = 0.5 * (1.1 / 0.5) ** frac
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
-            segs.append(Segment(shown, cap(voice.phoneme(ipa), hold), pad=gap))
+            segs.append(Segment(shown,
+                                cap(voice.phoneme(ipa), hold * _sounds_in(ipa)),
+                                pad=gap))
     segs += _touching(voice, parts)
     return segs
+
+
+def _sounds_in(ipa: str) -> int:
+    from gen import dictionary
+
+    return max(1, len(dictionary.tokens(ipa)))
 
 
 def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
@@ -485,7 +497,7 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
     """
     clips = []
     for _, ipa in parts:
-        c = cap(voice.phoneme(ipa), hold)
+        c = cap(voice.phoneme(ipa), hold * _sounds_in(ipa))
         e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
         if e and len(c) > 4 * e:
             c = c[e:len(c) - e]

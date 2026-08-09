@@ -463,3 +463,20 @@ def test_every_aligned_chunk_is_speakable_from_the_42():
     sounds = {s for entry in dictionary.load().values() for _, s in entry}
     bad = [s for s in sounds if any(t not in bank for t in dictionary.tokens(s))]
     assert not bad, f"unspeakable chunk sounds: {bad[:10]}"
+
+
+def test_multi_sound_chunks_keep_all_their_sounds():
+    """A chunk like an=/æn/ carries two sounds, and the pass caps must
+    budget for both - Grandma's /n/ was amputated by a one-sound cap."""
+
+    class TwoSoundVoice(StubVoice):
+        def phoneme(self, ipa):
+            from gen import dictionary
+            n = len(dictionary.tokens(ipa))
+            return np.full(int(SR * 0.45 * n), 0.2, dtype="float32")
+
+    parts = [("a", "æ"), ("an", "æn")]
+    segs = levels._approach(TwoSoundVoice(), parts, 1.5, passes=3)
+    single, double = segs[2], segs[3]  # the touching pass
+    assert len(double.audio) > 1.6 * len(single.audio), \
+        "the two-sound chunk gets roughly double the time"
