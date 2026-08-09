@@ -591,19 +591,26 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
             c = c[lo:hi]
         clips.append(c)
 
+    import numpy as np
+
     n = int(SR * xfade_ms / 1000)
-    tap = int(SR * 0.004)  # a butt-joint with just enough taper not to click
+    closure = np.zeros(int(SR * 0.03), dtype="float32")
     merged, cuts = clips[0], []
     for i, c in enumerate(clips[1:], start=1):
-        # Crossfading INTO a stop fades its burst in from zero, which
-        # deletes the one thing that makes it a /d/ and not a gap. A stop
-        # lands clean after the briefest close - the same closure a mouth
-        # makes. Same when a stop just ended: its release should not be
-        # smeared under the next sound's onset.
-        j = tap if starts_hard[i] or ends_hard[i - 1] else n
-        eff = min(j, len(merged), len(c))
-        cuts.append(len(merged) - eff + eff // 2)
-        merged = _xfade(merged, c, j)
+        if starts_hard[i] or ends_hard[i - 1]:
+            # A stop boundary is not a crossfade - it is what a mouth
+            # does: the voice fades over ~35ms as the lips close, a
+            # moment of true silence while they are closed, then the
+            # burst, untouched. The first version chopped the vowel in
+            # 4ms flat, and cutting a voiced waveform that fast is
+            # audible as a clack between Ru and bb.
+            merged = _fade(merged, 35)
+            cuts.append(len(merged))  # the closure belongs to the stop
+            merged = np.concatenate([merged, closure, c])
+        else:
+            eff = min(n, len(merged), len(c))
+            cuts.append(len(merged) - eff + eff // 2)
+            merged = _xfade(merged, c, n)
     merged = _fade(merged, 40)
 
     bounds = [0] + cuts + [len(merged)]

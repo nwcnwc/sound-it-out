@@ -548,3 +548,28 @@ def test_names_follow_the_syllable_rules():
     # closed syllables stay short: nonsense practice words are untouched
     assert levels.split_graphemes("vam") == [("v", "v"), ("a", "æ"), ("m", "m")]
     assert levels.split_graphemes("zib") == [("z", "z"), ("i", "ɪ"), ("b", "b")]
+
+
+def test_stop_joins_close_gently_never_clack():
+    """Chopping a voiced vowel to silence in 4ms is audible as a clack.
+    The join into a stop now fades the voice out over ~35ms, holds a
+    silent closure, then fires the burst - so the waveform never jumps."""
+
+    class VowelBurst(StubVoice):
+        def phoneme(self, ipa):
+            if ipa == "b":
+                a = np.zeros(int(SR * 0.2), dtype="float32")
+                a[int(SR * 0.03):int(SR * 0.05)] = 0.9
+                return a
+            return np.full(int(SR * 0.45), 0.3, dtype="float32")
+
+    segs = levels._touching(VowelBurst(), [("ru", "ɹʌ"), ("bb", "b")])
+    merged = np.concatenate([s.audio for s in segs])
+    # the vowel and the closure must be smooth - the burst itself is
+    # allowed to be sudden, that is what a burst is
+    boundary = len(segs[0].audio)
+    closure_end = boundary + int(SR * 0.03)
+    jumps = np.abs(np.diff(merged[:closure_end]))
+    assert float(jumps.max()) <= 0.05, "the voice closes gently, no clack"
+    # and the vowel actually reaches silence before the closure
+    assert float(np.abs(merged[boundary - 24:boundary + 24]).max()) < 0.05
