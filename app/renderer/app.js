@@ -1507,6 +1507,8 @@ function showTakeResult (r) {
     ? (r.reason || 'Got it.')
     : 'Kept take ' + (r.best + 1) + '. ' + (r.reason || '')
   // Move on by itself - stopping after every item would double the session.
+  // Three seconds, not the 1.4 it used to be: "Do that one again" is a
+  // decision, and a decision needs longer than it takes to read the words.
   clearTimeout(studio.advanceTimer)
   studio.advanceTimer = setTimeout(async () => {
     if (!(await pauseGate())) return
@@ -1515,7 +1517,7 @@ function showTakeResult (r) {
       showItem()
       if (studio.items[studio.i]) recordItem()
     }
-  }, 1400)
+  }, 3000)
 }
 
 function finishStudio () {
@@ -1600,7 +1602,12 @@ function initStudio () {
     recordItem()
   })
   on('studio-skip', () => { studio.i += 1; showItem() })
-  on('studio-redo', () => { sEl('studio-result').hidden = true; recordItem() })
+  on('studio-redo', () => {
+    // Cancel the pending auto-advance, or the retake races the timer.
+    clearTimeout(studio.advanceTimer)
+    sEl('studio-result').hidden = true
+    recordItem()
+  })
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('studio').hidden) closeStudio()
   })
