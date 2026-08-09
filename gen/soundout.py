@@ -104,6 +104,21 @@ def silence(seconds: float) -> np.ndarray:
     return np.zeros(int(seconds * SR), dtype="float32")
 
 
+def cap(a: np.ndarray, seconds: float) -> np.ndarray:
+    """Shorten a clip to `seconds` with a fade, or return it untouched.
+
+    Recorded phonemes vary enormously - a crisp /d/ is 0.2s, a generous
+    held /m/ can be 2.6s - and anything that plays them in sequence with
+    the highlight following inherits that lurch: the light camps on the
+    long sounds and blinks past the short ones, which reads as highlighting
+    the wrong letters. Capping evens the rhythm; the fade keeps a trimmed
+    hold sounding like a shorter hold rather than a cut."""
+    n = int(seconds * SR)
+    if len(a) <= n:
+        return a
+    return _fade(a[:n], 60)
+
+
 def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndarray:
     """Bring one clip up to a consistent speaking level. Gain only - the
     content is untouched, which is what "recordings are used verbatim" has

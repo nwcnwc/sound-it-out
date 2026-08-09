@@ -388,3 +388,24 @@ def test_redo_plans_contain_exactly_the_selection(library, monkeypatch):
     assert plan["redo"] is True and plan["total"] == 1
     assert plan["items"][0]["key"] == "s"
     assert plan["resumeAt"] == 0
+
+
+def test_approach_sounds_compress_with_the_gaps():
+    """Blending compresses the SOUNDS, not just the gaps - and capping evens
+    the rhythm so the highlight cannot camp on a long-held clip and blink
+    past a short one (the Grandma bug: her m dwarfed her d)."""
+
+    class UnevenVoice(StubVoice):
+        def phoneme(self, ipa):
+            secs = 2.5 if ipa == "m" else 0.2
+            return np.full(int(SR * secs), 0.2, dtype="float32")
+
+    segs = levels._approach(UnevenVoice(), levels.word_parts("dm"), 1.5, passes=3)
+    per_pass = [segs[i * 2:(i + 1) * 2] for i in range(3)]
+    for r, (d, m) in enumerate(per_pass):
+        assert len(m.audio) / SR <= 1.11, "long holds are capped"
+        assert len(d.audio) / SR == pytest.approx(0.2, abs=0.01), \
+            "short sounds are untouched"
+    # and the cap shrinks pass by pass, like the gaps
+    m_lens = [len(p[1].audio) for p in per_pass]
+    assert m_lens[0] > m_lens[1] > m_lens[2]

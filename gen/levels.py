@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 
 from gen import openended, wordlists
-from gen.soundout import Segment, whole
+from gen.soundout import Segment, cap, whole
 
 # ---------------------------------------------------------------- content
 
@@ -433,9 +433,15 @@ def _approach(voice, parts, pause, passes):
     for r in range(passes):
         frac = (passes - 1 - r) / max(1, passes - 1)
         gap = APPROACH_FLOOR * (max(pause, APPROACH_FLOOR * 2) / APPROACH_FLOOR) ** frac
+        # The SOUNDS compress along with the gaps - that is what blending
+        # is. It also evens the rhythm: recorded holds range from 0.2s to
+        # 2.6s, and uncapped, the highlight camped on the long sounds and
+        # blinked past the short ones - "it highlighted the wrong letters
+        # and skipped some", reported on Grandma, whose m dwarfed its d.
+        hold = 0.5 * (1.1 / 0.5) ** frac
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
-            segs.append(Segment(shown, voice.phoneme(ipa), pad=gap))
+            segs.append(Segment(shown, cap(voice.phoneme(ipa), hold), pad=gap))
     return segs
 
 
