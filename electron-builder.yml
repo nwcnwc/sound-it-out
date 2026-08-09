@@ -55,6 +55,11 @@ extraResources:
   - from: assets/commons
     to: assets/commons
 
+  # The aligned dictionary: 110k words with letters matched to sounds, the
+  # answer key that decides what may be built up and how it chunks.
+  - from: assets/dictionary
+    to: assets/dictionary
+
   # The starter voice: the developer's own 42 phoneme recordings, used for
   # any sound the family has not recorded yet (gen/voice.py). Shipped
   # deliberately - unlike assets/voice, which is a family's private

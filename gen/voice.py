@@ -59,6 +59,11 @@ PHONEME_ALIASES = {
     # espeak emits U+0261 (script g), keyboards produce U+0067.
     "\u0261": ("g",),
     "g": ("\u0261",),
+    # The schwa. No phonics session records an isolated /\u0259/ - it is the
+    # unstressed "uh", and teachers SAY "uh" - so the recorded /\u028c/ answers
+    # for it. An exact \u0259 recording, if anyone ever makes one, still wins,
+    # because aliases are only consulted after the exact name misses.
+    "\u0259": ("\u028c",),
 }
 
 
@@ -179,24 +184,48 @@ class VoiceSource:
         )
 
     def phoneme(self, ipa: str) -> np.ndarray:
-        a = self._recorded("phonemes", ipa)
+        a = self._one_sound(ipa)
         if a is not None:
             return loud(a)
-        # The shipped starter voice: a real human saying the sound, used until
-        # the family records their own (their recording above always wins).
-        if self.prefer_recordings:
-            a = self._lookup(STARTER_VOICE, "phonemes", ipa)
-            if a is not None:
-                self.used["starter"] += 1
-                return loud(a)
+        # A chunk sound with no clip of its own - "eɪk", "æn" - is said by
+        # running its member sounds together, each from a real recording.
+        # This is what makes every aligned dictionary chunk speakable
+        # without anyone recording ten thousand of them.
+        from gen import dictionary
+        from gen.soundout import _xfade, cap
+
+        parts = dictionary.tokens(ipa)
+        if len(parts) > 1:
+            clips = []
+            for p in parts:
+                c = self._one_sound(p)
+                if c is None:
+                    break
+                clips.append(cap(c, 0.45))
+            else:
+                out = clips[0]
+                n = int(SR * 0.03)
+                for c in clips[1:]:
+                    out = _xfade(out, c, n)
+                return loud(out)
         # Never cloned: isolated phonemes are exactly what cloning models are
-        # worst at, and a wrong phoneme teaches a wrong sound. The starter
-        # bank ships every sound and rime the spelling rules can produce, so
-        # arriving here means something new was asked for by name.
+        # worst at, and a wrong phoneme teaches a wrong sound.
         raise MissingVoice(
             f"The sound “{ipa}” has no recording. Record it in Setup under "
             "the sounds or the word endings."
         )
+
+    def _one_sound(self, ipa: str):
+        """A single clip for `ipa`, hers first, starter second, or None."""
+        a = self._recorded("phonemes", ipa)
+        if a is not None:
+            return a
+        if self.prefer_recordings:
+            a = self._lookup(STARTER_VOICE, "phonemes", ipa)
+            if a is not None:
+                self.used["starter"] += 1
+                return a
+        return None
 
     def blend(self, ipas) -> np.ndarray:
         """A partial syllable like /sæ/ - the halfway step between a letter

@@ -273,3 +273,12 @@ def test_capabilities_report_the_starter_bank_as_the_fallback(voice_dir, starter
     caps = V.VoiceSource.capabilities()
     assert caps["fallback_voice"] is True and caps["starter_phonemes"] == 1
     assert "kokoro" not in caps
+
+
+def test_schwa_is_answered_by_uh(voice_dir, starter_dir):
+    """No phonics session records an isolated schwa, but the dictionary
+    uses it constantly - "the" ends in one. The recorded /ʌ/ answers."""
+    put(starter_dir / "phonemes", "ʌ")
+    v = V.VoiceSource()
+    assert v.phoneme("ə") is not None
+    assert v.used["starter"] == 1

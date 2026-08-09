@@ -128,8 +128,20 @@ def split_graphemes(word: str):
 
 
 def word_parts(word: str):
-    """The (letters, sound) pairs a word is built up from, lexicon first."""
-    lex = WORD_SOUNDS.get(word.lower().strip(".,!?;:‘’“”'\""))
+    """The (letters, sound) pairs a word is built up from.
+
+    The aligned dictionary answers first - it knows how 110,000 real words
+    actually chunk, including the taught exceptions (said is s-ai-d with ai
+    saying /ɛ/). The lexicon and the spelling rules serve what no
+    dictionary knows: names, nonsense words, whatever a family invents.
+    """
+    from gen import dictionary
+
+    clean = word.strip(".,!?;:‘’“”'\"")
+    aligned = dictionary.chunks(clean)
+    if aligned:
+        return aligned
+    lex = WORD_SOUNDS.get(clean.lower())
     if lex:
         out, i = [], 0
         for g, p in lex:
@@ -177,11 +189,20 @@ def decodable(word: str) -> bool:
     now; what stays whole is the genuinely tricky: "the", "said", "one",
     r-controlled and v-e words, consonant+y endings.
     """
+    from gen import dictionary
+
     w = word.lower().strip(".,!?;:‘’“”'\"")
+    # A word the aligned dictionary vouches for is buildable by definition:
+    # every chunk in its entry is a teachable correspondence, and every
+    # chunk's sound can be spoken (from the bank, or concatenated from it).
+    if dictionary.chunks(w):
+        return True
     if w in WORD_SOUNDS:
         return True
     if not w or not w.isascii() or not w.isalpha():
         return False
+    # From here down: words no dictionary knows. The hand lists and rules
+    # only govern names and nonsense now.
     if w in IRREGULAR_WORDS:
         return False
     # Magic-e outside the safe rime pattern: "have", "care" - the rule

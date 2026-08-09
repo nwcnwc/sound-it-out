@@ -248,27 +248,40 @@ def test_regular_words_are_decodable():
 
 
 def test_magic_e_words_build_as_onset_and_rime():
-    """"case" is c + ase, said /k/ + /eɪs/ - the split-digraph pattern
-    phonics teaches as word families. One contiguous rime unit, so the
-    highlight still sweeps left to right."""
+    """The RULES teach magic-e as onset + rime - they serve words no
+    dictionary knows (names like Mabe), so they must stay correct even
+    though the dictionary answers first for real words."""
+    assert levels.split_graphemes("case") == [("c", "k"), ("ase", "eɪs")]
+    assert levels.split_graphemes("like") == [("l", "l"), ("ike", "aɪk")]
+    # and the dictionary path is live for the real words
     assert levels.decodable("case") and levels.decodable("Chase")
-    assert levels.word_parts("case") == [("c", "k"), ("ase", "eɪs")]
-    assert levels.word_parts("Chase") == [("Ch", "tʃ"), ("ase", "eɪs")]
-    assert levels.word_parts("like") == [("l", "l"), ("ike", "aɪk")]
+    parts = levels.word_parts("Chase")
+    assert "".join(g for g, _ in parts) == "Chase"
 
 
-def test_voiced_s_words_come_from_the_lexicon():
-    """"is" is /ɪz/, not /ɪs/ - buildable, but only because the lexicon
-    says so explicitly."""
+def test_voiced_s_words_are_buildable_and_voiced():
+    """"is" is /ɪz/, not /ɪs/ - the dictionary vouches for it now, and the
+    lexicon remains the answer for anything the dictionary misses."""
+    from gen import dictionary
+
     assert levels.decodable("is")
-    assert levels.word_parts("is") == [("i", "ɪ"), ("s", "z")]
+    sounds = "".join(p for _, p in levels.word_parts("is"))
+    assert "z" in sounds and "s" not in sounds.replace("z", "")
+    assert levels.WORD_SOUNDS["is"] == [("i", "ɪ"), ("s", "z")]
 
 
-def test_treacherous_words_are_not():
-    """Words the rules would sound out WRONG - not just unknown ones:
-    tricky words, r-controlled and v-e magic-e lookalikes, voiced-s rimes."""
-    for w in ("the", "said", "one", "happy", "I", "have", "care", "nose"):
-        assert not levels.decodable(w), w
+def test_the_dictionary_reversed_most_of_the_old_refusals():
+    """With aligned chunks, the classic tricky words build up honestly."""
+    for w in ("the", "said", "happy", "have", "care", "nose", "was", "of"):
+        assert levels.decodable(w), w
+
+
+def test_true_liars_are_still_shown_whole():
+    """"one" wants o=/wʌ/ - a correspondence English never teaches - and
+    unknown names with untrustworthy spellings fall back to the cautious
+    rules."""
+    assert not levels.decodable("one")
+    assert not levels.decodable("zorble")  # unknown magic-e lookalike
 
 
 # ------------------------------------------------------- the level builder
@@ -415,3 +428,38 @@ def test_approach_sounds_compress_with_the_gaps():
     joined = np.concatenate([d3.audio, m3.audio])
     assert len(joined) < (len(per_pass[1][0].audio) + len(per_pass[1][1].audio)), \
         "the touching pass is tighter than the pass before it"
+
+
+# ------------------------------------------------------------- dictionary
+
+
+def test_the_shipped_dictionary_is_big_and_loads():
+    from gen import dictionary
+
+    d = dictionary.load()
+    assert len(d) > 100_000
+    assert dictionary.chunks("said") == [("s", "s"), ("ai", "ɛ"), ("d", "d")]
+    assert dictionary.chunks("Said")[0] == ("S", "s"), "casing follows the word"
+    assert dictionary.chunks("zorble") is None
+
+
+def test_chunk_sounds_split_into_recordable_phonemes():
+    from gen import dictionary
+
+    assert dictionary.tokens("eɪk") == ["eɪ", "k"]
+    assert dictionary.tokens("ɪz") == ["ɪ", "z"]
+    assert dictionary.tokens("s") == ["s"]
+
+
+def test_every_aligned_chunk_is_speakable_from_the_42():
+    """The whole promise: any chunk the dictionary emits can be said by
+    concatenating clips that exist in the shipped bank."""
+    from gen import dictionary
+
+    bank = {"aɪ", "aʊ", "eɪ", "iː", "uː", "ɔː", "ɑː", "ɜː", "əʊ", "ɔɪ",
+            "eə", "ɪə", "tʃ", "dʒ", "æ", "ɛ", "ɪ", "ɒ", "ʌ", "ʊ", "ə",
+            "b", "d", "ð", "f", "ɡ", "h", "j", "k", "l", "m", "n", "ŋ",
+            "p", "ɹ", "s", "ʃ", "t", "θ", "v", "w", "z", "ʒ"}
+    sounds = {s for entry in dictionary.load().values() for _, s in entry}
+    bad = [s for s in sounds if any(t not in bank for t in dictionary.tokens(s))]
+    assert not bad, f"unspeakable chunk sounds: {bad[:10]}"
