@@ -1,6 +1,6 @@
 {
   "name": "sound-it-out",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Offline phonics reading videos for the TV",
   "main": "app/main.js",
   "scripts": {
