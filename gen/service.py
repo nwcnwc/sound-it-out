@@ -135,10 +135,14 @@ def m_plan(params):
             extra = _whole_items_upto(segments, target - n * one, allow_empty=True)
             segments = segments * n + extra
 
+    # Per-word colours are a fossil of the Words-tab era (Chase in his kit
+    # blue), and they break the one colour rule that matters now: the
+    # highlight means "being said" and everything else is neutral. A word
+    # whose BASE colour resembles the highlight - Chase's blue against the
+    # blue highlight of the contrast theme - makes the sweep invisible.
     base = THEMES.get(params.get("theme", "night"), THEMES["night"])
-    colors = {w: c for g in _groups() for w, c in g.words if c}
     theme = Theme(base.name, base.bg, base.fg, base.highlight, base.dim,
-                  base.weight, colors)
+                  base.weight)
 
     _progress(job_id, "planning", 0, 1, "Preparing the frames...")
     plan = plan_job(segments, theme, work)
@@ -171,15 +175,6 @@ def _whole_items_upto(segments, target, allow_empty=False):
             total += dur
             item = []
     return out if (out or allow_empty) else segments
-
-
-def _groups():
-    from gen import wordlists
-
-    try:
-        return wordlists.load()
-    except Exception:
-        return []
 
 
 def m_encode(params):

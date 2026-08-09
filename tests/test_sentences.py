@@ -525,3 +525,13 @@ def test_the_touching_pass_never_swallows_a_stop():
     total_before_d = len(segs[0].audio)
     assert burst_at >= total_before_d - int(SR * 0.01), \
         "the highlight flips to d before its burst fires"
+
+
+def test_no_word_is_a_single_unsplittable_chunk_when_it_can_pair():
+    """"is=ɪz" as one chunk made the buildup say "is" three times. When
+    letters and sounds pair one to one, they pair - i gets /ɪ/, s gets
+    /z/ - and the lexicon's hand splits win where they exist."""
+    assert levels.word_parts("is") == [("i", "ɪ"), ("s", "z")]
+    assert levels.word_parts("up") == [("u", "ʌ"), ("p", "p")]
+    assert levels.word_parts("an") == [("a", "æ"), ("n", "n")]
+    assert len(levels.word_parts("in")) == 2

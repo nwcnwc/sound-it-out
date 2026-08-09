@@ -231,6 +231,13 @@ def main():
                 merged.append((g, p))
         if any(not p for _, p in merged):
             continue  # a word that is ONLY silence is not a word
+        # A whole word as ONE chunk has no buildup - "is=ɪz" is just the
+        # word repeated. When letters and sounds pair one to one, split
+        # them; the runtime applies the same guard to older data.
+        if len(merged) == 1 and len(w) > 1:
+            g, p = merged[0]
+            if len(p) == len(g):
+                merged = list(zip(list(g), [(x,) for x in p]))
         aligned_all += 1
         if w in common and is_word(w):
             aligned_common += 1

@@ -139,6 +139,19 @@ def word_parts(word: str):
 
     clean = word.strip(".,!?;:‘’“”'\"")
     aligned = dictionary.chunks(clean)
+    if aligned and len(aligned) == 1 and len(clean) > 1:
+        # A whole word bundled into one chunk has no journey: the buildup
+        # of "is=ɪz" is just "is" said three times, which is what happened.
+        # The lexicon splits the notorious ones by hand; otherwise, when
+        # the letters and sounds pair one to one, pair them.
+        lex = WORD_SOUNDS.get(clean.lower())
+        if lex:
+            aligned = None  # fall through to the lexicon path below
+        else:
+            g, s = aligned[0]
+            toks = dictionary.tokens(s)
+            if len(toks) == len(g):
+                aligned = list(zip(list(g), toks))
     if aligned:
         return aligned
     lex = WORD_SOUNDS.get(clean.lower())
