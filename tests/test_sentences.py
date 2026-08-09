@@ -498,3 +498,29 @@ def test_piece_prompts_carry_word_recipe_and_notation(library):
     assert "Grandma" in chunk.say          # which word
     assert "then" in chunk.say             # the spoken recipe
     assert "/æn/" in chunk.say             # the notation
+
+
+def test_the_touching_pass_never_swallows_a_stop():
+    """A /d/ is nothing but its burst. Crossfading it in from zero deletes
+    it - "the d gets completely lost" - so a stop lands clean at full
+    strength after the briefest close, and its front edge is never
+    trimmed."""
+
+    class BurstVoice(StubVoice):
+        def phoneme(self, ipa):
+            if ipa == "d":
+                a = np.zeros(int(SR * 0.2), dtype="float32")
+                a[:int(SR * 0.02)] = 0.9   # the burst, right at the front
+                return a
+            return np.full(int(SR * 0.45), 0.2, dtype="float32")
+
+    segs = levels._touching(BurstVoice(), [("a", "æ"), ("d", "d")])
+    merged = np.concatenate([s.audio for s in segs])
+    d_slice = segs[1].audio
+    assert float(np.abs(d_slice).max()) > 0.8, \
+        "the burst survives at nearly full strength"
+    # and the d's slice begins at (or before) the burst, not after it
+    burst_at = int(np.argmax(np.abs(merged) > 0.5))
+    total_before_d = len(segs[0].audio)
+    assert burst_at >= total_before_d - int(SR * 0.01), \
+        "the highlight flips to d before its burst fires"

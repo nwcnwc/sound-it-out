@@ -495,20 +495,38 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
     midpoint, and the slices concatenate to exactly the merged audio, so
     sound and light cannot drift.
     """
-    clips = []
+    from gen import dictionary
+    from gen.soundout import STOPS
+
+    clips, starts_hard, ends_hard = [], [], []
     for _, ipa in parts:
+        toks = dictionary.tokens(ipa)
+        starts_hard.append(toks[0] in STOPS)
+        ends_hard.append(toks[-1] in STOPS)
         c = cap(voice.phoneme(ipa), hold * _sounds_in(ipa))
         e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
-        if e and len(c) > 4 * e:
-            c = c[e:len(c) - e]
+        # A stop is nothing but its burst, and the burst lives at the edge.
+        # Trim the edge and the sound is gone - "the d gets completely
+        # lost" - so hard edges keep every sample they have.
+        lo = 0 if starts_hard[-1] else e
+        hi = len(c) - (0 if ends_hard[-1] else e)
+        if hi - lo > 2 * e:
+            c = c[lo:hi]
         clips.append(c)
 
     n = int(SR * xfade_ms / 1000)
+    tap = int(SR * 0.004)  # a butt-joint with just enough taper not to click
     merged, cuts = clips[0], []
-    for c in clips[1:]:
-        eff = min(n, len(merged), len(c))
+    for i, c in enumerate(clips[1:], start=1):
+        # Crossfading INTO a stop fades its burst in from zero, which
+        # deletes the one thing that makes it a /d/ and not a gap. A stop
+        # lands clean after the briefest close - the same closure a mouth
+        # makes. Same when a stop just ended: its release should not be
+        # smeared under the next sound's onset.
+        j = tap if starts_hard[i] or ends_hard[i - 1] else n
+        eff = min(j, len(merged), len(c))
         cuts.append(len(merged) - eff + eff // 2)
-        merged = _xfade(merged, c, n)
+        merged = _xfade(merged, c, j)
     merged = _fade(merged, 40)
 
     bounds = [0] + cuts + [len(merged)]
