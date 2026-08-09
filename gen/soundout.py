@@ -104,18 +104,30 @@ def silence(seconds: float) -> np.ndarray:
     return np.zeros(int(seconds * SR), dtype="float32")
 
 
-def cap(a: np.ndarray, seconds: float) -> np.ndarray:
-    """Shorten a clip to `seconds` with a fade, or return it untouched.
+def cap(a: np.ndarray, seconds: float, keep="start") -> np.ndarray:
+    """Shorten a clip to `seconds`, or return it untouched.
 
     Recorded phonemes vary enormously - a crisp /d/ is 0.2s, a generous
     held /m/ can be 2.6s - and anything that plays them in sequence with
     the highlight following inherits that lurch: the light camps on the
     long sounds and blinks past the short ones, which reads as highlighting
-    the wrong letters. Capping evens the rhythm; the fade keeps a trimmed
-    hold sounding like a shorter hold rather than a cut."""
+    the wrong letters. Capping evens the rhythm.
+
+    `keep` decides WHICH end survives, and it matters enormously: a held
+    sound's identity is at its start, so keep="start" fades the tail; a
+    stop's identity is its release BURST, which many people record at the
+    end of a long voiced closure - keep="end" discards leading closure
+    instead of amputating the burst, which is how Grandma lost her /d/
+    twice."""
     n = int(seconds * SR)
     if len(a) <= n:
         return a
+    if keep == "end":
+        out = a[-n:].copy()
+        m = min(int(SR * 0.012), len(out))
+        if m > 1:
+            out[:m] *= np.linspace(0.0, 1.0, m, dtype="float32")
+        return out
     return _fade(a[:n], 60)
 
 

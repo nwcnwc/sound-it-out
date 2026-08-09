@@ -475,7 +475,7 @@ def _approach(voice, parts, pause, passes):
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
             segs.append(Segment(shown,
-                                cap(voice.phoneme(ipa), hold * _sounds_in(ipa)),
+                                _hard_clip(voice, ipa, hold * _sounds_in(ipa)),
                                 pad=gap))
     segs += _touching(voice, parts)
     return segs
@@ -485,6 +485,29 @@ def _sounds_in(ipa: str) -> int:
     from gen import dictionary
 
     return max(1, len(dictionary.tokens(ipa)))
+
+
+def _hard_clip(voice, ipa: str, seconds: float):
+    """A sound's clip, capped for the blend, with its stop protected.
+
+    Ends-on-a-stop keeps the END of the clip (the burst), and the whole
+    clip is then levelled by PEAK: a stop is mostly closure-silence, so
+    RMS levelling leaves its one burst too quiet to survive next to a
+    levelled sustain, and a burst nobody can hear is a /d/ lost however
+    carefully it was preserved."""
+    from gen import dictionary
+    from gen.soundout import STOPS, loud
+
+    toks = dictionary.tokens(ipa)
+    ends_stop = toks[-1] in STOPS
+    c = cap(voice.phoneme(ipa), seconds, keep="end" if ends_stop else "start")
+    if ends_stop and c.size:
+        import numpy as np
+
+        peak = float(np.abs(c).max())
+        if 0.0 < peak < 0.75:
+            c = (c * min(0.85 / peak, 6.0)).astype("float32")
+    return c
 
 
 def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
@@ -503,7 +526,7 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
         toks = dictionary.tokens(ipa)
         starts_hard.append(toks[0] in STOPS)
         ends_hard.append(toks[-1] in STOPS)
-        c = cap(voice.phoneme(ipa), hold * _sounds_in(ipa))
+        c = _hard_clip(voice, ipa, hold * _sounds_in(ipa))
         e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
         # A stop is nothing but its burst, and the burst lives at the edge.
         # Trim the edge and the sound is gone - "the d gets completely
