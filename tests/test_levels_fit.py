@@ -149,8 +149,11 @@ def test_the_gaps_shrink_pass_by_pass(monkeypatch):
     assert gaps[0] > gaps[1]
     # WITHIN-word gaps are brisk: a fraction of the between-words pause,
     # never the pause itself - sounding out at 1.5s a beat was a crawl.
-    assert abs(gaps[0] - levels._approach_start(pause)) < 1e-6
-    assert gaps[0] <= 0.45
+    assert abs(gaps[0] - levels._approach_start(3)) < 1e-6
+    assert gaps[0] <= 0.5
+    # more passes start wider - the count IS the pacing control
+    assert levels._approach_start(4) > levels._approach_start(3) > \
+        levels._approach_start(2)
     # ...and the FINAL pass has no gaps at all: the sounds touch, joined by
     # crossfades, with one held breath before the whole word answers.
     assert segs[6].pad == 0 and segs[7].pad == 0

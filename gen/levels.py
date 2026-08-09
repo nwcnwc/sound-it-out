@@ -409,17 +409,18 @@ def _sounds(voice, letters, reps, pause):
     return segs
 
 
-# Gaps WITHIN a word are not gaps BETWEEN words. The first approach pass
-# used to inherit the between-words pause (1.5s by default), which made
-# sounding out crawl; a teacher's "s...a...t" beats are a third of a second,
-# not a breath and a half. The opening gap is now a fraction of the pause
-# setting (so the pacing knob still has a say), clamped to stay brisk, and
-# the floor is two hundredths - the sounds all but touch by the final pass.
+# Gaps WITHIN a word are not a setting - they are a CONSEQUENCE. The one
+# choice that matters is how many times the word is sounded out before it is
+# said, and the count sets the journey: the final pass always touches (the
+# sounds crossfade into almost-the-word), so more passes simply means
+# starting wider to have further to travel. Two passes opens at 0.2s, three
+# at 0.3, four at 0.45; the floor before the touching pass is two
+# hundredths either way.
 APPROACH_FLOOR = 0.02
 
 
-def _approach_start(pause: float) -> float:
-    return min(0.45, max(0.20, pause * 0.2))
+def _approach_start(passes: int) -> float:
+    return min(0.5, max(0.20, 0.15 * (passes - 1)))
 
 
 def _approach(voice, parts, pause, passes):
@@ -436,7 +437,7 @@ def _approach(voice, parts, pause, passes):
     left-to-right sweep at every speed.
     """
     segs = []
-    start = _approach_start(pause)
+    start = _approach_start(passes)
     for r in range(passes - 1):
         frac = (passes - 1 - r) / max(1, passes - 1)
         gap = APPROACH_FLOOR * (start / APPROACH_FLOOR) ** frac

@@ -21,10 +21,10 @@ const THEME_COLOURS = {
 }
 const THEME_FALLBACK = { bg: '#333333', fg: '#ffffff', hl: '#ffd166' }
 
-const PAUSES = [
-  { value: 1, label: 'Short' },
-  { value: 1.5, label: 'Just right' },
-  { value: 2.5, label: 'Long' }
+const SOUNDINGS = [
+  { value: 2, label: 'Twice' },
+  { value: 3, label: '3 times' },
+  { value: 4, label: '4 times' }
 ]
 
 let state = null
@@ -491,12 +491,12 @@ function setUpTabs () {
 
 function setUpMake () {
   const chosen = Object.assign(
-    { theme: null, pauseSeconds: 1.5, minutes: 20 },
+    { theme: null, reps: 3 },
     state.settings || {}
   )
 
   renderThemes(chosen.theme)
-  renderSegmented($('pause'), 'pause', PAUSES, Number(chosen.pauseSeconds) || 1.5)
+  renderSegmented($('reps'), 'reps', SOUNDINGS, Number(chosen.reps) || 3)
 
   // Delegated: renderSegmented() replaces its inputs on re-render, and the
   // library ticks re-render with the list.
@@ -579,10 +579,11 @@ function currentOptions () {
     // pipeline's name for it, not something a user ever sees.
     level: '13',
     theme: picked('theme'),
-    reps: 3,
-    pauseSeconds: Number(picked('pause')) || 1.5,
-    // No length request: the video is as long as the chosen content takes,
-    // and the summary SAYS how long that will be instead of asking.
+    // The one pacing choice: how many times through the letters before the
+    // word. The final pass always touches; more passes just start wider.
+    // The between-items pause is a constant now, not a question.
+    reps: Number(picked('reps')) || 3,
+    pauseSeconds: 1.5,
     minutes: 0,
     sentences: pickedSentences()
   }
