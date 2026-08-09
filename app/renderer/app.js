@@ -123,6 +123,7 @@ async function refreshSentences () {
   }
   renderSentenceLib()
   refreshPacks()
+  restoreSelection()
   updateSummary()
 }
 
@@ -189,11 +190,43 @@ async function refreshPacks () {
   }
 }
 
-/* Every row keeps its tick across re-renders; new rows arrive ticked. */
+/* Which rows are ticked survives restarts: the saved selection is restored
+ * once both the settings and the library have arrived, and every change is
+ * persisted. Rows added after that arrive ticked - adding something is the
+ * strongest signal of wanting it - while everything else stays exactly as
+ * it was left, because reopening the app to find every box re-ticked was
+ * an errand nobody asked for. */
 const unticked = new Set()
+let selectionRestored = false
+
+function restoreSelection () {
+  if (selectionRestored || !state || !sentenceLib.length) return
+  selectionRestored = true
+  const saved = new Set((state.settings && state.settings.sentences) || [])
+  for (const s of sentenceLib) {
+    if (!saved.has(s.key)) unticked.add(s.key)
+  }
+  renderSentenceLib()
+  updateSummary()
+}
 
 function pickedSentences () {
   return sentenceLib.filter((s) => !unticked.has(s.key)).map((s) => s.key)
+}
+
+function renderTickAll () {
+  const btn = $('tick-all')
+  if (!btn) return
+  btn.hidden = sentenceLib.length === 0
+  const allOn = sentenceLib.every((s) => !unticked.has(s.key))
+  btn.textContent = allOn ? 'Untick all' : 'Tick all'
+  btn.onclick = () => {
+    unticked.clear()
+    if (allOn) sentenceLib.forEach((s) => unticked.add(s.key))
+    renderSentenceLib()
+    updateSummary()
+    persistChoices()
+  }
 }
 
 function statusLine (s) {
@@ -230,6 +263,7 @@ function statusLine (s) {
 function renderSentenceLib () {
   const host = $('sentence-list')
   if (!host) return
+  renderTickAll()
   host.textContent = ''
 
   if (!sentenceLib.length) {
@@ -452,6 +486,7 @@ function initSentences () {
     renderSentenceLib()
     refreshPacks()
     updateSummary()
+    persistChoices()
   })
   refreshSentences()
 }
@@ -518,6 +553,7 @@ function setUpMake () {
   $('btn-play').addEventListener('click', () => startJob('play'))
   $('btn-export').addEventListener('click', () => startJob('export'))
 
+  restoreSelection()
   updateSummary()
   updateExportDest()
 }
