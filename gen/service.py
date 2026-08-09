@@ -605,9 +605,29 @@ def m_studio_clip(params):
     from gen import studio
 
     # The passage has no key - it is a single file, not one of a list.
-    path = studio.clip_path(params.get("part", "phonemes"), params.get("key", ""),
+    part = params.get("part", "phonemes")
+    path = studio.clip_path(part, params.get("key", ""),
                             params.get("order", "rows"))
-    out = {"path": path, "peak": 0.0, "seconds": 0.0, "silent": True}
+    preview = False
+    if path is None and part == "chunks":
+        # Nothing recorded, but never nothing to hear: every chunk plays
+        # as an automatic blend of the recorded sounds, and the preview IS
+        # that blend - what a video would use today, rendered to a temp
+        # file so the ordinary player can play it.
+        import soundfile as sf
+        from gen.paths import BUILD
+        from gen.voice import VoiceSource, _safe
+
+        try:
+            a = VoiceSource().phoneme(params.get("key", ""))
+            p = BUILD / "preview" / f"{_safe(params.get('key', ''))}.wav"
+            p.parent.mkdir(parents=True, exist_ok=True)
+            sf.write(p, a, 24000)
+            path, preview = str(p), True
+        except Exception:
+            path = None
+    out = {"path": path, "peak": 0.0, "seconds": 0.0, "silent": True,
+           "preview": preview}
     if path:
         a, sr = sf.read(path, dtype="float32")
         out["peak"] = round(float(np.abs(a).max()) if a.size else 0.0, 4)

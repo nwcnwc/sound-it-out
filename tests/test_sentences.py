@@ -68,17 +68,21 @@ def test_status_reports_what_is_actually_on_disk(library):
     assert st["missing"] == ["Sam"] and not st["ready"]
 
 
-def test_walkthrough_is_words_then_the_line(library):
+def test_walkthrough_is_line_then_words_then_pieces(library):
     S.add("The dog can nap.")
     items = S.walkthrough_items(S.status()[0]["key"])
-    assert [i.kind for i in items] == ["word"] * 4 + ["sentence"]
-    assert items[-1].display == "The dog can nap."
+    assert items[0].kind == "sentence"
+    assert items[0].display == "The dog can nap."
+    assert [i.kind for i in items[1:5]] == ["word"] * 4
+    # everything after is a missing sound piece of the buildups
+    assert items[5:] and all(i.kind == "phoneme" for i in items[5:])
 
 
 def test_walkthrough_deduplicates_repeated_words(library):
     S.add("A dog and a cat.")
     items = S.walkthrough_items(S.status()[0]["key"])
-    assert [i.display for i in items[:-1]] == ["A", "dog", "and", "cat"]
+    words = [i.display for i in items if i.kind == "word"]
+    assert words == ["A", "dog", "and", "cat"]
 
 
 # ------------------------------------------------------------ entry kinds
@@ -95,7 +99,8 @@ def test_the_library_holds_letters_words_and_sentences():
 def test_a_word_entry_needs_no_line_read(library):
     S.add("Chase")
     items = S.walkthrough_items(S.status()[0]["key"])
-    assert [(i.kind, i.display) for i in items] == [("word", "Chase")]
+    assert items[0].kind == "word" and items[0].display == "Chase"
+    assert all(i.kind == "phoneme" for i in items[1:]), "then its pieces"
 
 
 def test_a_letter_entry_needs_no_recording_at_all(library, monkeypatch):
@@ -480,3 +485,16 @@ def test_multi_sound_chunks_keep_all_their_sounds():
     single, double = segs[2], segs[3]  # the touching pass
     assert len(double.audio) > 1.6 * len(single.audio), \
         "the two-sound chunk gets roughly double the time"
+
+
+def test_piece_prompts_carry_word_recipe_and_notation(library):
+    """A lazy-record piece must say which word it came from, spell out the
+    sound combination in plain words, and name the notation too."""
+    S.add("Grandma is happy.")
+    items = S.walkthrough_items(S.status()[0]["key"])
+    pieces = [i for i in items if i.kind == "phoneme"]
+    assert pieces, "buildable words must queue their missing pieces"
+    chunk = next(i for i in pieces if i.key == "æn")
+    assert "Grandma" in chunk.say          # which word
+    assert "then" in chunk.say             # the spoken recipe
+    assert "/æn/" in chunk.say             # the notation

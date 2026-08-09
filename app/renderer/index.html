@@ -25,8 +25,10 @@
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" id="tab-sentences" aria-controls="screen-sentences"
             aria-selected="true" data-screen="sentences">Sentences</button>
-    <button class="tab" role="tab" id="tab-setup" aria-controls="screen-setup"
-            aria-selected="false" tabindex="-1" data-screen="setup">Setup</button>
+    <button class="tab" role="tab" id="tab-soundbank" aria-controls="screen-soundbank"
+            aria-selected="false" tabindex="-1" data-screen="soundbank">Sound Bank</button>
+    <button class="tab" role="tab" id="tab-settings" aria-controls="screen-settings"
+            aria-selected="false" tabindex="-1" data-screen="settings">Settings</button>
   </nav>
 </header>
 
@@ -128,12 +130,14 @@
   <!-- ============================================================ SETUP
        Everything done once: the 42 sounds, the optional story voice, where
        videos go, and keeping the recordings safe. -->
-  <section class="screen" id="screen-setup" role="tabpanel" aria-labelledby="tab-setup" tabindex="-1" hidden>
+  <section class="screen" id="screen-soundbank" role="tabpanel" aria-labelledby="tab-soundbank" tabindex="-1" hidden>
 
     <div class="page-head">
-      <h1>Setup</h1>
+      <h1>Sound Bank</h1>
       <p class="lede">
-        One recording session that matters, one optional extra, and where things are kept.
+        Everything a word is built from. Each layer starts with a working default
+        &mdash; the app maker's voice, or an automatic blend &mdash; and every piece
+        you record replaces its default everywhere, for good.
       </p>
     </div>
 
@@ -168,29 +172,28 @@
         </div>
       </li>
 
-      <li class="vpart" data-part="rimes">
+      <li class="vpart" data-part="chunks">
         <div class="vpart-num">2</div>
         <div class="vpart-body">
-          <h2>Record the word endings <span class="vpart-count" id="count-rimes"></span></h2>
-          <p>The magic-e endings &mdash; <i>ase</i> as in case, <i>ike</i> as in like,
-             <i>ome</i> as in home. Words like these are sounded out as a first sound
-             plus an ending, so the endings are sounds of their own. Recorded live,
-             like the sounds above, because they teach.</p>
-          <div class="bar bar-slim vpart-bar" id="barwrap-rimes" hidden>
-            <div class="bar-fill" id="bar-rimes" style="width:0%"></div>
+          <h2>The letter-team sounds <span class="vpart-count" id="count-chunks"></span></h2>
+          <p>Every team of sounds words are chunked into &mdash; <i>ing</i> as in bring,
+             <i>an</i> as in hand, <i>ase</i> as in case. Each one already plays as an
+             automatic blend of the sounds above (press Play on any of them to hear
+             it). Record one and your single breath replaces the blend, for that sound
+             in every word it appears in. Most useful ones first &mdash; do five, do
+             fifty, or none at all.</p>
+          <div class="bar bar-slim vpart-bar" id="barwrap-chunks" hidden>
+            <div class="bar-fill" id="bar-chunks" style="width:0%"></div>
           </div>
           <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="rimes">
+            <button class="btn btn-primary vpart-record" type="button" data-part="chunks">
               Record them here
             </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="rimes" hidden>
-              Listen back &amp; redo
-            </button>
-            <button class="btn btn-second vpart-script" type="button" data-part="rimes">
-              Show what to say
+            <button class="btn btn-second vpart-review" type="button" data-part="chunks">
+              Listen &amp; record one by one
             </button>
           </div>
-          <div class="vpart-result" id="result-rimes" hidden></div>
+          <div class="vpart-result" id="result-chunks" hidden></div>
         </div>
       </li>
 
@@ -218,8 +221,20 @@
         </div>
       </li>
 
+    </ol>
+  </section>
+
+  <!-- ========================================================= SETTINGS -->
+  <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>
+
+    <div class="page-head">
+      <h1>Settings</h1>
+      <p class="lede">The optional story voice, and where things are kept.</p>
+    </div>
+
+    <ol class="voice-parts">
       <li class="vpart" data-part="passage">
-        <div class="vpart-num">4</div>
+        <div class="vpart-num">1</div>
         <div class="vpart-body">
           <h2>The reading passage <span class="vpart-count" id="count-passage"></span></h2>
           <p><b>Optional, in six short parts.</b> New things you add and have not

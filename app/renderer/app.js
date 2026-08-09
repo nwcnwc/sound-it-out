@@ -92,7 +92,7 @@ function devPreview () {
     $('btn-open-folder').hidden = false
     progressView('prog-done')
   } else if (demo === 'install') {
-    window.showScreen('setup')
+    window.showScreen('settings')
     $('install-clone').click()
   } else if (demo === 'job') {
     window.showScreen('sentences')
@@ -202,7 +202,12 @@ function statusLine (s) {
       ? 'Uses the sound recorded in Setup.'
       : 'Uses its letter sound — record the sounds in Setup to make it yours.'
   }
-  if (s.ready) return 'Recorded, in your own voice.'
+  if (s.ready) {
+    return s.missingSounds
+      ? `Recorded. ${s.missingSounds} buildup sound${s.missingSounds === 1 ? '' : 's'} ` +
+        'still borrowed from the starter voice — Record it again to make them yours.'
+      : 'Recorded, in your own voice — every word, sound and the line.'
+  }
   // The shared word bank makes recording quietly cheap, and quiet reads as
   // broken: "it only asked me one of the five words" is a bug report unless
   // this line says where the other four came from.
@@ -211,8 +216,11 @@ function statusLine (s) {
     ? `${have} of its ${s.words} words are already in your recordings. `
     : ''
   const bits = []
-  if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
   if (!s.lineRecorded && s.kind === 'sentence') bits.push('the whole line')
+  if (s.missing && s.missing.length) bits.push(s.missing.join(', '))
+  if (s.missingSounds) {
+    bits.push(`${s.missingSounds} buildup sound${s.missingSounds === 1 ? '' : 's'}`)
+  }
   return already + 'Still to record: ' + bits.join(', and ') +
     (s.starterCovered
       ? '. Works now — the starter voice covers it until then.'
@@ -997,8 +1005,8 @@ boot()
  */
 
 const PART_NAMES = {
-  phonemes: 'sounds', rimes: 'word endings', bank: 'words',
-  passage: 'reading passage'
+  phonemes: 'sounds', rimes: 'word endings', chunks: 'letter-team sounds',
+  bank: 'words', passage: 'reading passage'
 }
 
 async function voiceCounts (caps) {
@@ -1014,10 +1022,8 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    const rs = await api.studioPlan({ part: 'rimes' })
-    showPartProgress('rimes', rs.done || 0, rs.total || 0)
-    const rb = document.querySelector('.vpart-review[data-part="rimes"]')
-    if (rb) rb.hidden = (rs.done || 0) === 0
+    const cs = await api.studioPlan({ part: 'chunks' })
+    showPartProgress('chunks', cs.done || 0, cs.total || 0)
   } catch { /* the panel still works without a count */ }
 
   showPartProgress('phonemes', p, total)
@@ -1722,7 +1728,9 @@ async function openReview (part) {
   }
   review.items = plan.items || []
   $('review-title').textContent =
-    part === 'phonemes' ? 'Listen back - the sounds' : 'Listen back - your words'
+    part === 'phonemes' ? 'Listen back - the sounds'
+      : part === 'chunks' ? 'The letter-team sounds'
+        : 'Listen back - your words'
   $('review-hint').textContent = part === 'bank'
     ? `${plan.total} word${plan.total === 1 ? '' : 's'} in your bank. Press one ` +
       'to hear it. Tick any you want to do again, then Re-record selected.'
@@ -1743,7 +1751,10 @@ function renderReview () {
     const box = document.createElement('input')
     box.type = 'checkbox'
     box.id = 'rev-' + it.key
-    box.disabled = !it.done
+    // Chunks are recordable whether or not a take exists - the default
+    // blend counts as recorded-enough to play, but not to keep her from
+    // replacing it.
+    box.disabled = !it.done && review.part !== 'chunks'
     box.checked = review.chosen.has(it.key)
     box.addEventListener('change', () => {
       if (box.checked) review.chosen.add(it.key)
@@ -1762,10 +1773,11 @@ function renderReview () {
 
     const state = document.createElement('span')
     state.className = 'rev-state'
-    state.textContent = it.done ? '' : 'not recorded yet'
+    state.textContent = it.done ? ''
+      : review.part === 'chunks' ? 'automatic blend' : 'not recorded yet'
     row.appendChild(state)
 
-    if (it.done) {
+    if (it.done || review.part === 'chunks') {
       const play = document.createElement('button')
       play.type = 'button'
       play.className = 'btn btn-quiet rev-play'
@@ -1790,7 +1802,11 @@ async function playClip (it, btn) {
       btn.textContent = 'Play'
       return
     }
-    if (note) note.textContent = `${r.seconds}s, level ${Math.round(r.peak * 100)}%`
+    if (note) {
+      note.textContent = r.preview
+        ? 'the automatic blend — record it to make it one breath'
+        : `${r.seconds}s, level ${Math.round(r.peak * 100)}%`
+    }
 
     if (review.audio) { review.audio.pause(); review.audio = null }
     review.audio = new Audio('file://' + encodeURI(r.path).replace(/#/g, '%23'))

@@ -243,6 +243,13 @@ def main():
         "# from CMUdict (public domain); alignment learned by EM, rare\n"
         "# correspondences dropped so every chunk shown is teachable.\n"
         + "\n".join(lines) + "\n", encoding="utf-8")
+    # The common words, separately: the catalog picks its example words
+    # from these, because CMUdict's shortest words are names and noise -
+    # "ring" teaches /ɪŋ/, "ibn" teaches nothing but doubt.
+    (OUT.parent / "common.txt").write_text(
+        "\n".join(sorted(w for w in common
+                         if w.isalpha() and len(w) > 1)) + "\n",
+        encoding="utf-8")
     print(f"wrote {aligned_all} aligned words "
           f"({aligned_all * 100 // len(entries)}% of all)")
     print(f"common words aligned: {aligned_common}/{total_common} "

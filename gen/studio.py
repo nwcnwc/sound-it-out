@@ -75,7 +75,7 @@ TAKES_DEFAULT = 3
 # something the speaker does correctly by reflex, and three takes of "dog"
 # turns a manageable sitting into an hour of repeating herself. One take, and
 # the scorer speaks up when it actually went wrong.
-TAKES = {"phonemes": 3, "rimes": 2, "words": 1, "sentences": 1}
+TAKES = {"phonemes": 3, "rimes": 2, "chunks": 2, "words": 1, "sentences": 1}
 
 # A real word carrying each rime's SOUND, so the prompt can always say
 # "as in ...". Every rime has one - a prompt that names a sound the reader
@@ -115,6 +115,32 @@ RIME_CONS_HINT = {
     "l": "lll", "m": "mmm", "n": "nnn", "p": "p", "s": "sss", "t": "t",
     "z": "zzz",
 }
+
+# Every sound, in words a non-linguist can read aloud. Used to spell out
+# what a chunk is made of: "an" is “a as in ant” then “nnn”.
+SOUND_HINTS = {
+    "æ": "“a” as in ant", "ɑː": "“ah” as in father", "ɒ": "“o” as in hot",
+    "ɔː": "“aw” as in saw", "aʊ": "“ow” as in cow", "aɪ": "“igh” as in high",
+    "ʌ": "“u” as in cup", "ə": "a light “uh”", "ɛ": "“e” as in egg",
+    "ɜː": "“er” as in her", "eɪ": "“ay” as in day", "iː": "“ee” as in see",
+    "ɪ": "“i” as in sit", "əʊ": "“oh” as in go", "ɔɪ": "“oy” as in boy",
+    "ʊ": "“oo” as in book", "uː": "“oo” as in moon", "eə": "“air”",
+    "ɪə": "“ear”", "b": "“b”", "d": "“d”", "ð": "soft “th” as in this",
+    "f": "“fff”", "ɡ": "“g”", "h": "“h”", "dʒ": "“j” as in jam",
+    "k": "“k”", "l": "“lll”", "m": "“mmm”", "n": "“nnn”",
+    "ŋ": "“ng” as in ring", "p": "“p”", "ɹ": "“rrr”", "s": "“sss”",
+    "ʃ": "“sh” as in ship", "t": "“t”", "tʃ": "“ch” as in chip",
+    "θ": "hard “th” as in thin", "v": "“vvv”", "w": "“w”",
+    "j": "“y” as in yes", "z": "“zzz”", "ʒ": "“zh” as in treasure",
+}
+
+
+def sound_recipe(ipa: str) -> str:
+    """The spoken recipe for a sound: its pieces, in plain words."""
+    from gen import dictionary
+
+    hints = [SOUND_HINTS.get(t, f"“{t}”") for t in dictionary.tokens(ipa)]
+    return " then ".join(hints)
 
 
 def takes_for(part: str) -> int:
@@ -201,6 +227,23 @@ def plan(part="phonemes", order="rows") -> list:
                 say=(f"Say the ending “{spelling}”: {how}"
                      + (f" — as in “{ex}”" if ex else "")
                      + ". No word around it."),
+            ))
+    elif part == "chunks":
+        # Every letter-team sound the dictionary uses, most useful first.
+        # Each already PLAYS as an automatic blend of the recorded sounds;
+        # recording one replaces the blend with a single human breath, for
+        # this sound everywhere it appears. Saved under the sound's own
+        # name in phonemes/, same as the 42 - which is also why rime
+        # recordings made before this list existed appear here as done.
+        from gen import dictionary
+
+        for c in dictionary.catalog():
+            items.append(Item(
+                key=c["ipa"], kind="phoneme", display=c["spelling"],
+                ipa=c["ipa"], length="free",
+                say=(f"Say “{c['spelling']}” as in “{c['example']}”: "
+                     f"{sound_recipe(c['ipa'])}, run together. "
+                     f"(/{c['ipa']}/)"),
             ))
     elif part == "sentences":
         # Every whole line any level reads out. There are about ten and they

@@ -212,6 +212,9 @@ def status() -> list:
             "kind": kind,
             "words": len(words),
             "missing": missing,
+            # Buildup sound pieces not yet in the family's own voice -
+            # the walk-through queues these after the line and the words.
+            "missingSounds": 0 if kind == "letter" else len(_piece_items(text)),
             "starterCovered": starter,
             # How many of this entry's words the shared bank already covers.
             # The bank makes recording quietly cheap, and quiet reads as
@@ -248,26 +251,59 @@ def clips(key: str) -> list:
     return out
 
 
+def _piece_items(text: str) -> list:
+    """The sound pieces of this entry's buildups the family has NOT
+    recorded themselves: chunks first, then single sounds. These queue in
+    the walk-through so a sentence can become fully hers, and they shrink
+    to nothing as the shared bank fills - the pieces are keyed by sound,
+    recorded once, used everywhere."""
+    from gen import dictionary, levels
+
+    seen, chunks_out, singles = set(), [], []
+    for w in _unique_words(text):
+        if not levels.decodable(w):
+            continue
+        for g, ipa in levels.word_parts(w):
+            if ipa in seen:
+                continue
+            seen.add(ipa)
+            recipe = studio.sound_recipe(ipa)
+            many = len(dictionary.tokens(ipa)) > 1
+            it = studio.Item(
+                key=ipa, kind="phoneme", display=g.lower(), ipa=ipa,
+                length="free",
+                say=(f"From “{_clean(w)}”: say “{g.lower()}” — {recipe}"
+                     + (", run together" if many else "")
+                     + f". No word around it. (/{ipa}/)"))
+            if it.done():
+                continue
+            (chunks_out if len(dictionary.tokens(ipa)) > 1
+             else singles).append(it)
+    return chunks_out + singles
+
+
 def walkthrough_items(key: str) -> list:
-    """What to record for one entry.
+    """What to record for one entry: the whole line FIRST, then its words,
+    then whatever sound pieces of the buildup are not yet in the family's
+    own voice - chunks, then single sounds. Missing means "not recorded by
+    you": the shipped starter voice only ever fills gaps at video time.
 
-    A sentence: its words, then the whole line - the line last, so the words
-    are fresh in her voice when she reads them joined up. A single word: just
-    the word. A letter: nothing - its sound is the phoneme bank's job, and
-    the caller should not be offering a record button at all.
+    A single word skips the line (the word IS the line); a letter entry
+    records nothing here - its sound belongs to the Sound Bank.
 
-    Words already in the shared bank show as done and the studio resumes
-    past them - this is what makes the tenth sentence cheaper than the
-    first.
+    Anything already in the shared banks shows as done and the studio
+    resumes past it - the tenth sentence is cheaper than the first.
     """
     for text in load():
         if sentence_key(text) == key:
             kind = entry_kind(text)
             if kind == "letter":
                 return []
-            items = [_word_item(w) for w in _unique_words(text)]
+            items = []
             if kind == "sentence":
                 items.append(_line_item(text))
+            items += [_word_item(w) for w in _unique_words(text)]
+            items += _piece_items(text)
             return items
     raise ValueError("That sentence is not in the library any more.")
 
