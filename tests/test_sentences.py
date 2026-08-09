@@ -537,3 +537,14 @@ def test_no_word_is_a_single_unsplittable_chunk_when_it_can_pair():
     assert levels.word_parts("up") == [("u", "ʌ"), ("p", "p")]
     assert levels.word_parts("an") == [("a", "æ"), ("n", "n")]
     assert len(levels.word_parts("in")) == 2
+
+
+def test_names_follow_the_syllable_rules():
+    """Rules serve names, and names follow what children are taught: an
+    open syllable's vowel says its long sound (Zu-ma is "zoo", not
+    "zuh") and a final -a is the soft "uh"."""
+    assert levels.split_graphemes("Zuma") == \
+        [("Z", "z"), ("u", "uː"), ("m", "m"), ("a", "ə")]
+    # closed syllables stay short: nonsense practice words are untouched
+    assert levels.split_graphemes("vam") == [("v", "v"), ("a", "æ"), ("m", "m")]
+    assert levels.split_graphemes("zib") == [("z", "z"), ("i", "ɪ"), ("b", "b")]

@@ -131,7 +131,20 @@ def split_graphemes(word: str):
                 break
         else:
             ch = low[i]
-            out.append((word[i], CVC_PHONEMES.get(ch, ch)))
+            # These rules serve NAMES - real words come from the
+            # dictionary - and names follow the syllable rules children
+            # are taught: an open syllable's vowel says its long sound
+            # (Zu-ma is "zoo", not "zuh"), and a final -a is the soft
+            # "uh" of Zuma, Nala, grandma.
+            if (ch in "aeiou" and i + 2 < len(word)
+                    and low[i + 1] not in "aeiou"
+                    and low[i + 1:i + 3] not in GRAPHEMES
+                    and low[i + 2] in "aeiouy"):
+                out.append((word[i], LONG_VOWELS[ch]))
+            elif ch == "a" and i == len(word) - 1 and i >= 2:
+                out.append((word[i], "ə"))
+            else:
+                out.append((word[i], CVC_PHONEMES.get(ch, ch)))
             i += 1
     return out
 
