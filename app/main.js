@@ -274,6 +274,17 @@ function registerIpc () {
     }
   })
 
+  // The sight-word list: words read whole, never sounded out. Typed in on
+  // the Sound Bank screen; the pipeline consults it at plan time.
+  ipcMain.handle('sightwords:load', async () => sidecar.call('sightwords.load', {}))
+  ipcMain.handle('sightwords:save', async (_e, text) => {
+    try {
+      return { ok: true, ...(await sidecar.call('sightwords.save', { text })) }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  })
+
   // The sentence library. Text in, recording status out; the walk-through
   // recording itself goes through the studio channel with part "sentence".
   ipcMain.handle('sentences:list', async () => sidecar.call('sentences.list', {}))

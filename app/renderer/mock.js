@@ -99,6 +99,7 @@ down
     ],
     capabilities: { fallback_voice: true, recordings: true, cloning: false },
     wordlistText: WORDLIST,
+    sightWordsText: 'Chase\nNana',
     outputDir: '/Users/mum/Movies/Sound It Out',
     settings: { level: '1', theme: 'night', reps: 3, pauseSeconds: 1.5, minutes: 20 }
   }
@@ -190,6 +191,18 @@ down
     fire('done', { jobId, output: out })
   }
 
+  function mockSightWords () {
+    const out = []
+    const seen = new Set()
+    for (const raw of String(state.sightWordsText || '').split(/[\s,;]+/)) {
+      const w = raw.replace(/^[.,!?;:'"“”‘’]+|[.,!?;:'"“”‘’]+$/g, '')
+      if (!w || !/[a-z]/i.test(w) || seen.has(w.toLowerCase())) continue
+      seen.add(w.toLowerCase())
+      out.push(w)
+    }
+    return out
+  }
+
   window.soundout = {
     async getState () { await wait(120); return JSON.parse(JSON.stringify(state)) },
 
@@ -277,6 +290,18 @@ down
       const n = (opts && opts.sentences && opts.sentences.length) || 0
       return { seconds: n * 95 }
     },
+    // The sight-word list: words read whole, never sounded out.
+    async sightWordsLoad () {
+      await wait(80)
+      return { text: state.sightWordsText || '', words: mockSightWords() }
+    },
+    async sightWordsSave (text) {
+      await wait(120)
+      state.sightWordsText = String(text || '')
+        .split(/\r?\n/).filter((l) => !l.trim().startsWith('#')).join('\n').trim()
+      return { ok: true, text: state.sightWordsText, words: mockSightWords() }
+    },
+
     async packsList () {
       await wait(80)
       return { packs: JSON.parse(JSON.stringify(mockPacks)) }

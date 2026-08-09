@@ -55,3 +55,6 @@ wordlists/sight-words.txt
 # The family's own sentence library, like the live word list above: written
 # by the app, holds their real sentences, never for git.
 wordlists/sentences.txt
+# The sight-word list typed in on the Sound Bank screen - a family's own
+# words, same doctrine as sentences.txt: never committed.
+wordlists/whole-words.txt

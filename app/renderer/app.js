@@ -59,6 +59,7 @@ async function boot () {
   }
 
   initVoice()
+  initSightWords()
   initStudio()
   initScript()
   initReview()
@@ -1078,6 +1079,59 @@ async function voiceCounts (caps) {
       ? 'All ' + total + ' recorded. Every sound is your own voice.'
       : `${p} of ${total} recorded. You can stop and carry on whenever \u2014 ` +
         'it picks up where you left off.'
+}
+
+/* ------------------------------------------------------------ sight words
+ *
+ * Words read whole, never sounded out. The list lives on the Python side
+ * (wordlists/whole-words.txt) and the pipeline consults it at plan time, so
+ * saving here changes what the walk-through asks for and what the video
+ * builds - no other switch to flip.
+ */
+
+async function initSightWords () {
+  const input = $('sight-input')
+  const save = $('sight-save')
+  if (!input || !save || !api.sightWordsLoad) return
+
+  const setCount = (words) => {
+    setText('count-sight', words.length
+      ? `— ${words.length} word${words.length === 1 ? '' : 's'}`
+      : '— none yet')
+  }
+
+  try {
+    const r = await api.sightWordsLoad()
+    input.value = (r && r.text) || ''
+    setCount((r && r.words) || [])
+  } catch (err) {
+    console.error(err)
+  }
+
+  save.addEventListener('click', async () => {
+    const err = $('sight-error')
+    const status = $('sight-status')
+    err.hidden = true
+    save.disabled = true
+    try {
+      const r = await api.sightWordsSave(input.value)
+      if (r && r.ok === false) throw new Error(r.error || 'Could not save the list.')
+      input.value = (r && r.text) || ''
+      const words = (r && r.words) || []
+      setCount(words)
+      status.textContent = words.length
+        ? `Saved. ${words.length === 1 ? 'This word' : 'These words'} will be shown and said whole - never sounded out.`
+        : 'Saved - the list is empty, so every word is sounded out where it can be.'
+      // What the walk-through asks for just changed: rows on the Sentences
+      // page count their missing sound pieces, so they need fresh numbers.
+      refreshSentences()
+    } catch (e) {
+      err.textContent = e.message || 'Could not save the list.'
+      err.hidden = false
+    } finally {
+      save.disabled = false
+    }
+  })
 }
 
 /* The passage had no state on screen at all - no length, no level, no way to

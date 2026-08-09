@@ -785,9 +785,12 @@ def _sentences(voice, sentences, reps, pause):
 def _one_word(voice, word, reps, pause):
     """A single word met on its own: sounded out with the gaps closing if
     the grapheme table can honestly say it, shown and spoken whole if it
-    cannot (see decodable)."""
+    cannot (see decodable) - or if the parent put it on the sight-word
+    list, which wins over everything."""
+    from gen import sightwords
+
     segs = []
-    if decodable(word):
+    if decodable(word) and not sightwords.is_sight(word):
         segs += _approach(voice, word_parts(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))

@@ -257,11 +257,14 @@ def _piece_items(text: str) -> list:
     the walk-through so a sentence can become fully hers, and they shrink
     to nothing as the shared bank fills - the pieces are keyed by sound,
     recorded once, used everywhere."""
-    from gen import dictionary, levels
+    from gen import dictionary, levels, sightwords
 
+    sight = sightwords.words()
     seen, chunks_out, singles = set(), [], []
     for w in _unique_words(text):
-        if not levels.decodable(w):
+        # A sight word is recorded and shown whole - its buildup never
+        # happens, so its pieces are never needed.
+        if not levels.decodable(w) or _clean(w).lower() in sight:
             continue
         for g, ipa in levels.word_parts(w):
             if ipa in seen:
@@ -457,14 +460,15 @@ def estimate_seconds(keys=None, reps=3, pause=1.5) -> float:
     on a button, not a contract - but it must track the options, or it
     teaches people to ignore it.
     """
-    from gen import levels
+    from gen import levels, sightwords
 
     PH, WORD, LINE = 0.75, 0.55, 2.6
     passes = max(2, reps)
     gap = 0.12  # mean of the (now brisk) shrinking approach gaps
+    sight = sightwords.words()
 
     def word_cost(w):
-        if levels.decodable(w):
+        if levels.decodable(w) and _clean(w).lower() not in sight:
             n = len(levels.word_parts(w))
             return passes * n * (PH + gap) + WORD + pause + 1.0
         return max(2, reps - 1) * (WORD + pause) + 1.0

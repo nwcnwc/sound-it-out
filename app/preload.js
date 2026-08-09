@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('soundout', {
   openExternal: (u) => ipcRenderer.invoke('url:open', u),
   chooseRecording: () => ipcRenderer.invoke('recordings:choose'),
   importRecording: (opts) => ipcRenderer.invoke('recordings:import', opts),
+  sightWordsLoad: () => ipcRenderer.invoke('sightwords:load'),
+  sightWordsSave: (text) => ipcRenderer.invoke('sightwords:save', text),
   sentencesList: () => ipcRenderer.invoke('sentences:list'),
   sentencesAdd: (text) => ipcRenderer.invoke('sentences:add', text),
   sentencesRemove: (key) => ipcRenderer.invoke('sentences:remove', key),

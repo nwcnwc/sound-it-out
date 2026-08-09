@@ -84,6 +84,20 @@ def m_wordlist_save(params):
     }
 
 
+def m_sightwords_load(_params):
+    from gen import sightwords
+
+    text = sightwords.load_text()
+    return {"text": text, "words": sightwords.parse(text)}
+
+
+def m_sightwords_save(params):
+    from gen import sightwords
+
+    words = sightwords.save(params.get("text", ""))
+    return {"text": sightwords.load_text(), "words": words}
+
+
 def m_plan(params):
     """Build audio and the storyboard. Returns a job dir for Electron to render."""
     from gen import levels
@@ -678,6 +692,8 @@ METHODS = {
     "capabilities": m_capabilities,
     "wordlist.load": m_wordlist_load,
     "wordlist.save": m_wordlist_save,
+    "sightwords.load": m_sightwords_load,
+    "sightwords.save": m_sightwords_save,
     "sentences.list": m_sentences_list,
     "sentences.add": m_sentences_add,
     "sentences.remove": m_sentences_remove,
