@@ -169,3 +169,78 @@ def test_each_pass_still_sweeps_the_highlight_left_to_right(monkeypatch):
         for j in range(3):
             parts = segs[p * 3 + j].parts
             assert [on for _, on in parts] == [i == j for i in range(3)]
+
+
+# ------------------------------------------------- the blend hears the sound
+#
+# Round 3 of "Ezra" lit r, then a, with nothing audible under either, while
+# the same two clips sounded fine in rounds 1 and 2. The cause was not the
+# recordings: their sound simply started a third of a second in, behind a
+# breath too loud for content() to strip, and the blend's cap is 0.40s - so
+# the window it kept was the breath. The longer rounds reached past it.
+
+
+class LateVoice:
+    """A recording whose sound starts late, behind an audible breath."""
+
+    def __init__(self, lead=0.38, lead_amp=0.15):
+        self.lead, self.lead_amp = lead, lead_amp
+
+    def _clip(self):
+        rng = np.random.default_rng(7)
+        breath = rng.uniform(-self.lead_amp, self.lead_amp,
+                             int(self.lead * SR)).astype("float32")
+        t = np.arange(int(0.45 * SR)) / SR
+        sound = (np.sin(2 * np.pi * 180 * t) * 0.9).astype("float32")
+        return np.concatenate([breath, sound])
+
+    def phoneme(self, ipa):
+        return self._clip()
+
+    def word(self, text, slow=False):
+        return np.zeros(int(SR * 0.4), dtype="float32")
+
+    def blend(self, ipas):
+        return np.zeros(int(SR * 0.3), dtype="float32")
+
+    def sentence(self, text, tempo=0.68):
+        return np.zeros(int(SR * 1.0), dtype="float32")
+
+
+def _rms(a):
+    return float(np.sqrt(np.mean(a ** 2))) if len(a) else 0.0
+
+
+def test_a_sound_that_starts_late_is_still_heard_in_the_blend():
+    voice = LateVoice()
+    clipped = levels._hard_clip(voice, "m", 0.40)
+    # the window kept must be mostly the sound, not the breath in front of
+    # it: the breath's own level is 0.15/sqrt(3), the sound's is 0.9/sqrt(2)
+    assert _rms(clipped) > 0.5 * (0.9 / np.sqrt(2)), _rms(clipped)
+    assert _rms(clipped) > 5 * (0.15 / np.sqrt(3))
+
+
+def test_every_slice_of_the_touching_pass_has_a_sound_in_it():
+    """The whole point of the final pass is that all of it is audible."""
+    segs = levels._touching(LateVoice(), levels.spell("Sam"))
+    assert len(segs) == 3
+    for seg in segs:
+        assert _rms(seg.audio) > 0.3, [_rms(s.audio) for s in segs]
+
+
+def test_a_swelling_vowel_is_not_slid_forward():
+    """The shape this must NOT touch: an /iː/ that fades in over half a
+    second starts late too, and cutting its swell is how lollipop lost its
+    i. A swell rises into its sound; a breath sits flat and then stops."""
+    t = np.arange(int(1.0 * SR)) / SR
+    swell = (np.sin(2 * np.pi * 180 * t) * 0.9).astype("float32")
+    ramp = np.concatenate([np.linspace(0, 1, int(0.5 * SR)),
+                           np.ones(int(0.5 * SR))]).astype("float32")
+    c = (swell * ramp[:len(swell)]).astype("float32")
+    assert np.array_equal(levels._onto_the_sound(c, int(0.40 * SR)), c)
+
+
+def test_a_clip_that_starts_on_its_sound_is_left_alone():
+    t = np.arange(int(0.9 * SR)) / SR
+    c = (np.sin(2 * np.pi * 180 * t) * 0.9).astype("float32")
+    assert np.array_equal(levels._onto_the_sound(c, int(0.40 * SR)), c)

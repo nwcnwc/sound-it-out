@@ -528,6 +528,57 @@ def _sounds_in(ipa: str) -> int:
     return max(1, len(dictionary.tokens(ipa)))
 
 
+def _onto_the_sound(c, n: int):
+    """Slide a keep-the-start window onto the sound, if it has missed it.
+
+    A stop's window is centred on its located burst; a sustain's was just
+    the first `n` samples, on the assumption that a sustain starts when
+    its clip does. It does not always. content() strips a lead-in only
+    while it is below a tenth of the clip's loudest window, and a breath,
+    a lip smack or a live room sits above that - so the sound can begin a
+    third of a second in and the lead-in survives.
+
+    A long cap reaches past that and nobody notices. The blend's cap is
+    0.40s, and 0.40s of held breath is a letter that lights in silence:
+    round 3 of "Ezra" lit r and then a with nothing audible under either,
+    while the same two clips sounded fine in the longer rounds that came
+    before it. So: when the window we would keep holds almost none of the
+    sound, start it at the sound instead.
+
+    Two conditions, and both must hold, because the shape this must NOT
+    touch is a swelling vowel: an /iː/ that fades in over half a second is
+    exactly a sound that starts late, and content() keeps its swell on
+    purpose (cutting it is how lollipop lost its i). So the window moves
+    only when the sound starts beyond the window's first 60% AND the
+    material in front of it is a STEP rather than a rise - a swell walks
+    up to its onset, a breath sits flat and then the mouth starts."""
+    import numpy as np
+
+    if len(c) <= n or n <= 0:
+        return c
+    w = int(SR * 0.02)
+    if len(c) < w * 2:
+        return c
+    wins = np.array([float(np.sqrt(np.mean(c[i * w:(i + 1) * w] ** 2)))
+                     for i in range(len(c) // w)])
+    top = float(wins.max())
+    if top <= 0:
+        return c
+    onset = int(np.argmax(wins >= top * 0.5))
+    if onset * w < 0.6 * n:
+        return c  # the sound is inside the window already
+    if wins[onset - 1] >= 0.5 * wins[onset]:
+        return c  # it rose into the sound: a swell, not a lead-in
+    lo = max(0, min(onset * w - w, len(c) - n))  # 20ms of air before it
+    if lo <= 0:
+        return c
+    out = c[lo:].copy()
+    m = min(int(SR * 0.012), len(out))
+    if m > 1:
+        out[:m] *= np.linspace(0.0, 1.0, m, dtype="float32")
+    return out
+
+
 def _hard_clip(voice, ipa: str, seconds: float):
     """A sound's clip, conditioned and capped for the blend.
 
@@ -537,7 +588,11 @@ def _hard_clip(voice, ipa: str, seconds: float):
     the sound's body before it and the release after. The burst is
     levelled by peak only when it IS a burst (peak well above the window's
     own rms): boosting a window that has no transient just manufactures
-    static, which is what lollipop's op became."""
+    static, which is what lollipop's op became.
+
+    A sustain keeps its start - identity is the onset - but the start of
+    the CLIP is not always the start of the SOUND, so the window is slid
+    onto the sound first (_onto_the_sound)."""
     import numpy as np
 
     from gen import dictionary
@@ -548,7 +603,7 @@ def _hard_clip(voice, ipa: str, seconds: float):
     c = content(voice.phoneme(ipa))
     n = int(seconds * SR)
     if not ends_stop:
-        return cap(c, seconds)
+        return cap(_onto_the_sound(c, n), seconds)
     if len(c) > n:
         b = int(np.argmax(np.abs(c)))
         lo = max(0, min(b - int(n * 0.6), len(c) - n))
