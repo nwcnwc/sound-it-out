@@ -676,3 +676,52 @@ def test_the_typed_list_tolerates_however_it_is_typed(tmp_path, monkeypatch):
     sightwords.save("Chase, Skye\nGrandma\n# a note\n\nRubble;Rocky")
     assert sightwords.load() == {"chase", "skye", "grandma", "rubble", "rocky"}
     sightwords.reload()
+
+
+def test_no_example_word_is_unsuitable_for_a_child():
+    """Every word printed on a screen a parent reads with their child.
+
+    These were once picked by frequency alone, with the blocklist applied
+    nowhere near them, and the examples shipped for four sounds were
+    cigarette, suicide, orgy and orgasm - alongside stawski and waitzkin,
+    proper names straight out of CMUdict.
+
+    The gate is now three things at once, because no one of them is enough:
+    the blocklist misses whatever nobody thought of, and a frequency cut
+    cannot exclude "sex" at rank 169.
+    """
+    from gen import dictionary as D
+
+    cat = D.pair_catalog()
+    assert cat, "the catalog is not empty"
+
+    bad = [c for c in cat
+           if c["example"] and not D.good_example(c["example"])
+           and c["words"] > 0]        # magic-e anchors are curated, exempt
+    assert not bad, f"unsuitable examples: {[(c['spelling'], c['example']) for c in bad]}"
+
+    for c in cat:
+        assert c["example"], f"{c['spelling']} has no example at all"
+        assert len(c["example"]) >= 3, f"{c['example']} is not a word"
+
+
+def test_the_blocklist_and_the_rank_cut_each_catch_what_the_other_cannot():
+    from gen import dictionary as D
+
+    # Common enough that no frequency cut would ever exclude them.
+    for w in ("sex", "porn", "drug"):
+        assert D.frequency_rank().get(w, 10 ** 6) < D.EXAMPLE_MAX_RANK
+        assert not D.good_example(w), f"{w} must be blocked by name"
+
+    # Rare enough that the rank cut is what stops them.
+    for w in ("orgasm", "orgy", "cigarette", "suicide"):
+        assert not D.good_example(w)
+
+    # Not in the common list at all - CMUdict proper names.
+    for w in ("stawski", "waitzkin"):
+        assert D.frequency_rank().get(w) is None
+        assert not D.good_example(w)
+
+    # And the ordinary words still pass.
+    for w in ("cat", "dog", "box", "ring", "water", "able"):
+        assert D.good_example(w), w

@@ -171,16 +171,36 @@ def pair_catalog():
                 # context: "bring" teaches /ɪŋ/, but "ing" on its own and
                 # "ibn" the name teach doubt. So: common, short, few units,
                 # and meaningfully longer than the pair itself.
+                # An example is printed on a screen a parent reads WITH their
+                # child, so it is gated before it is ranked. This used to be a
+                # preference only - "common words score better" - which is how
+                # cigarette, suicide, orgy and orgasm ended up as the examples
+                # for four sounds, alongside the proper names stawski and
+                # waitzkin straight out of CMUdict.
+                if not good_example(word):
+                    continue
                 roomy = len(word) >= len(letters) + 2
-                fit = (0 if word in common else 1,
-                       0 if roomy and len(word) <= 7 and len(entry) <= 3 else 1,
-                       len(word), word)
+                # SHORT first, then common. Ranking by frequency alone gave
+                # "during" for -ing and "information" for -ati, both perfectly
+                # common and neither a word a child would pick out. A short
+                # word is also a word they can read.
+                fit = (0 if len(word) <= 5 else 1 if len(word) <= 7 else 2,
+                       0 if roomy and len(entry) <= 3 else 1,
+                       frequency_rank().get(word, 10 ** 6), len(word), word)
                 if sound not in example or fit < example[sound]:
                     example[sound] = fit
+        # No example, no entry.
+        #
+        # A join is offered so somebody can smooth a seam they will actually
+        # hear. If no short, common, child-appropriate word demonstrates it,
+        # the seam is not in anything they are going to make - and the row is
+        # just noise in a list of two hundred. This is what drops mc, tz, ce,
+        # lu, rew and yo, which were there because the corpus contains
+        # mcdonald and pizza and this app never will.
         _catalog = [
             {"ipa": s, "spelling": spellings[s].most_common(1)[0][0],
-             "example": example[s][3], "words": n}
-            for s, n in count.most_common()
+             "example": example[s][4], "words": n}
+            for s, n in count.most_common() if s in example
         ]
         # The magic-e rime sounds stay listed even when the aligner never
         # chose them for a dictionary word: recordings of them serve the
@@ -189,11 +209,21 @@ def pair_catalog():
         from gen.starter import all_magic_e
 
         have = {c["ipa"] for c in _catalog}
+        from gen.studio import MAGIC_E_EXAMPLES
+
         for spelling, ipa in all_magic_e():
             if ipa not in have:
                 have.add(ipa)
+                # "ufe" as in "ufe" tells nobody anything. studio already
+                # keeps a real word carrying each ending's SOUND - roof for
+                # ufe, soup for upe, zoom for ume - chosen for the ear rather
+                # than the spelling, which is the whole point of an anchor.
+                # Exempt from good_example(): these were picked by hand to
+                # carry each ending's SOUND - "beef" for ufe, "eel" for ele -
+                # which is a better test than how often the web says them.
                 _catalog.append({"ipa": ipa, "spelling": spelling,
-                                 "example": spelling, "words": 0})
+                                 "example": MAGIC_E_EXAMPLES.get(spelling, ""),
+                                 "words": 0})
     return _catalog
 
 
@@ -223,31 +253,82 @@ def phonemes_in(sound: str):
 # and over-broad, because a false exclusion costs one word in a family that
 # has a dozen, and a false inclusion puts it on a screen in front of a child.
 UNSUITABLE = frozenset("""
-ass arse bitch bastard cock crap cunt damn dick dildo fag faggot fuck fucked
-fucking hell homo jizz nigga nigger piss porn pussy queer rape rapist screw
-sex sexy shag shit slut slag spic std tit tits twat wank whore xxx nude naked
-abortion abuse abused abusive addict addiction alcohol assault
+sex sexy sexual sexuality intercourse orgasm orgasms orgy orgies erotic
+erotica porn porno pornography nude nudes naked nudity strip stripper
+breast breasts boob boobs butt buttocks genital genitals penis vagina
+condom condoms virgin virginity fetish bdsm escort escorts brothel
+prostitute prostitution incest rape rapist molest molested pedophile
+ass arse bitch bastard cock crap cunt damn dick dildo fag faggot fuck
+fucked fucking hell homo jizz nigga nigger piss pussy queer screw shag
+shit slut slag spic std tit tits twat wank whore xxx bollocks bugger
 
-nudes erotic escort viagra cialis casino gambling drug drugs weed coke booze
-beer wine vodka whisky whiskey cigarette cigarettes tobacco gun guns ammo
-kill killed killing murder dead death die died dying suicide blood gore war
+drug drugs cocaine heroin meth methamphetamine marijuana cannabis weed
+opium morphine addict addiction addicted overdose narcotic narcotics
+alcohol alcoholic booze beer wine vodka whisky whiskey rum gin liquor
+drunk drunken cigarette cigarettes cigar tobacco smoking nicotine vape
+viagra cialis casino gambling betting lottery
+
+kill killed killing killer murder murdered homicide suicide suicidal
+death dead die died dying corpse coffin funeral grave burial
+blood bloody gore violent violence assault abuse abused abusive
+gun guns rifle pistol shotgun ammo bullet bomb bombing weapon weapons
+war warfare terror terrorist terrorism torture hostage massacre
+abortion miscarriage cancer tumor tumour disease infection
 """.split())
 
+# Membership in the common list is not enough on its own: it is web text, so
+# "sex" sits at rank 169 and "porn" at 632, above "cat" at 1733. The list
+# above is the backstop for exactly those - the ones common enough that no
+# frequency cut will ever exclude them.
+#
+# The cut does the rest of the work, and does it better than a blocklist can,
+# because a blocklist only ever excludes what somebody thought of. Every good
+# example word is rare enough to be well inside it: water 314, box 426,
+# bank 848, dog 1020, happy 1253, ring 1490, cat 1733, ball 1860. Everything
+# that caused trouble sits far outside: orgy 4795, suicide 5715, screw 7168,
+# cigarette 8075, orgasm 9479 - and stawski and waitzkin, both proper names
+# out of CMUdict, are not in the common list at all.
+EXAMPLE_MAX_RANK = 2500
+
 # Junk shapes rather than junk meanings: initialisms, brands and fragments.
-# A word a child reads should be a word, and these are strings.
+# A word shown to a child should be a word, and these are strings.
 NOT_WORDS = frozenset("""
 cnet ui dui phi tri pre ce je ne bo jo ko geo cho chan dat lan nat sen len
 chen glen ben brad chad kay jay dee lee tee pee vee zee bra hugo dell msn aol
 url asp php sql xml html http https www ftp pdf gif jpg mp3 dvd cd tv pc mac
-ip isp faq ceo cfo cto usa uk eu un nyc la sf dc pm am est pst
+ip isp faq ceo cfo cto usa uk eu un nyc la sf dc pm am est pst dns cnn bbc
+ac dc ok tv pm inc ltd corp yahoo google amazon ebay paypal microsoft apple
+doge nasdaq nato fbi cia irs dmv atm gps usb
+georgia texas florida ohio boston chicago denver dallas
 """.split())
 
-
 def suitable(word: str) -> bool:
-    """Is this a word a child may meet in a family list?"""
+    """Is this a word a child may meet at all?"""
     w = word.lower()
     return (w not in UNSUITABLE and w not in NOT_WORDS
             and any(c in "aeiouy" for c in w) and len(w) >= 2)
+
+
+def good_example(word: str) -> bool:
+    """May this word be shown as the example for a sound?
+
+    Stricter than suitable(), because an example is printed on a screen a
+    parent reads next to their child. Three gates, and a word must pass all:
+
+        it is a real common word     - excludes CMUdict's proper names,
+                                       stawski and waitzkin among them
+        it is COMMONLY common        - rank inside EXAMPLE_MAX_RANK
+        it is not on the blocklist   - for the ones frequency cannot catch
+    """
+    w = word.lower()
+    if not suitable(w):
+        return False
+    # Three letters at least. "ac" is in the common list and is not a word;
+    # nothing shorter than three letters teaches anyone what a sound is.
+    if len(w) < 3:
+        return False
+    r = frequency_rank().get(w)
+    return r is not None and r < EXAMPLE_MAX_RANK
 
 
 _families = None
