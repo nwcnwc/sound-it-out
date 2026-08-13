@@ -368,8 +368,14 @@ def test_bank_display_decodes_safe_names(library):
 def test_soft_c_and_g_in_rimes():
     """"face" ends /eɪs/ and "cage" ends /eɪdʒ/ - the e softens c and g
     inside a rime, while an opening c stays hard."""
-    assert levels.word_alignment("face") == [("f", "f"), ("ace", "eɪs")]
-    assert levels.word_alignment("cage") == [("c", "k"), ("age", "eɪdʒ")]
+    # The rime view is where a magic-e ending is one unit. The grapheme view
+    # splits it f + a + ce, which is what shows WHY the vowel says its name.
+    from gen import dictionary as D
+
+    assert D.onset_rime("face") == (("f", "f"), ("ace", "eɪs"))
+    assert D.alignment("face") == [("f", "f"), ("a", "eɪ"), ("ce", "s")]
+    assert D.onset_rime("cage") == (("c", "k"), ("age", "eɪdʒ"))
+    assert D.alignment("cage") == [("c", "k"), ("a", "eɪ"), ("ge", "dʒ")]
 
 
 # ------------------------------------------------------------------ rimes
@@ -492,18 +498,18 @@ def test_multi_sound_chunks_keep_all_their_sounds():
 def test_piece_prompts_carry_word_recipe_and_notation(library):
     """A lazy-record piece must say which word it came from, spell out the
     sound combination in plain words, and name the notation too."""
-    # "ring" is r + ing, and /ɪŋ/ is a GRAPHEME PAIR - two phonemes in one
-    # unit - so it is the kind of piece that has a recipe worth spelling out.
-    # A word made only of single graphemes queues nothing, because every one
-    # of them is already among the 42.
-    S.add("The king is happy.")
+    # "box" is b + o + x, and x is one of the three graphemes that genuinely
+    # spell two phonemes (/ks/), so it is the kind of piece with a recipe
+    # worth spelling out. A word made only of single-phoneme graphemes queues
+    # nothing, because every one of those is already among the 42.
+    S.add("The box is red.")
     items = S.walkthrough_items(S.status()[0]["key"])
     pieces = [i for i in items if i.kind == "phoneme"]
     assert pieces, "a word containing a grapheme pair must queue it"
-    pair = next(i for i in pieces if i.key == "ɪŋ")
-    assert "king" in pair.say.lower()      # which word
+    pair = next(i for i in pieces if i.key == "ks")
+    assert "box" in pair.say.lower()       # which word
     assert "then" in pair.say              # the spoken recipe
-    assert "/ɪŋ/" in pair.say              # the notation
+    assert "/ks/" in pair.say              # the notation
 
 
 def test_the_touching_pass_never_swallows_a_stop():

@@ -37,7 +37,9 @@ from gen.paths import RESOURCES
 CMUDICT = "https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict"
 COMMON = ("https://raw.githubusercontent.com/first20hours/"
           "google-10000-english/master/google-10000-english.txt")
-OUT = RESOURCES / "assets" / "dictionary" / "aligned.txt"
+DICT_DIR = RESOURCES / "assets" / "dictionary"
+OUT = DICT_DIR / "graphemes.txt"
+SYLLABLES_OUT = DICT_DIR / "syllables.txt"
 
 ARPA_TO_IPA = {
     "AA": "ɒ", "AE": "æ", "AH": "ʌ", "AO": "ɔː", "AW": "aʊ", "AY": "aɪ",
@@ -51,39 +53,40 @@ ARPA_TO_IPA = {
 
 MAX_L, MAX_P = 3, 2      # unit sizes: letters 1-3, phonemes 0-2
 EM_ROUNDS = 4
+
 # Viterbi naturally prefers FEWER units (each adds a negative log
 # probability), which bundles "was" into wa=wɒ s=z. A flat per-unit bonus
 # tips it back toward fine splits - w=w a=ɒ s=z - which are what a child
 # should see, and which map to single recordable sounds besides.
 UNIT_BONUS = 3.0
 
-# The bonus alone could not do it, and the failure is worth recording.
+# A GRAPHEME spells exactly one phoneme, and that is what this dictionary
+# emits. Two-phoneme units are refused outright rather than merely penalised,
+# because there is no such thing as a two-phoneme grapheme except in the three
+# cases below - a letter that genuinely makes two sounds with no way to split
+# the spelling.
 #
-# At 1.2 only 2 of 63 ordinary CVC words split into single graphemes: cat
-# came out ca=kæ t=t, hat ha=hæ t=t, the whole -at family bundled so the
-# rime they share was invisible in every one of them. Raising the bonus far
-# enough to fix cat (about 5.0) began fracturing what should stay whole -
-# back became b=b ac=æ k=k, breaking the ck digraph it was meant to protect
-# - and it still plateaued at 53 of 63.
-#
-# What is actually wrong is narrower than "too few units": a unit must not
-# run from a consonant INTO a vowel. That is a syllable's onset glued to its
-# nucleus, and no phonics program teaches it as a unit. The test is
-# structural rather than statistical:
-#
-#     starts with a consonant, contains a vowel, spans 2+ phonemes
-#
-# which catches ca, ha, ru, bu, chi, wa, lit - and by construction spares
-# the two kinds of multi-letter unit that ARE taught: digraphs (sh ch th ck
-# ng - consonants only, one sound) and rimes (at un ing ake - vowel-initial).
-ONSET_BUNDLE_PENALTY = 6.0
-VOWEL_LETTERS = set("aeiou")
+# Measured over the whole corpus, every other common two-phoneme
+# correspondence is splittable and was a bundle we did not want: ing, ar, on,
+# in, st, an, en, le, tr, nd... all of them two graphemes glued together.
+# Whitelisting the real ones and forbidding the rest replaces the tuning
+# problem with a structural one, and takes the CVC words from 2 of 63 correct
+# to all 63 without a penalty term at all.
+TWO_PHONEME_GRAPHEMES = {
+    ("x", ("k", "s")),        # box, six - one letter, two sounds
+    ("u", ("j", "uː")),       # use, cute - the "yoo" u
+    ("qu", ("k", "w")),       # queen - taught whole, because q never
+                              # appears without its u
+}
 
 
-def is_onset_bundle(g: str, p: tuple) -> bool:
-    """A unit running from an onset consonant into its vowel."""
-    return (len(p) >= 2 and g and g[0].lower() not in VOWEL_LETTERS
-            and any(c in VOWEL_LETTERS for c in g.lower()))
+def unit_allowed(g: str, p: tuple) -> bool:
+    """One phoneme per unit, plus the three graphemes that truly make two."""
+    if len(p) <= 1:
+        return True
+    return (g.lower(), p) in TWO_PHONEME_GRAPHEMES
+
+
 # A correspondence must be seen at least this often across the whole
 # dictionary to be teachable; rarer ones are spelling lying about itself.
 MIN_COUNT = 40
@@ -156,7 +159,21 @@ def load_cmu():
     return entries
 
 
-def align(word, phons, prob, bonus=0.0):
+def align_best(word, phons, prob, bonus):
+    """Grapheme-only if possible, otherwise the best alignment there is.
+
+    Refusing a word outright because one of its units needs two phonemes is
+    the wrong trade: a word split into graphemes with a single pair in it is
+    still a word a child can be walked through, while a refused word is shown
+    whole and sounded out not at all. Strict first, so the pair only appears
+    where nothing else works - measured at under 1 word in 8, and those are
+    the genuinely awkward ones (actual = /aektSuwel/, adjacent).
+    """
+    a = align(word, phons, prob, bonus, strict=True)
+    return a if a is not None else align(word, phons, prob, bonus, strict=False)
+
+
+def align(word, phons, prob, bonus=0.0, strict=False):
     """Best alignment of `word` against `phons` under `prob`. Returns a list
     of (letters, phoneme-tuple) or None. Standard DP over (i, j).
 
@@ -183,13 +200,14 @@ def align(word, phons, prob, bonus=0.0):
                     s = prob.get((g, p))
                     if s is None:
                         continue
+                    # The whitelist applies only to the FINAL decode, the
+                    # same as `bonus`: EM must be left to learn what English
+                    # actually does, and a biased decode feeds biased counts
+                    # to the next round until the statistics are about the
+                    # bias rather than the language.
+                    if strict and not unit_allowed(g, p):
+                        continue
                     cand = score + s + bonus
-                    # Rides on the same switch as `bonus`, for the same
-                    # reason: this is a teaching preference, not a fact
-                    # about English, and EM must be left to learn what the
-                    # language actually does.
-                    if bonus and is_onset_bundle(g, p):
-                        cand -= ONSET_BUNDLE_PENALTY
                     if cand > best[i + dl][j + dp][0]:
                         best[i + dl][j + dp] = (cand, (i, j, dl, dp))
     if best[n][m][0] == -math.inf:
@@ -238,6 +256,48 @@ def to_logprob(counts):
             for (g, p), c in counts.items() if c > 0}
 
 
+def build_syllables(words) -> int:
+    """Write word -> syllable split, from hyphenation patterns.
+
+    A SEPARATE dictionary rather than a view of the grapheme one, because
+    syllable boundaries genuinely are not derivable from a letters-to-sounds
+    alignment: nothing in "rabbit" being r/a/bb/i/t says whether it divides
+    rab-bit or ra-bbit. That is its own question with its own data.
+
+    Hyphenation patterns are the data. They are not quite syllabification -
+    they mark where a typesetter may break a line, which is conservative:
+    "elephant" comes back ele-phant where a phonics teacher would say
+    el-e-phant. Conservative is the right failure here, because a break in
+    the wrong place teaches a wrong word shape, while a missing break just
+    teaches a longer piece.
+
+    Computed at build time and shipped as text, like the grapheme dictionary,
+    so the app never needs pyphen at runtime and the frozen sidecar does not
+    have to carry it.
+    """
+    try:
+        import pyphen
+    except ImportError:
+        print("pyphen not installed - skipping the syllable dictionary")
+        return 0
+    dic = pyphen.Pyphen(lang="en_US")
+    lines = []
+    for w in sorted(words):
+        if len(w) < 4:
+            continue                      # nothing to divide
+        split = dic.inserted(w)
+        if "-" not in split:
+            continue                      # one syllable; the word IS the unit
+        lines.append(f"{w} {split}")
+    SYLLABLES_OUT.parent.mkdir(parents=True, exist_ok=True)
+    SYLLABLES_OUT.write_text(
+        "# word  syl-la-ble-split   built by gen/build_dictionary.py\n"
+        "# from en_US hyphenation patterns (pyphen). Break points, which are\n"
+        "# conservative: a missing break is safer than a wrong one.\n"
+        + "\n".join(lines) + "\n", encoding="utf-8")
+    return len(lines)
+
+
 def main():
     entries = load_cmu()
     print(f"{len(entries)} dictionary words")
@@ -268,7 +328,7 @@ def main():
     lines, aligned_common, total_common = [], 0, 0
     aligned_all = 0
     for w, ph in entries:
-        a = align(w, ph, prob, bonus=UNIT_BONUS)
+        a = align_best(w, ph, prob, UNIT_BONUS)
         if w in common and is_word(w):
             total_common += 1
         if a is None:
@@ -311,6 +371,8 @@ def main():
         "\n".join(sorted(w for w in common
                          if w.isalpha() and len(w) > 1)) + "\n",
         encoding="utf-8")
+    n_syl = build_syllables({w for w, _ in entries})
+    print(f"wrote {n_syl} syllable splits")
     print(f"wrote {aligned_all} aligned words "
           f"({aligned_all * 100 // len(entries)}% of all)")
     print(f"common words aligned: {aligned_common}/{total_common} "
