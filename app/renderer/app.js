@@ -12,7 +12,7 @@
 const api = window.soundout
 const $ = (id) => document.getElementById(id)
 
-/* Theme swatch colours mirror THEMES in gen/soundout.py so the preview is the
+/* Theme swatch colors mirror THEMES in gen/soundout.py so the preview is the
    real thing. Unknown ids fall back to something neutral rather than blank. */
 const THEME_COLOURS = {
   night: { bg: '#0d1b2a', fg: '#f8f4e9', hl: '#ffd166' },
@@ -140,7 +140,7 @@ async function refreshPacks () {
   }
   host.textContent = ''
   const GROUPS = [
-    ['favourites', 'Stories and favourites'],
+    ['favorites', 'Stories and favorites'],
     ['skills', 'Learning to sound out']
   ]
   let lastGroup = null
@@ -505,6 +505,8 @@ function setUpTabs () {
       const panel = $('screen-' + t.dataset.screen)
       panel.hidden = !on
       if (on && focus) t.focus()
+      // The read-whole list lives on disk, not in state, so it is read when
+      // the screen it belongs to is opened rather than at startup.
     })
   }
 
@@ -1041,15 +1043,18 @@ boot()
  * terminal. This is the way in.
  */
 
+// Keys are the part names the Python side uses; values are what a parent is
+// shown. The parent never meets "grapheme pair" - they are told what the
+// thing sounds like, not what it is called.
 const PART_NAMES = {
-  phonemes: 'sounds', rimes: 'word endings', chunks: 'letter-team sounds',
+  phonemes: 'sounds', 'magic-e': 'magic-e endings', pairs: 'joins',
   bank: 'words', passage: 'reading passage'
 }
 
 async function voiceCounts (caps) {
   const w = (caps && caps.recorded_words) || 0
 
-  // Counts come from the plans, not from counting files: rimes save into
+  // Counts come from the plans, not from counting files: magic-e saves into
   // the same phonemes folder, so a directory count would say "65 of 42".
   let p = (caps && caps.recorded_phonemes) || 0
   let total = 42
@@ -1059,8 +1064,10 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    const cs = await api.studioPlan({ part: 'chunks' })
-    showPartProgress('chunks', cs.done || 0, cs.total || 0)
+    for (const part of ['magic-e', 'pairs']) {
+      const r = await api.studioPlan({ part })
+      showPartProgress(part, r.done || 0, r.total || 0)
+    }
   } catch { /* the panel still works without a count */ }
 
   showPartProgress('phonemes', p, total)
@@ -1262,7 +1269,7 @@ const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md
 
 const studio = {
   items: [], i: 0, takes: 3, part: 'phonemes',
-  buf: [], running: false, cancelled: false, paused: false, advanceTimer: null
+  buf: [], running: false, canceled: false, paused: false, advanceTimer: null
 }
 
 // "line" is a whole sentence read aloud to a child - unhurried, it needs
@@ -1275,7 +1282,7 @@ function sEl (id) { return $(id) }
 
 async function openStudio (part, extra) {
   studio.part = part
-  studio.cancelled = false
+  studio.canceled = false
   // `plan` is used well below, so it must not be scoped to the try block.
   let plan
   try {
@@ -1408,7 +1415,7 @@ function endMicCheck () {
 
 function closeStudio () {
   clearInterval(studio.micTimer)
-  studio.cancelled = true
+  studio.canceled = true
   studio.paused = false
   clearTimeout(studio.advanceTimer)
   studio.running = false
@@ -1472,8 +1479,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms))
  * next step instead of after the whole item. A take interrupted part-way is
  * discarded and redone on resume - half a sound is worse than none. */
 async function pauseGate () {
-  while (studio.paused && !studio.cancelled) await wait(120)
-  return !studio.cancelled
+  while (studio.paused && !studio.canceled) await wait(120)
+  return !studio.canceled
 }
 
 function setPaused (on) {
@@ -1514,7 +1521,7 @@ async function recordItem () {
     for (let c = 3; c > 0 && !interrupted; c--) {
       sEl('studio-state').textContent = `Ready… ${c}`
       await wait(360)
-      if (studio.cancelled) return
+      if (studio.canceled) return
       if (studio.paused) interrupted = true
     }
     if (interrupted) continue          // redo this take from the countdown
@@ -1529,13 +1536,13 @@ async function recordItem () {
     const step = 100
     for (let waited = 0; waited < dur; waited += step) {
       await wait(step)
-      if (studio.cancelled || studio.paused) { interrupted = true; break }
+      if (studio.canceled || studio.paused) { interrupted = true; break }
     }
     clearInterval(meter)
     sEl('studio-meter-fill').style.width = '0%'
     const take = Recorder.stop()
     sEl('studio-word').classList.remove('is-live')
-    if (studio.cancelled) return
+    if (studio.canceled) return
     if (interrupted) continue          // discard the part-take, redo it on resume
 
     studio.buf.push(take)
@@ -1628,7 +1635,7 @@ function finishStudio () {
   if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
 
   const what = studio.part === 'phonemes' ? 'sounds'
-    : studio.part === 'rimes' ? 'endings'
+    : studio.part === 'magic-e' ? 'endings'
       : studio.part === 'sentence' ? 'parts' : 'words'
   sEl('studio-word').textContent = missed ? 'Finished' : 'All done'
   sEl('studio-say').textContent = missed
@@ -1773,6 +1780,8 @@ function initScript () {
   for (const b of document.querySelectorAll('.vpart-script')) {
     b.addEventListener('click', () => showScript(b.dataset.part))
   }
+  {
+  }
   const close = $('script-close')
   if (close) {
     close.addEventListener('click', () => {
@@ -1819,7 +1828,7 @@ async function openReview (part) {
   review.items = plan.items || []
   $('review-title').textContent =
     part === 'phonemes' ? 'Listen back - the sounds'
-      : part === 'chunks' ? 'The letter-team sounds'
+      : part === 'pairs' ? 'The letter-team sounds'
         : 'Listen back - your words'
   $('review-hint').textContent = part === 'bank'
     ? `${plan.total} word${plan.total === 1 ? '' : 's'} in your bank. Press one ` +
@@ -1844,7 +1853,7 @@ function renderReview () {
     // Chunks are recordable whether or not a take exists - the default
     // blend counts as recorded-enough to play, but not to keep her from
     // replacing it.
-    box.disabled = !it.done && review.part !== 'chunks'
+    box.disabled = !it.done && review.part !== 'pairs'
     box.checked = review.chosen.has(it.key)
     box.addEventListener('change', () => {
       if (box.checked) review.chosen.add(it.key)
@@ -1859,15 +1868,25 @@ function renderReview () {
     label.setAttribute('for', box.id)
     label.className = 'rev-name'
     label.textContent = it.display
+    // Which two sounds this joins, always - "le" alone does not say what the
+    // blend is, and that is the only question a person scanning this list is
+    // asking. The example word says which one it is when the spelling is
+    // ambiguous.
+    if (it.join) {
+      const j = document.createElement('span')
+      j.className = 'rev-join'
+      j.textContent = it.join + (it.example ? `  ·  as in ${it.example}` : '')
+      label.appendChild(j)
+    }
     row.appendChild(label)
 
     const state = document.createElement('span')
     state.className = 'rev-state'
-    state.textContent = it.done ? ''
-      : review.part === 'chunks' ? 'automatic blend' : 'not recorded yet'
+    state.textContent = it.done ? 'your voice'
+      : review.part === 'pairs' ? 'joined automatically' : 'not recorded yet'
     row.appendChild(state)
 
-    if (it.done || review.part === 'chunks') {
+    if (it.done || review.part === 'pairs') {
       const play = document.createElement('button')
       play.type = 'button'
       play.className = 'btn btn-quiet rev-play'
@@ -1894,7 +1913,7 @@ async function playClip (it, btn) {
     }
     if (note) {
       note.textContent = r.preview
-        ? 'the automatic blend — record it to make it one breath'
+        ? 'joined automatically — record it to make it one breath'
         : `${r.seconds}s, level ${Math.round(r.peak * 100)}%`
     }
 

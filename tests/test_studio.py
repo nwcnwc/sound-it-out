@@ -1,6 +1,6 @@
 """Tests for the in-app recording studio.
 
-The behaviour under test is the one a parent actually feels: how many times she
+The behavior under test is the one a parent actually feels: how many times she
 is asked to say each thing, and whether the app notices when a take went wrong.
 
 Words get a single take. That makes the scorer load-bearing in a way it is not

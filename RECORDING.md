@@ -93,7 +93,7 @@ Add "Bluey" and you'll be asked to record "Bluey", and then "Bluey" starts appea
 their videos. There's no second step.
 
 The **[People]** group is the one to change first. It ships with example names — Alex,
-Mum, Dad, Nana, Grandad — and those should be your real ones: their brothers and sisters,
+Mom, Dad, Grandma, Grandpa — and those should be your real ones: their brothers and sisters,
 your pets, anyone they see often. This group matters more than the rest put together.
 The research on reading and Down syndrome is specific about it: start with words that
 mean something to them personally, because those are the ones they'll learn fastest.

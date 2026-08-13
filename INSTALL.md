@@ -54,7 +54,7 @@ then **Run anyway**. Once only.
 ## 3. First things to set up
 
 **Put in your real names.** Open the **Words** tab. It comes with example names —
-Alex, Mum, Dad, Nana, Grandad — and you should replace them with your actual ones:
+Alex, Mom, Dad, Grandma, Grandpa — and you should replace them with your actual ones:
 your child's name, brothers and sisters, pets, anyone they see every day.
 
 This matters more than any other setting. The research on reading and Down

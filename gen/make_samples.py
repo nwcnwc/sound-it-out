@@ -21,7 +21,7 @@ from gen.soundout import (  # noqa: E402
 # recognition first, phonics only after ~50 confident sight words. Personally
 # meaningful words are explicitly recommended - hence Paw Patrol.
 #
-# Colours echo each pup's kit. No copyrighted art, just the association.
+# Colors echo each pup's kit. No copyrighted art, just the association.
 # Level 1 words come from wordlists/sight-words.txt, which the parent edits
 # directly. The same file drives the recording checklist, so a word is only
 # ever written down once. Falls back to the first group if renamed.

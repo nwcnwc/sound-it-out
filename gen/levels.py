@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from gen import openended, wordlists
+from gen import dictionary, openended, wordlists
 from gen.soundout import SR, Segment, _fade, _xfade, cap, content, whole
 
 # ---------------------------------------------------------------- content
@@ -49,7 +49,7 @@ BLENDS_2 = [
 CVC_REAL = ["sat", "pin", "man", "tap", "nip", "mat", "sit", "pan", "tin", "map"]
 CVC_NONSENSE = ["vam", "zib", "fot", "lun", "dat", "mip"]
 
-CVC_PHONEMES = {
+SINGLE_LETTER_GRAPHEMES = {
     "s": "s", "a": "æ", "t": "t", "p": "p", "i": "ɪ", "n": "n", "m": "m",
     "d": "d", "g": "ɡ", "o": "ɒ", "c": "k", "k": "k", "e": "ɛ", "u": "ʌ",
     "r": "ɹ", "h": "h", "b": "b", "f": "f", "l": "l", "v": "v", "z": "z",
@@ -57,7 +57,8 @@ CVC_PHONEMES = {
 }
 
 
-# Multi-letter graphemes, longest first. This is the piece levels 7-9 needed:
+# Multi-letter graphemes (digraphs and trigraphs), longest first. This is
+# the piece levels 7-9 needed:
 # "ship" must highlight "sh" as ONE unit, because that is what it is - showing
 # s-h-i-p teaches a child to look for four sounds in a three-sound word, which
 # is worse than not splitting it at all.
@@ -65,7 +66,7 @@ CVC_PHONEMES = {
 # Curated rather than general. A full grapheme-phoneme aligner for arbitrary
 # English is a research problem; a table that covers the words these levels
 # actually teach is a afternoon's work and is correct where it applies.
-GRAPHEMES = {
+MULTI_LETTER_GRAPHEMES = {
     # trigraphs first - longest match wins
     "igh": "aɪ", "air": "eə", "ear": "ɪə", "tch": "tʃ",
     # doubled consonants are one sound
@@ -85,7 +86,7 @@ GRAPHEMES = {
 # Magic-e, taught the onset-rime way: "case" is c + ase, said /k/ + /eɪs/.
 # The rime (vowel-consonant-e) stays one contiguous unit, which is both how
 # word families are taught (-ake, -ike, -ame) and what keeps the display
-# simple - the highlight sweeps left to right over whole chunks.
+# simple - the highlight sweeps left to right over whole units.
 #
 # The consonant class is deliberately narrow: no r (r-controlled vowels -
 # "care", "more" - are a different sound entirely), no v ("have", "give",
@@ -96,7 +97,7 @@ MAGIC_E = re.compile(r"[aeiou][bcdfgklmnpstz]e$")
 LONG_VOWELS = {"a": "eɪ", "e": "iː", "i": "aɪ", "o": "əʊ", "u": "uː"}
 # Inside a rime the e also softens c and g: "face" is /eɪs/, "cage" is
 # /eɪdʒ/. Everywhere else c stays /k/ and g stays /ɡ/.
-RIME_CONS = {"c": "s", "g": "dʒ"}
+MAGIC_E_CONS = {"c": "s", "g": "dʒ"}
 
 # Buildable exceptions the letter rules cannot produce: the s in these is
 # voiced. Small and explicit beats a clever rule that misfires.
@@ -113,20 +114,20 @@ def split_graphemes(word: str):
     low = word.lower()
     # Consonant-le: the -ble/-dle/-tle family ends in its own little
     # syllable, /əl/. "Rubble" is r-u-bb-le, the way every phonics
-    # programme teaches it.
+    # program teaches it.
     if len(low) >= 4 and low.endswith("le") and low[-3] not in "aeiou":
         return split_graphemes(word[:-2]) + [(word[-2:], "əl")]
     if len(low) >= 3 and MAGIC_E.search(low):
         head = split_graphemes(word[:-3]) if len(word) > 3 else []
         c = low[-2]
-        rime = LONG_VOWELS[low[-3]] + RIME_CONS.get(c, CVC_PHONEMES.get(c, c))
+        rime = LONG_VOWELS[low[-3]] + MAGIC_E_CONS.get(c, SINGLE_LETTER_GRAPHEMES.get(c, c))
         return head + [(word[-3:], rime)]
     out, i = [], 0
     while i < len(word):
         for n in (3, 2):
-            chunk = low[i:i + n]
-            if len(chunk) == n and chunk in GRAPHEMES:
-                out.append((word[i:i + n], GRAPHEMES[chunk]))
+            candidate = low[i:i + n]
+            if len(candidate) == n and candidate in MULTI_LETTER_GRAPHEMES:
+                out.append((word[i:i + n], MULTI_LETTER_GRAPHEMES[candidate]))
                 i += n
                 break
         else:
@@ -138,31 +139,31 @@ def split_graphemes(word: str):
             # "uh" of Zuma, Nala, grandma.
             if (ch in "aeiou" and i + 2 < len(word)
                     and low[i + 1] not in "aeiou"
-                    and low[i + 1:i + 3] not in GRAPHEMES
+                    and low[i + 1:i + 3] not in MULTI_LETTER_GRAPHEMES
                     and low[i + 2] in "aeiouy"):
                 out.append((word[i], LONG_VOWELS[ch]))
             elif ch == "a" and i == len(word) - 1 and i >= 2:
                 out.append((word[i], "ə"))
             else:
-                out.append((word[i], CVC_PHONEMES.get(ch, ch)))
+                out.append((word[i], SINGLE_LETTER_GRAPHEMES.get(ch, ch)))
             i += 1
     return out
 
 
-def word_parts(word: str):
+def word_alignment(word: str):
     """The (letters, sound) pairs a word is built up from.
 
     The aligned dictionary answers first - it knows how 110,000 real words
-    actually chunk, including the taught exceptions (said is s-ai-d with ai
+    actually split, including the taught exceptions (said is s-ai-d with ai
     saying /ɛ/). The lexicon and the spelling rules serve what no
     dictionary knows: names, nonsense words, whatever a family invents.
     """
     from gen import dictionary
 
     clean = word.strip(".,!?;:‘’“”'\"")
-    aligned = dictionary.chunks(clean)
+    aligned = dictionary.alignment(clean)
     if aligned and len(aligned) == 1 and len(clean) > 1:
-        # A whole word bundled into one chunk has no journey: the buildup
+        # A whole word bundled into one unit has no journey: the buildup
         # of "is=ɪz" is just "is" said three times, which is what happened.
         # The lexicon splits the notorious ones by hand; otherwise, when
         # the letters and sounds pair one to one, pair them.
@@ -171,7 +172,7 @@ def word_parts(word: str):
             aligned = None  # fall through to the lexicon path below
         else:
             g, s = aligned[0]
-            toks = dictionary.tokens(s)
+            toks = dictionary.phonemes_in(s)
             if len(toks) == len(g):
                 aligned = list(zip(list(g), toks))
     if aligned:
@@ -190,7 +191,7 @@ def spell(word: str):
     """Split a word into (letter, phoneme) pairs. Level 5 is CVC only, so a
     straight letter-by-letter mapping is correct here; digraphs arrive at
     level 7 and will need the alignment lexicon described in the README."""
-    return [(ch, CVC_PHONEMES.get(ch.lower(), ch.lower())) for ch in word]
+    return [(ch, SINGLE_LETTER_GRAPHEMES.get(ch.lower(), ch.lower())) for ch in word]
 
 
 # Common words the grapheme table gets WRONG - not merely words it cannot
@@ -228,9 +229,9 @@ def decodable(word: str) -> bool:
 
     w = word.lower().strip(".,!?;:‘’“”'\"")
     # A word the aligned dictionary vouches for is buildable by definition:
-    # every chunk in its entry is a teachable correspondence, and every
-    # chunk's sound can be spoken (from the bank, or concatenated from it).
-    if dictionary.chunks(w):
+    # every unit in its entry is a teachable correspondence, and every
+    # unit's sound can be spoken (from the bank, or concatenated from it).
+    if dictionary.alignment(w):
         return True
     if w in WORD_SOUNDS:
         return True
@@ -268,6 +269,10 @@ LEVELS = [
     Level(1, "Paw Patrol", "The pups' names as whole words. Where a new reader starts.", "recorded"),
     Level(2, "Family and home", "Their own name, the people they love, everyday things.", "recorded"),
     Level(3, "Letter sounds", "One letter at a time, with its sound. s a t p i n first.", "recorded"),
+    Level(14, "Word families",
+          "One ending, many words: at -> cat, hat, mat, sat. The gentlest "
+          "way in - the ending stays put and only the front changes.",
+          "recorded"),
     Level(4, "Two sounds together", "Joining two sounds: sa, at, ip, um.", "recorded"),
     Level(5, "Three-letter words", "sat, pin, man - and some nonsense words too.", "recorded"),
     Level(6, "Building up",
@@ -276,13 +281,16 @@ LEVELS = [
     Level(7, "Letter teams", "sh, ch, th, ck treated as one sound.", "generated"),
     Level(8, "Harder words", "Longer words with clusters: stop, black, hand.", "generated"),
     Level(9, "Sentences", "Whole sentences, read word by word then together.", "generated"),
+    Level(15, "Longer words",
+          "Words of more than one syllable, a syllable at a time: "
+          "rab-bit, but-ter-fly.", "recorded"),
 
     # Levels 10-12 have no fixed content. What they read depends on what the
     # parent pastes in, the names in their word list, and how far the child has
     # got - so it cannot be listed here, cannot be recorded in advance, and is
     # different for every family. This is what the cloned voice is for.
     Level(10, "Anything you paste in",
-          "A page of a book, a card from Nana, a note about the day. "
+          "A page of a book, a card from Grandma, a note about the day. "
           "Read word by word, then whole.", "open"),
     Level(11, "Their own sentences",
           "Sentences built from the names and things in your word list. "
@@ -389,7 +397,7 @@ _check_ladder()
 # All nine are built now. Levels 7-9 still lean on generation for the parts
 # nobody can record - nonsense blends, and whole sentences read with real
 # intonation - which is what the "install the extra voice" note is about.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 
 
 def level_status(capabilities: dict) -> list:
@@ -505,14 +513,15 @@ def _approach(voice, parts, pause, passes):
         # blinked past the short ones - "it highlighted the wrong letters
         # and skipped some", reported on Grandma, whose m dwarfed its d.
         #
-        # The budget is PER SOUND, not per chunk: a dictionary chunk like
+        # The budget is PER SOUND, not per unit: a grapheme pair like
         # an=/æn/ carries two sounds, and capping it to one sound's length
         # amputated the second - Grandma again, this time missing her /n/.
         hold = 0.5 * (1.1 / 0.5) ** frac
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
             segs.append(Segment(shown,
-                                _hard_clip(voice, ipa, hold * _sounds_in(ipa)),
+                                _hard_clip(voice, ipa,
+                                            _hold_for(ipa, hold * _sounds_in(ipa))),
                                 pad=gap))
         # A breath between rounds: each pass is its own attempt, and the
         # boundary should be audible - within-round gaps alone made one
@@ -525,7 +534,34 @@ def _approach(voice, parts, pause, passes):
 def _sounds_in(ipa: str) -> int:
     from gen import dictionary
 
-    return max(1, len(dictionary.tokens(ipa)))
+    return max(1, len(dictionary.phonemes_in(ipa)))
+
+
+# How much of a sound's budget each class actually needs.
+#
+# A stop is a burst: /p/ is 0.2s of mouth and there is nothing to shorten, so
+# a uniform budget gives it room it cannot use. A continuant IS its duration -
+# /s/, /m/, /ɒ/ exist for as long as the breath does - so the same uniform
+# budget is the thing that cuts it off.
+#
+# Reported on "on" and "too": at the fastest pass the continuant was clipped
+# to the same length as a stop, which is the one place the difference between
+# them should still be audible. Blending speeds the sounds up; it does not
+# turn a held sound into a burst.
+HOLD_BY_CLASS = {"stop": 0.65, "fricative": 1.35, "sonorant": 1.35,
+                 "vowel": 1.35}
+
+
+def _hold_for(ipa: str, seconds: float) -> float:
+    """`seconds` adjusted for what kind of sound this is."""
+    from gen.recordings import phoneme_class
+    from gen import dictionary
+
+    toks = dictionary.phonemes_in(ipa)
+    # A pair takes the more generous of its members: capping /æn/ to a stop's
+    # budget amputates the /n/.
+    return seconds * max(HOLD_BY_CLASS.get(phoneme_class(tok), 1.0)
+                         for tok in toks)
 
 
 def _onto_the_sound(c, n: int):
@@ -586,7 +622,7 @@ def _hard_clip(voice, ipa: str, seconds: float):
     in a stop then keeps a window CENTRED ON ITS BURST - located, not
     assumed, because bursts turn up wherever the person put them - with
     the sound's body before it and the release after. The burst is
-    levelled by peak only when it IS a burst (peak well above the window's
+    leveled by peak only when it IS a burst (peak well above the window's
     own rms): boosting a window that has no transient just manufactures
     static, which is what lollipop's op became.
 
@@ -598,7 +634,7 @@ def _hard_clip(voice, ipa: str, seconds: float):
     from gen import dictionary
     from gen.soundout import STOPS
 
-    toks = dictionary.tokens(ipa)
+    toks = dictionary.phonemes_in(ipa)
     ends_stop = toks[-1] in STOPS
     c = content(voice.phoneme(ipa))
     n = int(seconds * SR)
@@ -632,10 +668,10 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
 
     clips, starts_hard, ends_hard = [], [], []
     for _, ipa in parts:
-        toks = dictionary.tokens(ipa)
+        toks = dictionary.phonemes_in(ipa)
         starts_hard.append(toks[0] in STOPS)
         ends_hard.append(toks[-1] in STOPS)
-        c = _hard_clip(voice, ipa, hold * _sounds_in(ipa))
+        c = _hard_clip(voice, ipa, _hold_for(ipa, hold * _sounds_in(ipa)))
         e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
         # A stop is nothing but its burst, and the burst lives at the edge.
         # Trim the edge and the sound is gone - "the d gets completely
@@ -679,6 +715,63 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
     return segs
 
 
+def sayable(voice, words):
+    """The words the bank can actually say, in order.
+
+    Whole words are never assembled, so this is not a fallback to synthesis -
+    it is teaching what there is a human voice for.
+
+    It is also not the real answer to a missing recording. The app already
+    has a flow for that: a word in the sentence library shows what is still
+    to record and opens a walkthrough for it, and every starter pack puts its
+    words into that library. A level whose gaps are silently skipped here is
+    a level whose gaps are invisible there, which is how six of the ten words
+    in CVC_REAL stayed unrecorded and unnoticed long enough to break the
+    level on a fresh install.
+
+    So this keeps a video from failing outright, and needs_recording() is
+    what callers should show the reader.
+    """
+    return [w for w in words if voice.can_say(w)]
+
+
+def needs_recording(voice, words) -> list:
+    """The words a level wants that nobody has recorded yet.
+
+    Ready to hand to the sentence library, where the existing walkthrough
+    asks for exactly these and nothing else.
+    """
+    return [w for w in words if not voice.can_say(w)]
+
+
+# Levels whose word list is fixed, and the pack that puts those words into
+# the library so their gaps become visible and recordable. Every one of them
+# has a pack; the absence of one for level 5 is what hid its problem.
+LEVEL_PACKS = {
+    5: "three-letter", 6: "ladder", 7: "letter-teams", 8: "first-sentences",
+    14: "word-families", 15: "longer-words",
+}
+
+
+def _blends(voice, spellings, reps, pause):
+    """Two sounds closing into one another - the step between a letter and a
+    word.
+
+    Same shape as _sound_out, with one difference that matters: the arrival is
+    voice.blend(), not voice.word(). A blend like "sa" is a fragment nobody
+    ever says alone, so there is no recording of it and asking for one
+    stopped this level dead on every item.
+    """
+    segs = []
+    for parts in spellings:
+        shown = "".join(g for g, _ in parts)
+        segs += _approach(voice, parts, pause, passes=max(2, reps))
+        segs.append(whole(shown, voice.blend([s for _, s in parts]),
+                          pad=pause + 1.2))
+        segs[-1].item_end = True
+    return segs
+
+
 def _sound_out(voice, spellings, reps, pause):
     """Sound a word out with the gaps closing pass by pass, then blend it.
 
@@ -694,6 +787,68 @@ def _sound_out(voice, spellings, reps, pause):
         word = "".join(g for g, _ in parts)
         segs += _approach(voice, parts, pause, passes=max(2, reps))
         segs.append(whole(word, voice.word(word, slow=True), pad=pause + 1.2))
+        segs[-1].item_end = True
+    return segs
+
+
+def _family(voice, family, reps, pause):
+    """One word family: the rime, then the same rime behind changing onsets.
+
+    This is the gentlest way into decoding for the readers this is built for,
+    and the reason is specific. Sounding out c-a-t means holding three sounds
+    in order and merging them, which leans on phonological working memory -
+    the documented weakness in Down syndrome. A family leans on the visual
+    strength instead: the rime is a shape that stays put, and only the front
+    changes. One thing to manipulate, not three.
+
+    So the rime is established FIRST and alone, and every word after it is
+    that same known ending with one new sound in front.
+    """
+    rime, sound, words = family["rime"], family["sound"], family["words"]
+    segs = [whole(rime, voice.phoneme(sound), pad=pause + 0.6)]
+    segs[-1].item_end = True
+    for word in words:
+        pair = dictionary.onset_rime(word)
+        if not pair:
+            continue
+        (onset_g, onset_s), (rime_g, rime_s) = pair
+        # The onset alone, then the known rime, then the word - the two
+        # pieces lit in turn so the join is visible as well as audible.
+        segs.append(Segment([(onset_g, True), (rime_g, False)],
+                            voice.phoneme(onset_s), pad=0.35))
+        segs.append(Segment([(onset_g, False), (rime_g, True)],
+                            voice.phoneme(rime_s), pad=0.5))
+        segs.append(whole(word, voice.word(word, slow=True), pad=pause + 0.9))
+        segs[-1].item_end = True
+    return segs
+
+
+def _syllable_words(voice, words, reps, pause):
+    """Longer words, one syllable at a time, then whole.
+
+    Syllables come from the second dictionary rather than from the letter
+    alignment, because where a word divides is not something the sounds can
+    tell you - nothing in rabbit being r/a/bb/i/t says rab-bit rather than
+    ra-bbit.
+
+    A word with no entry is one syllable as far as we know, and is read
+    whole rather than guessed at.
+    """
+    segs = []
+    for word in words:
+        parts = dictionary.syllables(word)
+        if not parts:
+            segs.append(whole(word, voice.word(word, slow=True), pad=pause))
+            segs[-1].item_end = True
+            continue
+        for i, syl in enumerate(parts):
+            shown = [(s, j == i) for j, s in enumerate(parts)]
+            # A syllable is not a recorded clip. phoneme() already joins a
+            # multi-sound label out of the bank's single sounds, which is
+            # exactly what a syllable is: rab = /r/ + /ae/ + /b/.
+            sound = "".join(s for _, s in split_graphemes(syl))
+            segs.append(Segment(shown, voice.phoneme(sound), pad=0.4))
+        segs.append(whole(word, voice.word(word, slow=True), pad=pause + 1.0))
         segs[-1].item_end = True
     return segs
 
@@ -841,12 +996,18 @@ def _one_word(voice, word, reps, pause):
     """A single word met on its own: sounded out with the gaps closing if
     the grapheme table can honestly say it, shown and spoken whole if it
     cannot (see decodable) - or if the parent put it on the sight-word
-    list, which wins over everything."""
+    list, which wins over everything.
+
+    Two different questions, and the parent's answer wins. decodable() knows
+    whether "Chase" CAN be built from c + ase; only the parent knows that it
+    is a cartoon dog the child reads by shape, and that sounding it out
+    teaches a fight rather than a word.
+    """
     from gen import sightwords
 
     segs = []
     if decodable(word) and not sightwords.is_sight(word):
-        segs += _approach(voice, word_parts(word), pause,
+        segs += _approach(voice, word_alignment(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))
     else:
@@ -876,7 +1037,7 @@ def _library(voice, texts, reps, pause):
 
         if kind == "letter":
             letter = words[0].strip(".,!?;:‘’“”'\"")
-            audio = voice.phoneme(CVC_PHONEMES.get(letter.lower(),
+            audio = voice.phoneme(SINGLE_LETTER_GRAPHEMES.get(letter.lower(),
                                                    letter.lower()))
             for i in range(reps):
                 segs.append(whole(letter, audio,
@@ -892,13 +1053,27 @@ def _library(voice, texts, reps, pause):
 
         word_clips = [voice.word(w.strip(".,!?;:‘’“”'\"")) for w in words]
 
-        # 1. Each word on its own, first time it appears.
-        seen = set()
+        # 1. Every word on its own, in the order the sentence has them.
+        #
+        # No de-duplication, deliberately. This used to teach each word only
+        # the first time it appeared, so "The pups save the day" taught The,
+        # pups, save, day - and then the growth in step 2 lit a "the" the
+        # child had never been shown. Two reasons that is wrong here:
+        #
+        #   the build-up should match the sentence. A word that appears twice
+        #   is read twice, and the video is a rehearsal of the reading.
+        #
+        #   "The" and "the" are different shapes. For a reader whose strength
+        #   is visual, collapsing them because they are the same word is
+        #   collapsing the very thing they are reading by.
+        #
+        # Recording still happens once per word - sentences.walkthrough_items
+        # de-duplicates there, correctly, because saying "the" twice into a
+        # microphone buys nothing.
         for w in words:
             clean = w.strip(".,!?;:‘’“”'\"")
-            if not clean or clean.lower() in seen:
+            if not clean:
                 continue
-            seen.add(clean.lower())
             segs += _one_word(voice, clean, reps, pause)
 
         # 2. Grow the sentence word by word.
@@ -939,22 +1114,64 @@ def build(level: int, voice, opts: dict) -> list:
     if level == 3:
         return _sounds(voice, SATPIN + SET2 + SET3, reps, pause)
     if level == 4:
-        return _sound_out(voice, BLENDS_2, reps, pause)
+        # Not _sound_out: these are partial syllables, not words. "sa" has
+        # no recording and never will - it is not a thing anybody says on its
+        # own - so the arrival is the JOINED blend, not voice.word("sa").
+        return _blends(voice, BLENDS_2, reps, pause)
     if level == 5:
-        spellings = [spell(w) for w in CVC_REAL]
+        words = sayable(voice, CVC_REAL)
         if opts.get("nonsense", True):
-            spellings += [spell(w) for w in CVC_NONSENSE]
-        return _sound_out(voice, spellings, reps, pause)
+            words += sayable(voice, CVC_NONSENSE)
+        if not words:
+            need = needs_recording(voice, CVC_REAL)
+            raise ValueError(
+                "None of this level's words have been recorded yet. Add the "
+                "“Three-letter words” pack to your list and record them - "
+                + ", ".join(need[:6]) + " - and this builds itself from them.")
+        return _sound_out(voice, [spell(w) for w in words], reps, pause)
     if level == 6:
         return _build_up(voice, reps, pause)
     if level == 7:
-        return _sound_out(voice, [split_graphemes(w) for w in DIGRAPH_WORDS],
+        return _sound_out(voice, [split_graphemes(w)
+                                  for w in sayable(voice, DIGRAPH_WORDS)],
                           reps, pause)
     if level == 8:
-        return _sound_out(voice, [split_graphemes(w) for w in CLUSTER_WORDS],
+        return _sound_out(voice, [split_graphemes(w)
+                                  for w in sayable(voice, CLUSTER_WORDS)],
                           reps, pause)
     if level == 9:
         return _sentences(voice, SENTENCES, reps, pause)
+    if level == 14:
+        # Which family to teach is the caller's choice; the default is the
+        # one the most short common words share.
+        fams = dictionary.families()
+        if not fams:
+            raise ValueError("No word families are available.")
+        want = opts.get("family")
+        limit = int(opts.get("familyWords", 6))
+        # Only words the bank can actually say. The family list comes from
+        # the corpus, so most of its words are ones nobody has recorded -
+        # picking those would raise MissingVoice at a reader rather than
+        # teach them anything. The level gets richer as more is recorded.
+        teachable = [dict(f, words=sayable(voice, f["words"])) for f in fams]
+        teachable = [f for f in teachable if len(f["words"]) >= 2]
+        if not teachable:
+            raise ValueError(
+                "No word family has enough recorded words yet. Record a few "
+                "short words that rhyme - cat, hat, mat - and this level "
+                "builds itself from them.")
+        fam = next((f for f in teachable if f["rime"] == want), teachable[0])
+        return _family(voice, dict(fam, words=fam["words"][:limit]),
+                       reps, pause)
+    if level == 15:
+        words = sayable(voice, opts.get("words")
+                        or [w for w in wordlists.all_words()
+                            if dictionary.syllables(w)])
+        if not words:
+            raise ValueError(
+                "This level needs words of more than one syllable. Add some "
+                "to your word list first.")
+        return _syllable_words(voice, words, reps, pause)
 
     # ---- open-ended levels: content comes from the parent, not from here ----
     if level == 10:

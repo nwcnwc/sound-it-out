@@ -2,7 +2,7 @@
 
 Resolution order, per item:
 
-    1. Mum's recording, if it exists          -> used verbatim, levelled
+    1. Mom's recording, if it exists          -> used verbatim, leveled
     2. The starter voice, shipped             -> the developer's recordings
     3. Their cloned voice, if installed       -> generated
 
@@ -25,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 import soundfile as sf
 
-from gen.paths import STARTER_VOICE, VOICE_DIR
+from gen.paths import SENTENCES, SOUNDS, STARTER_VOICE, VOICE_DIR, WORDS
 from gen.soundout import SR, loud, slower, tidy_word
 
 
@@ -99,7 +99,7 @@ class VoiceSource:
     @staticmethod
     def capabilities() -> dict:
         words = VOICE_DIR / "words"
-        phon = VOICE_DIR / "phonemes"
+        phon = VOICE_DIR / SOUNDS
         n_words = len(list(words.glob("*.wav"))) if words.exists() else 0
         n_phon = len(list(phon.glob("*.wav"))) if phon.exists() else 0
         sent = VOICE_DIR / "sentences"
@@ -112,8 +112,8 @@ class VoiceSource:
         except Exception:
             cloning = False  # optional module; absence is normal, not an error
         starter = (
-            len(list((STARTER_VOICE / "phonemes").glob("*.wav")))
-            if (STARTER_VOICE / "phonemes").exists() else 0
+            len(list((STARTER_VOICE / SOUNDS).glob("*.wav")))
+            if (STARTER_VOICE / SOUNDS).exists() else 0
         )
         return {
             "recordings": n_words > 0 or n_phon > 0,
@@ -144,7 +144,7 @@ class VoiceSource:
             else:
                 return None
         data, sr = sf.read(f, dtype="float32")
-        if sr != SR:  # recordings are normalised on import, but never assume
+        if sr != SR:  # recordings are normalized on import, but never assume
             return None
         return data
 
@@ -183,18 +183,31 @@ class VoiceSource:
             "your voice."
         )
 
+    def can_say(self, text: str) -> bool:
+        """Is there a recording of this whole word, in either bank?
+
+        Whole words are never assembled, so "can this be said" is exactly
+        "has somebody said it". Callers that choose their own words - the
+        word-family level picks from a corpus list - use this to pick words
+        the bank actually has rather than raising at the reader.
+        """
+        key = sentence_key(text) if " " in text else text.lower()
+        kind = SENTENCES if " " in text else WORDS
+        return (self._lookup(VOICE_DIR, kind, key) is not None
+                or self._lookup(STARTER_VOICE, kind, key) is not None)
+
     def phoneme(self, ipa: str) -> np.ndarray:
         a = self._one_sound(ipa)
         if a is not None:
             return loud(a)
-        # A chunk sound with no clip of its own - "eɪk", "æn" - is said by
+        # A grapheme-pair sound with no clip of its own - "eɪk", "æn" - is said by
         # running its member sounds together, each from a real recording.
-        # This is what makes every aligned dictionary chunk speakable
+        # This is what makes every aligned dictionary unit speakable
         # without anyone recording ten thousand of them.
         from gen import dictionary
         from gen.soundout import _xfade, cap, content
 
-        parts = dictionary.tokens(ipa)
+        parts = dictionary.phonemes_in(ipa)
         if len(parts) > 1:
             clips = []
             for p in parts:
@@ -219,11 +232,11 @@ class VoiceSource:
 
     def _one_sound(self, ipa: str):
         """A single clip for `ipa`, hers first, starter second, or None."""
-        a = self._recorded("phonemes", ipa)
+        a = self._recorded(SOUNDS, ipa)
         if a is not None:
             return a
         if self.prefer_recordings:
-            a = self._lookup(STARTER_VOICE, "phonemes", ipa)
+            a = self._lookup(STARTER_VOICE, SOUNDS, ipa)
             if a is not None:
                 self.used["starter"] += 1
                 return a
@@ -233,21 +246,25 @@ class VoiceSource:
         """A partial syllable like /sæ/ - the halfway step between a letter
         and a word.
 
-        Always generated: these are nonsense fragments, so there is nothing for
-        their to have recorded. Synthesised from IPA rather than spelling, since
-        "sa" read as text is anyone's guess but /sæ/ is exact.
+        Addressed by IPA rather than spelling, since "sa" read as text is
+        anyone's guess but /sæ/ is exact.
+
+        A recording of the whole blend wins if somebody has made one. Failing
+        that it is JOINED from its member sounds, exactly as phoneme() joins a
+        two-phoneme label - same crossfade, same clips, same bank. Nothing is
+        synthesised here and nothing is cloned.
+
+        This used to raise instead, on the grounds that only a legacy path
+        asked for blends. It was not only a legacy path: levels 4 and 6 - the
+        two-sounds-together level and the building-up journey that is the
+        centre of the whole curriculum - both go through here, and both failed
+        outright for every word.
         """
         key = "".join(ipas)
         a = self._recorded("blends", key)
         if a is not None:
             return loud(a)
-        # Only the legacy chapter builder asks for blends, and only when run
-        # from the command line. Nothing the app's own screens can reach
-        # arrives here.
-        raise MissingVoice(
-            f"The blend “{key}” has no recording, and blends cannot be "
-            "generated any more."
-        )
+        return self.phoneme(key)
 
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
         # Her own read of the whole line, if there is one.

@@ -41,7 +41,7 @@ class Theme:
     highlight: str
     dim: str
     weight: int = 700
-    # per-word colour override, e.g. Paw Patrol character colours
+    # per-word color override, e.g. Paw Patrol character colors
     word_colors: dict = field(default_factory=dict)
 
 
@@ -139,7 +139,7 @@ def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndar
 
     Measured before this existed: her word clips peaked around 0.12 and the
     finished videos came out at -30 LUFS, sixteen decibels below what any
-    streaming service plays at. Every clip is levelled here so her voice,
+    streaming service plays at. Every clip is leveled here so her voice,
     the starter voice and the synthesiser sit at the same volume, and the
     final encode then masters the whole track (see encode_job).
 
@@ -147,7 +147,12 @@ def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndar
     of room noise, and the ceiling leaves headroom rather than clipping."""
     if not a.size:
         return a
-    rms = float(np.sqrt(np.mean(a.astype("float64") ** 2)))
+    # Measured over the sounding part, not the whole clip. A recording that
+    # is mostly silence reads as very quiet, earns a large gain, and the gain
+    # lands on whatever noise IS in it - which is how a false-start blip in
+    # the /ʌ/ clip was amplified to 0.911 and became a clap.
+    body = content(a) if a.size > SR // 10 else a
+    rms = float(np.sqrt(np.mean(body.astype("float64") ** 2)))
     if rms < 1e-5:  # effectively silence: boosting it only amplifies hiss
         return a
     g = min(target_rms / rms, max_gain)
@@ -433,9 +438,9 @@ def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
     """A segment speaking `text` whole, so the whole text is lit.
 
     The rule, everywhere: whatever the audio is SAYING is in the highlight
-    colour, and everything else is neutral. It used to show spoken whole
-    words in the plain colour, which broke the child's one reliable cue -
-    colour means "this is the thing being said right now"."""
+    color, and everything else is neutral. It used to show spoken whole
+    words in the plain color, which broke the child's one reliable cue -
+    color means "this is the thing being said right now"."""
     return Segment([(text, True)], audio, pad, scale, color)
 
 
@@ -443,7 +448,7 @@ def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
 
 
 # A word must NEVER break mid-word - "Chas / e" is worse than useless to a
-# child learning to recognise word shapes. Estimating glyph widths got this
+# child learning to recognize word shapes. Estimating glyph widths got this
 # wrong (Andika is wider than it looks), so the page measures itself instead:
 # binary-search the largest font size that actually fits, in the browser that
 # is actually rendering it. `white-space:nowrap` makes overflow measurable
@@ -492,8 +497,8 @@ def frame_html(seg: Segment, theme: Theme) -> str:
     """
     text = "".join(p for p, _ in seg.parts)
     # Two states only: being said (highlight) or not (neutral). There used
-    # to be a third - unsaid letters dimmed to grey whenever anything was
-    # highlighted - and three colours meaning two things read as noise.
+    # to be a third - unsaid letters dimmed to gray whenever anything was
+    # highlighted - and three colors meaning two things read as noise.
     spans = "".join(
         f'<span class="{"hl" if on else ""}">{html.escape(p)}</span>'
         for p, on in seg.parts
@@ -554,12 +559,39 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
     # A 20 minute video is a few hundred PNGs, not 36,000.
     #
     # The highlight goes out when the voice stops: a segment's pad shows the
-    # same text NEUTRAL, so colour keeps exactly one meaning - "this is what
+    # same text NEUTRAL, so color keeps exactly one meaning - "this is what
     # is being said right now". A lit letter hanging through two seconds of
     # silence taught the opposite. Below the threshold the light stays on:
     # the closing gaps of a blending buildup are a fast rhythm, and flicking
-    # the colour at that rate is a strobe, not a cue.
+    # the color at that rate is a strobe, not a cue.
     NEUTRAL_PAD = 0.35
+
+    # The highlight must change when the SOUND starts, not when the clip does.
+    #
+    # Every recorded clip keeps about 60ms of room tone in front of it -
+    # recordings._trim leaves it deliberately, so a sound is never shaved at
+    # the front. But a frame's duration is the length of its clip, so the
+    # light moved at the clip's first sample and the voice arrived 60ms later.
+    # Reported as "the words were highlighted before the sound actually
+    # played", and it is systematic: sixty milliseconds is well inside what
+    # the eye and ear will fuse, and whole-line reads carry more lead-in than
+    # single words, which is why sentences read worst.
+    #
+    # The lead-in is not removed - it is moved. It plays under the PREVIOUS
+    # frame, so the total duration is unchanged to the sample and only the
+    # boundary moves.
+    LEAD_FLOOR = 0.012
+
+    def lead_in(a):
+        if not a.size:
+            return 0
+        env = np.abs(a)
+        peak = float(env.max())
+        if peak <= 0:
+            return 0
+        onset = int(np.argmax(env > peak * 0.08))
+        return onset if onset > int(SR * LEAD_FLOOR) else 0
+
     seen, timeline, audio = {}, [], []
 
     def add_frame(parts, scale, color, duration):
@@ -571,7 +603,14 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
         timeline.append({"frame": seen[sig][0], "duration": round(duration, 4)})
 
     for seg in segments:
-        talk = len(seg.audio) / SR
+        # Hand this clip's silent head to the frame before it.
+        lead = lead_in(seg.audio) / SR
+        if lead and timeline:
+            timeline[-1]["duration"] = round(timeline[-1]["duration"] + lead, 4)
+        elif lead:
+            lead = 0.0            # nothing to hand it to; leave the first alone
+
+        talk = len(seg.audio) / SR - lead
         dark = seg.pad >= NEUTRAL_PAD and any(on for _, on in seg.parts)
         add_frame(seg.parts, seg.scale, seg.color,
                   talk if dark else talk + seg.pad)
@@ -666,7 +705,7 @@ def encode_job(work: Path, out: Path, progress=None) -> Path:
         # Raise it if any player ever objects; nothing else depends on it.
         "-r", "15", "-preset", "veryfast", "-tune", "stillimage", "-crf", "21",
         # Master the whole track to streaming loudness. The clips are already
-        # levelled individually (see loud()), so this is mostly one static
+        # leveled individually (see loud()), so this is mostly one static
         # gain rather than anything that pumps; -14 LUFS is what YouTube and
         # Spotify play at, which is exactly how loud a TV expects things to
         # be. Before this the videos measured -30 LUFS - a sixteen-decibel
@@ -726,7 +765,38 @@ def content(a: np.ndarray, keep_ms=15) -> np.ndarray:
     on = rms > top * 0.10
     if not on.any():
         return a
-    i0 = int(np.argmax(on))
-    i1 = n - int(np.argmax(on[::-1]))
+
+    # The LONGEST sounding run, not the outer span.
+    #
+    # Taking the outer span assumes everything between the first sound and
+    # the last is the sound. A false start breaks that: the recorded /ʌ/ was
+    # a quiet blip, a second of silence, then the real vowel - and the outer
+    # span kept all 1.79s of it, so cap(keep="start") played the blip and the
+    # gap and threw the vowel away. In "pups" that came out "p - clap - p - s"
+    # with no vowel at all.
+    #
+    # Short dips are bridged first, because a real sound has them: a stop is
+    # a closure then a burst, and splitting on the closure would keep only
+    # half a /d/.
+    bridge = max(1, int(0.12 * SR / w))
+    filled, gap = on.copy(), 0
+    for i, v in enumerate(on):
+        if v:
+            if 0 < gap <= bridge:
+                filled[i - gap:i] = True
+            gap = 0
+        else:
+            gap += 1
+    best, run, start = (0, 0), 0, 0
+    for i, v in enumerate(list(filled) + [False]):
+        if v:
+            if run == 0:
+                start = i
+            run += 1
+        else:
+            if run > best[1] - best[0]:
+                best = (start, i)
+            run = 0
+    i0, i1 = best
     pad = int(SR * keep_ms / 1000)
     return a[max(0, i0 * w - pad): min(len(a), i1 * w + pad)]

@@ -1,6 +1,6 @@
 """Tests for recording the passage a section at a time.
 
-The behaviour that matters is resumption: a parent records two sections, is
+The behavior that matters is resumption: a parent records two sections, is
 interrupted, comes back an hour later, and has to land on section three
 without deciding anything. Everything here is about that, and about the
 failure it replaced - a session cut short leaving a fraction of the script on
@@ -36,9 +36,9 @@ def voice_dir(tmp_path, monkeypatch):
     forty minutes to make and cannot be reproduced.
     """
     monkeypatch.setattr(P, "VOICE_DIR", tmp_path)
-    monkeypatch.setattr(P, "chunk_dir", lambda: tmp_path / "passage")
+    monkeypatch.setattr(P, "section_dir", lambda: tmp_path / "passage")
     monkeypatch.setattr(P, "whole_path", lambda: tmp_path / "passage.wav")
-    monkeypatch.setattr(P, "chunk_path",
+    monkeypatch.setattr(P, "section_path",
                         lambda i: tmp_path / "passage" / f"{i:02d}.wav")
     return tmp_path
 

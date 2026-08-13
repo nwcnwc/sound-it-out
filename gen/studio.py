@@ -35,13 +35,14 @@ The first two are disqualifying; the rest are weighted.
 from __future__ import annotations
 
 import base64
+import re
 from dataclasses import dataclass, field
 
 import numpy as np
 import soundfile as sf
 
 from gen import recordings as R
-from gen.paths import VOICE_DIR
+from gen.paths import SENTENCES, SOUNDS, VOICE_DIR, WORDS
 from gen.soundout import SR
 
 # Per class, the length a take should be. Continuants are held for a second
@@ -54,8 +55,8 @@ from gen.soundout import SR
 # for missing a target nobody hits. The videos prefer the shorter holds
 # anyway: a long phoneme clip slows every buildup it appears in.
 LENGTH_TARGET = {
-    "hold": (0.7, 3.0, 1.3),    # min, max, ideal seconds
-    "crisp": (0.05, 0.60, 0.20),
+    "continuant": (0.7, 3.0, 1.3),    # min, max, ideal seconds
+    "stop": (0.05, 0.60, 0.20),
     "free": (0.08, 1.50, 0.40),
     # A whole line, not a word. Scored against "free" every sentence would be
     # over its 1.5s ceiling and lose points for the length that makes it a
@@ -75,7 +76,7 @@ TAKES_DEFAULT = 3
 # something the speaker does correctly by reflex, and three takes of "dog"
 # turns a manageable sitting into an hour of repeating herself. One take, and
 # the scorer speaks up when it actually went wrong.
-TAKES = {"phonemes": 3, "rimes": 2, "chunks": 2, "words": 1, "sentences": 1}
+TAKES = {"phonemes": 3, "magic-e": 2, "pairs": 2, "words": 1, "sentences": 1}
 
 # A real word carrying each rime's SOUND, so the prompt can always say
 # "as in ...". Every rime has one - a prompt that names a sound the reader
@@ -83,7 +84,7 @@ TAKES = {"phonemes": 3, "rimes": 2, "chunks": 2, "words": 1, "sentences": 1}
 # spelled everyday word exists, a sound-alike anchors it instead: "beef"
 # carries /eef/ for "efe" perfectly well, because the anchor is for the
 # ear, not the spelling.
-RIME_EXAMPLES = {
+MAGIC_E_EXAMPLES = {
     "abe": "babe", "ace": "face", "ade": "made", "afe": "safe",
     "age": "page", "ake": "cake", "ale": "tale", "ame": "name",
     "ane": "plane", "ape": "tape", "ase": "case", "ate": "gate",
@@ -109,15 +110,15 @@ RIME_EXAMPLES = {
 # How each half of a rime is said, in plain letters a non-linguist can
 # read aloud. The vowel says its NAME (that is what the magic e does);
 # c and g are their soft sounds inside a rime.
-RIME_VOWEL_HINT = {"a": "ay", "e": "ee", "i": "eye", "o": "oh", "u": "oo"}
-RIME_CONS_HINT = {
+MAGIC_E_VOWEL_HINT = {"a": "ay", "e": "ee", "i": "eye", "o": "oh", "u": "oo"}
+MAGIC_E_CONS_HINT = {
     "b": "b", "c": "sss", "d": "d", "f": "fff", "g": "j", "k": "k",
     "l": "lll", "m": "mmm", "n": "nnn", "p": "p", "s": "sss", "t": "t",
     "z": "zzz",
 }
 
 # Every sound, in words a non-linguist can read aloud. Used to spell out
-# what a chunk is made of: "an" is “a as in ant” then “nnn”.
+# what a pair is made of: "an" is “a as in ant” then “nnn”.
 SOUND_HINTS = {
     "æ": "“a” as in ant", "ɑː": "“ah” as in father", "ɒ": "“o” as in hot",
     "ɔː": "“aw” as in saw", "aʊ": "“ow” as in cow", "aɪ": "“igh” as in high",
@@ -135,11 +136,40 @@ SOUND_HINTS = {
 }
 
 
-def sound_recipe(ipa: str) -> str:
-    """The spoken recipe for a sound: its pieces, in plain words."""
+def sound_label(ipa: str) -> str:
+    """The short spoken name of one sound: “uh”, “lll”, “a”.
+
+    SOUND_HINTS is written for a prompt read aloud - “a” as in ant, a light
+    “uh” - which is right when somebody is about to say it and too long for a
+    list of two hundred rows. This pulls out just the quoted part.
+    """
+    hint = SOUND_HINTS.get(ipa)
+    if not hint:
+        return ipa
+    m = re.search(r"[“\"]([^”\"]+)[”\"]", hint)
+    return m.group(1) if m else hint
+
+
+def sound_join(ipa: str) -> str:
+    """The sounds a pair joins, as “uh - lll”.
+
+    A row saying only "le" and "automatic blend" does not say what the blend
+    IS, so a list of two hundred of them is unreadable: the whole question a
+    person is asking is which two sounds are about to be run together.
+    """
     from gen import dictionary
 
-    hints = [SOUND_HINTS.get(t, f"“{t}”") for t in dictionary.tokens(ipa)]
+    parts = dictionary.phonemes_in(ipa)
+    if len(parts) < 2:
+        return ""
+    return " - ".join(sound_label(p) for p in parts)
+
+
+def sound_recipe(ipa: str) -> str:
+    """The spoken recipe for a sound: its phonemes, in plain words."""
+    from gen import dictionary
+
+    hints = [SOUND_HINTS.get(t, f"“{t}”") for t in dictionary.phonemes_in(ipa)]
     return " then ".join(hints)
 
 
@@ -171,7 +201,7 @@ class Item:
     ipa: str = ""
 
     def path(self):
-        sub = {"phoneme": "phonemes", "sentence": "sentences"}.get(self.kind, "words")
+        sub = {"phoneme": SOUNDS, "sentence": SENTENCES}.get(self.kind, WORDS)
         key = self.ipa if self.kind == "phoneme" else self.key
         safe = "".join(f"u{ord(c):04x}" if not c.isalnum() else c for c in key)
         return VOICE_DIR / sub / f"{safe}.wav"
@@ -180,9 +210,17 @@ class Item:
         return self.path().exists()
 
     def as_dict(self):
-        return {"key": self.key, "kind": self.kind, "display": self.display,
-                "say": self.say, "length": self.length, "ipa": self.ipa,
-                "target": LENGTH_TARGET[self.length][2], "done": self.done()}
+        d = {"key": self.key, "kind": self.kind, "display": self.display,
+             "say": self.say, "length": self.length, "ipa": self.ipa,
+             "target": LENGTH_TARGET[self.length][2], "done": self.done()}
+        if self.ipa:
+            join = sound_join(self.ipa)
+            if join:
+                d["join"] = join
+        m = re.search(r"as in [“\"]([^”\"]+)[”\"]", self.say or "")
+        if m:
+            d["example"] = m.group(1)
+        return d
 
 
 def plan(part="phonemes", order="rows") -> list:
@@ -194,7 +232,7 @@ def plan(part="phonemes", order="rows") -> list:
         # prompt properly and to score against the right target length.
         source = R.PHONEME_COLS if order == "columns" else R.PHONEME_ROWS
         for p in source:
-            hold = p.length == "hold"
+            hold = p.length == "continuant"
             # NOT "the sound at the start of" - that is only true for the
             # consonants. Nearly every vowel example has the sound in the
             # middle or at the end ("oo" in moon, "ar" in car), so the old
@@ -205,22 +243,22 @@ def plan(part="phonemes", order="rows") -> list:
                 length=p.length,
                 say=(f"Say the “{p.display}” sound, as in “{p.example}” - "
                      + ("hold it for a second or two." if hold else
-                        "keep it short and crisp." if p.length == "crisp" else
+                        "keep it short and crisp." if p.length == "stop" else
                         "say it naturally.")),
             ))
-    elif part == "rimes":
-        # The magic-e endings, recorded live for the same reason the 42
-        # sounds are: an isolated sound is what cloning does worst, and a
-        # wrong sound teaches a wrong thing. They save into phonemes/ under
-        # their IPA, which is exactly where the lookup already asks - so a
-        # family recording these overrides the shipped ones with no new
+    elif part == "magic-e":
+        # The magic-e rimes (ake, ice, ome), recorded live for the same reason
+        # the 42 sounds are: an isolated sound is what cloning does worst,
+        # and a wrong sound teaches a wrong thing. They save into phonemes/
+        # under their IPA, which is exactly where the lookup already asks -
+        # so a family recording these overrides the shipped ones with no new
         # machinery at all.
-        from gen.starter import all_rimes
+        from gen.starter import all_magic_e
 
-        for spelling, ipa in all_rimes():
-            ex = RIME_EXAMPLES.get(spelling)
-            how = (f"“{RIME_VOWEL_HINT[spelling[0]]}” then "
-                   f"“{RIME_CONS_HINT[spelling[1]]}”, run together")
+        for spelling, ipa in all_magic_e():
+            ex = MAGIC_E_EXAMPLES.get(spelling)
+            how = (f"“{MAGIC_E_VOWEL_HINT[spelling[0]]}” then "
+                   f"“{MAGIC_E_CONS_HINT[spelling[1]]}”, run together")
             items.append(Item(
                 key=spelling, kind="phoneme", display=spelling, ipa=ipa,
                 length="free",
@@ -228,16 +266,16 @@ def plan(part="phonemes", order="rows") -> list:
                      + (f" — as in “{ex}”" if ex else "")
                      + ". No word around it."),
             ))
-    elif part == "chunks":
-        # Every letter-team sound the dictionary uses, most useful first.
-        # Each already PLAYS as an automatic blend of the recorded sounds;
+    elif part == "pairs":
+        # Every GRAPHEME PAIR the dictionary uses, most useful first. Each
+        # already PLAYS as an automatic blend of the two recorded phonemes;
         # recording one replaces the blend with a single human breath, for
-        # this sound everywhere it appears. Saved under the sound's own
-        # name in phonemes/, same as the 42 - which is also why rime
+        # that sound everywhere it appears. Saved under the sound's own name
+        # in phonemes/, same as the 42 - which is also why magic-e
         # recordings made before this list existed appear here as done.
         from gen import dictionary
 
-        for c in dictionary.catalog():
+        for c in dictionary.pair_catalog():
             items.append(Item(
                 key=c["ipa"], kind="phoneme", display=c["spelling"],
                 ipa=c["ipa"], length="free",
@@ -263,7 +301,7 @@ def plan(part="phonemes", order="rows") -> list:
                 say="Read the whole line the way you would to your child - "
                     "not word by word.",
             ))
-    else:
+    elif part == "words":
         from gen import levels, wordlists
 
         # Her own list first, then any word level 6 needs that is not already
@@ -294,6 +332,15 @@ def plan(part="phonemes", order="rows") -> list:
             items.append(Item(key=w.lower(), kind="word", display=w,
                               length="free",
                               say="Say it normally, the way you would in a sentence."))
+    else:
+        # An unknown part used to fall through to the words branch and return
+        # a perfectly plausible list of the wrong thing. After the rename the
+        # UI still asked for "chunks", got 118 words back, and would have
+        # opened a recording session for them under a heading about
+        # letter-team sounds. Nothing raised, nothing looked wrong.
+        raise ValueError(
+            f"Unknown part {part!r}. Expected one of: phonemes, magic-e, "
+            f"pairs, words, sentences.")
     return items
 
 
@@ -373,6 +420,55 @@ def score_take(audio: np.ndarray, item: Item) -> Score:
         s.fatal = "Too loud - it distorted. Move back a little."
         return s
 
+    # 2b. a click, tick or thump - and it is worth being strict about.
+    #
+    # A clip is levelled on the way out (soundout.loud), and a quiet
+    # recording earns a lot of gain: /s/ recorded at peak 0.116 was played
+    # back with 6.3x on it, which took a small mouth click and turned it into
+    # a sample-to-sample jump larger than full scale - a bang, in the middle
+    # of a sound a child is being asked to listen to. Reported as "a clapping
+    # noise".
+    #
+    # Measured against the clip's OWN loudness rather than an absolute, so a
+    # quiet recording is judged the way it will actually be heard. A stop is
+    # exempt: /p/, /t/ and /k/ are bursts, and a burst is a step change by
+    # definition - that is the sound, not a fault in it.
+    cls = R.phoneme_class(item.ipa) if item.kind == "phoneme" and item.ipa else ""
+    if cls != "stop" and a.size > 2:
+        step = float(np.abs(np.diff(a)).max())
+        body = float(np.sqrt(np.mean(a ** 2))) or 1e-6
+        if step > 12.0 * body:
+            s.fatal = ("There is a click or a thump in it - a tongue tick, a "
+                       "knock on the desk, or a bump on the microphone.")
+            return s
+
+    # 2c. a false start: a blip, a long gap, then the real take.
+    #
+    # This is what the recorded /ʌ/ was - a quiet start, a second of silence,
+    # then the vowel - and nothing caught it, because _trim measures from the
+    # FIRST sound to the LAST and so read the whole 1.79s as one long vowel.
+    # Downstream it was worse than useless: the clip was levelled from an rms
+    # dominated by the silence, which amplified the blip, and then capped from
+    # the start, which kept the blip and threw the vowel away. In "pups" the
+    # result was "p - clap - p - s" with no vowel in it at all.
+    w = int(SR * 0.02)
+    if a.size > w * 4:
+        blocks = np.array([float(np.sqrt(np.mean(a[i * w:(i + 1) * w] ** 2)))
+                           for i in range(len(a) // w)])
+        loud_blocks = blocks > blocks.max() * 0.10
+        if loud_blocks.any():
+            first, last = int(np.argmax(loud_blocks)), len(loud_blocks) - int(
+                np.argmax(loud_blocks[::-1]))
+            gap, worst = 0, 0
+            for v in loud_blocks[first:last]:
+                gap = 0 if v else gap + 1
+                worst = max(worst, gap)
+            if worst * w / SR > 0.35:
+                s.fatal = ("There is a long gap in the middle - it sounds "
+                           "like a false start, then a pause, then the real "
+                           "one. Record it again as a single go.")
+                return s
+
     # 1. schwa on a consonant - the fatal one for teaching
     if item.kind == "phoneme" and item.ipa:
         cls = R.phoneme_class(item.ipa)
@@ -423,7 +519,7 @@ def score_take(audio: np.ndarray, item: Item) -> Score:
         s.notes.append("noisy room")
 
     # 5. steadiness, but only where steadiness is the point
-    if item.length == "hold":
+    if item.length == "continuant":
         n = int(SR * 0.025)
         mid = a[int(len(a) * 0.2): int(len(a) * 0.85)]
         if len(mid) > n * 3:

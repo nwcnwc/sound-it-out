@@ -43,6 +43,11 @@ class StubVoice:
     def sentence(self, text, tempo=0.68):
         return np.zeros(int(SR * 1.0), dtype="float32")
 
+    def can_say(self, text):
+        # The stub can say anything - this test is about where a level ENDS,
+        # not about what a particular bank happens to hold.
+        return True
+
 
 class FakeGroup:
     def __init__(self, name, words):
@@ -52,7 +57,7 @@ class FakeGroup:
 def fake_wordlist(*_a, **_k):
     return [
         FakeGroup("Paw Patrol", [("Chase", "#00a"), ("Skye", None)]),
-        FakeGroup("People", [("Mum", None)]),
+        FakeGroup("People", [("Mom", None)]),
         FakeGroup("Home", [("dog", None)]),
     ]
 
@@ -244,3 +249,33 @@ def test_a_clip_that_starts_on_its_sound_is_left_alone():
     t = np.arange(int(0.9 * SR)) / SR
     c = (np.sin(2 * np.pi * 180 * t) * 0.9).astype("float32")
     assert np.array_equal(levels._onto_the_sound(c, int(0.40 * SR)), c)
+
+def test_every_implemented_level_builds_against_the_shipped_bank():
+    """A level that raises is a level nobody can watch.
+
+    Levels 4, 5 and 6 were all broken at once and nothing noticed, because
+    every other test drives them with a stub voice that can say anything.
+    This one uses the real VoiceSource against the real shipped starter bank,
+    which is what a person gets on a fresh install:
+
+      4  asked voice.word("sa") for a blend nobody says on its own
+      5  wanted six words absent from the starter bank
+      6  went through voice.blend(), which raised outright
+
+    Level 6 is the building-up journey - the centre of the curriculum - so
+    "nothing the app's screens reach arrives here" was not true.
+    """
+    from gen import levels as L
+    from gen.voice import VoiceSource
+
+    voice = VoiceSource()
+    fixed = sorted(n for n in L.IMPLEMENTED if n < 10 or n > 13)
+    broken = {}
+    for n in fixed:
+        try:
+            segs = L.build(n, voice, {"reps": 2, "pauseSeconds": 1.2})
+            if not segs:
+                broken[n] = "built nothing"
+        except Exception as e:                      # noqa: BLE001
+            broken[n] = f"{type(e).__name__}: {e}"
+    assert not broken, "levels that do not build: " + repr(broken)

@@ -5,7 +5,7 @@ Levels 6–8 — the 10,000-word dictionary and arbitrary sentences — are spok
 back verbatim and have nothing to do with any of this.
 
 **The app ships without this module and is fully functional without it.** `gen/clone.py`
-imports with no ML stack present, reports what is missing, and lets the UI grey out
+imports with no ML stack present, reports what is missing, and lets the UI gray out
 levels 6–8 with a sentence a parent can read. Nothing here is required to install, open
 or use the app.
 
@@ -33,9 +33,9 @@ This models a real person's voice. Read this bit even if you skip the rest.
 
 Honest expectations, so the first listen is not a disappointment.
 
-**It will get:** their timbre — the basic colour of the voice; their accent; their general
+**It will get:** their timbre — the basic color of the voice; their accent; their general
 speaking rate; the broad shape of their intonation on ordinary declarative sentences. On a
-plain sentence like *"Chase is on the case."* a listener who knows their should recognise
+plain sentence like *"Chase is on the case."* a listener who knows their should recognize
 their.
 
 **It will not get:** their. Specifically —
@@ -178,8 +178,8 @@ assumes one.
 ```python
 from gen.clone import clone_voice, ClonedVoice
 
-clone_voice("recordings/passage.wav", "models/voices/mum")   # once
-v = ClonedVoice("models/voices/mum")
+clone_voice("recordings/passage.wav", "models/voices/mom")   # once
+v = ClonedVoice("models/voices/mom")
 audio = v.say("Chase is on the case.")                        # float32, 24000 Hz
 ```
 
@@ -211,18 +211,18 @@ A profile directory contains:
 
 ## Licensing
 
-Checked, because the licence is the reason this model was chosen over the more popular one.
+Checked, because the license is the reason this model was chosen over the more popular one.
 
 | | |
 |---|---|
 | Package | `chatterbox-tts` **0.1.7** (PyPI, released 2026-03-26, Python ≥ 3.10) |
-| Code licence | **MIT** — "Copyright (c) 2025 Resemble AI" |
-| Weights licence | **MIT** — `ResembleAI/chatterbox`, `-nano` and `-turbo` all carry `license: mit` on Hugging Face |
+| Code license | **MIT** — "Copyright (c) 2025 Resemble AI" |
+| Weights license | **MIT** — `ResembleAI/chatterbox`, `-nano` and `-turbo` all carry `license: mit` on Hugging Face |
 | Dependencies | torch/torchaudio (BSD), transformers & diffusers (Apache-2.0), librosa (ISC), `resemble-perth` (MIT), `conformer` (MIT), `s3tokenizer` (Apache-2.0) |
 
 The trap this avoids: **XTTS-v2**, the most widely deployed open voice cloner, ships MIT-ish
-code with weights under the Coqui Public Model Licence, which forbids commercial use. MIT
-code alone is not enough — the weights carry their own licence, and here both are MIT.
+code with weights under the Coqui Public Model License, which forbids commercial use. MIT
+code alone is not enough — the weights carry their own license, and here both are MIT.
 
 If Chatterbox ever becomes unusable, the replacement must be checked the same way, on both
 halves. Permissively-licensed alternatives worth looking at first: **Kokoro-82M**

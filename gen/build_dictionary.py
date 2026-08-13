@@ -9,17 +9,20 @@ letters to its sounds, and writes assets/dictionary/aligned.txt:
     said s=s ai=ɛ d=d
     nose n=n o=əʊ se=z
 
-An entry means: this word may be built up, chunk by chunk, with each
-chunk's letters highlighted while its sound plays - and the alignment is
-trusted because every chunk correspondence in it is COMMON across English
+An entry means: this word may be built up, unit by unit, with each unit's
+letters highlighted while its sound plays - and the alignment is trusted
+because every correspondence in it is COMMON across English
 (learned by expectation-maximisation over the whole dictionary, then
 thresholded). A word whose best alignment needs a rare, lying
 correspondence - "one" wanting o=/wʌ/ - is left out and shown whole,
 which is exactly what phonics teachers do with it.
 
-The aligner is deliberately small: chunks of 1-3 letters mapping to 0-2
-phonemes (0 = silent letters, folded into the previous chunk for
-display), EM-trained alignment probabilities, Viterbi decode per word.
+The aligner is deliberately small: units of 1-3 letters mapping to 0-2
+phonemes (0 = silent letters, folded into the previous unit for display),
+EM-trained alignment probabilities, Viterbi decode per word.
+
+A unit carrying one phoneme is a GRAPHEME; one carrying two is a GRAPHEME
+PAIR. See README.md for the glossary.
 """
 
 from __future__ import annotations
@@ -34,7 +37,9 @@ from gen.paths import RESOURCES
 CMUDICT = "https://raw.githubusercontent.com/cmusphinx/cmudict/master/cmudict.dict"
 COMMON = ("https://raw.githubusercontent.com/first20hours/"
           "google-10000-english/master/google-10000-english.txt")
-OUT = RESOURCES / "assets" / "dictionary" / "aligned.txt"
+DICT_DIR = RESOURCES / "assets" / "dictionary"
+OUT = DICT_DIR / "graphemes.txt"
+SYLLABLES_OUT = DICT_DIR / "syllables.txt"
 
 ARPA_TO_IPA = {
     "AA": "ɒ", "AE": "æ", "AH": "ʌ", "AO": "ɔː", "AW": "aʊ", "AY": "aɪ",
@@ -46,13 +51,42 @@ ARPA_TO_IPA = {
     "Y": "j", "Z": "z", "ZH": "ʒ",
 }
 
-MAX_L, MAX_P = 3, 2      # chunk sizes: letters 1-3, phonemes 0-2
+MAX_L, MAX_P = 3, 2      # unit sizes: letters 1-3, phonemes 0-2
 EM_ROUNDS = 4
-# Viterbi naturally prefers FEWER chunks (each chunk adds a negative log
-# probability), which bundles "was" into wa=wɒ s=z. A flat per-chunk bonus
+
+# Viterbi naturally prefers FEWER units (each adds a negative log
+# probability), which bundles "was" into wa=wɒ s=z. A flat per-unit bonus
 # tips it back toward fine splits - w=w a=ɒ s=z - which are what a child
 # should see, and which map to single recordable sounds besides.
-CHUNK_BONUS = 1.2
+UNIT_BONUS = 3.0
+
+# A GRAPHEME spells exactly one phoneme, and that is what this dictionary
+# emits. Two-phoneme units are refused outright rather than merely penalised,
+# because there is no such thing as a two-phoneme grapheme except in the three
+# cases below - a letter that genuinely makes two sounds with no way to split
+# the spelling.
+#
+# Measured over the whole corpus, every other common two-phoneme
+# correspondence is splittable and was a bundle we did not want: ing, ar, on,
+# in, st, an, en, le, tr, nd... all of them two graphemes glued together.
+# Whitelisting the real ones and forbidding the rest replaces the tuning
+# problem with a structural one, and takes the CVC words from 2 of 63 correct
+# to all 63 without a penalty term at all.
+TWO_PHONEME_GRAPHEMES = {
+    ("x", ("k", "s")),        # box, six - one letter, two sounds
+    ("u", ("j", "uː")),       # use, cute - the "yoo" u
+    ("qu", ("k", "w")),       # queen - taught whole, because q never
+                              # appears without its u
+}
+
+
+def unit_allowed(g: str, p: tuple) -> bool:
+    """One phoneme per unit, plus the three graphemes that truly make two."""
+    if len(p) <= 1:
+        return True
+    return (g.lower(), p) in TWO_PHONEME_GRAPHEMES
+
+
 # A correspondence must be seen at least this often across the whole
 # dictionary to be teachable; rarer ones are spelling lying about itself.
 MIN_COUNT = 40
@@ -62,6 +96,16 @@ MIN_COUNT = 40
 # the language. Hand-vetted; a correspondence goes here only if a teacher
 # would write it on the board, never just to lift the coverage number.
 TAUGHT_EXCEPTIONS = {
+    # The five short vowels. These are the first five correspondences any
+    # phonics program teaches, and EM had them holding 0.76%, 6.6%, 4.1%,
+    # 3.1% and - for u=ʌ - ZERO percent of their letters. That is not
+    # English being surprising, it is a local minimum: every time the
+    # decoder chose ha=hæ the bundle took the count and h= and a= took
+    # none, so the halves weakened and the bundle strengthened, round after
+    # round, until short u could not be isolated in cup or sun at any bonus.
+    ("a", ("æ",)), ("e", ("ɛ",)), ("i", ("ɪ",)),
+    ("o", ("ɒ",)), ("u", ("ʌ",)),
+
     ("ai", ("ɛ",)),            # said, again
     ("f", ("v",)),             # of
     ("o", ("uː",)),            # to, do, who
@@ -76,7 +120,7 @@ TAUGHT_EXCEPTIONS = {
     ("ai", ("ə",)),            # certain, captain
     ("a", ("ɔː",)),            # water, walk, tall
     # Doubled consonants are one sound - every teacher writes that on the
-    # board - but a bare double is rarer than its bundled chunks, and
+    # board - but a bare double is rarer than the units that bundle it, and
     # rubble lost its alignment to that arithmetic.
     ("bb", ("b",)), ("cc", ("k",)), ("dd", ("d",)), ("ff", ("f",)),
     ("gg", ("ɡ",)), ("ll", ("l",)), ("mm", ("m",)), ("nn", ("n",)),
@@ -115,11 +159,25 @@ def load_cmu():
     return entries
 
 
-def align(word, phons, prob, bonus=0.0):
-    """Best chunking of `word` against `phons` under `prob`. Returns a list
+def align_best(word, phons, prob, bonus):
+    """Grapheme-only if possible, otherwise the best alignment there is.
+
+    Refusing a word outright because one of its units needs two phonemes is
+    the wrong trade: a word split into graphemes with a single pair in it is
+    still a word a child can be walked through, while a refused word is shown
+    whole and sounded out not at all. Strict first, so the pair only appears
+    where nothing else works - measured at under 1 word in 8, and those are
+    the genuinely awkward ones (actual = /aektSuwel/, adjacent).
+    """
+    a = align(word, phons, prob, bonus, strict=True)
+    return a if a is not None else align(word, phons, prob, bonus, strict=False)
+
+
+def align(word, phons, prob, bonus=0.0, strict=False):
+    """Best alignment of `word` against `phons` under `prob`. Returns a list
     of (letters, phoneme-tuple) or None. Standard DP over (i, j).
 
-    `bonus` (per chunk, favouring fine splits) applies only to the FINAL
+    `bonus` (per unit, favouring fine splits) applies only to the FINAL
     decode. Inside EM it must stay zero: a biased decode feeds biased
     counts to the next round, and the bias compounds until the learned
     statistics are about the bonus rather than about English."""
@@ -142,6 +200,13 @@ def align(word, phons, prob, bonus=0.0):
                     s = prob.get((g, p))
                     if s is None:
                         continue
+                    # The whitelist applies only to the FINAL decode, the
+                    # same as `bonus`: EM must be left to learn what English
+                    # actually does, and a biased decode feeds biased counts
+                    # to the next round until the statistics are about the
+                    # bias rather than the language.
+                    if strict and not unit_allowed(g, p):
+                        continue
                     cand = score + s + bonus
                     if cand > best[i + dl][j + dp][0]:
                         best[i + dl][j + dp] = (cand, (i, j, dl, dp))
@@ -158,9 +223,9 @@ def align(word, phons, prob, bonus=0.0):
 
 
 def train(entries):
-    """EM for chunk correspondence weights: seed uniformly over everything
+    """EM for correspondence weights: seed uniformly over everything
     plausible, decode, re-count, repeat."""
-    # seed: every chunk/phoneme-run co-occurrence within a loose window
+    # seed: every letters/phoneme-run co-occurrence within a loose window
     counts = defaultdict(float)
     for w, ph in entries:
         for i in range(len(w)):
@@ -191,13 +256,65 @@ def to_logprob(counts):
             for (g, p), c in counts.items() if c > 0}
 
 
+def build_syllables(words) -> int:
+    """Write word -> syllable split, from hyphenation patterns.
+
+    A SEPARATE dictionary rather than a view of the grapheme one, because
+    syllable boundaries genuinely are not derivable from a letters-to-sounds
+    alignment: nothing in "rabbit" being r/a/bb/i/t says whether it divides
+    rab-bit or ra-bbit. That is its own question with its own data.
+
+    Hyphenation patterns are the data. They are not quite syllabification -
+    they mark where a typesetter may break a line, which is conservative:
+    "elephant" comes back ele-phant where a phonics teacher would say
+    el-e-phant. Conservative is the right failure here, because a break in
+    the wrong place teaches a wrong word shape, while a missing break just
+    teaches a longer piece.
+
+    Computed at build time and shipped as text, like the grapheme dictionary,
+    so the app never needs pyphen at runtime and the frozen sidecar does not
+    have to carry it.
+    """
+    try:
+        import pyphen
+    except ImportError:
+        print("pyphen not installed - skipping the syllable dictionary")
+        return 0
+    dic = pyphen.Pyphen(lang="en_US")
+    lines = []
+    for w in sorted(words):
+        if len(w) < 4:
+            continue                      # nothing to divide
+        split = dic.inserted(w)
+        if "-" not in split:
+            continue                      # one syllable; the word IS the unit
+        lines.append(f"{w} {split}")
+    SYLLABLES_OUT.parent.mkdir(parents=True, exist_ok=True)
+    SYLLABLES_OUT.write_text(
+        "# word  syl-la-ble-split   built by gen/build_dictionary.py\n"
+        "# from en_US hyphenation patterns (pyphen). Break points, which are\n"
+        "# conservative: a missing break is safer than a wrong one.\n"
+        + "\n".join(lines) + "\n", encoding="utf-8")
+    return len(lines)
+
+
 def main():
     entries = load_cmu()
     print(f"{len(entries)} dictionary words")
-    common = {w.strip().lower() for w in fetch(COMMON).splitlines()}
+    # A LIST, in the source's frequency order. It used to be a set written
+    # out sorted, which threw the frequency away - and frequency is the only
+    # thing that makes this list useful at all. Sorted alphabetically it just
+    # returns the top of the alphabet, which is not the top of anything.
+    #
+    # This list is raw web-frequency data and is never shown to a child
+    # directly. It feeds derivations and example-picking; the packs a parent
+    # can tap are curated by hand.
+    common_order = [w.strip().lower() for w in fetch(COMMON).splitlines()
+                    if w.strip()]
+    common = set(common_order)
 
     counts = train(entries)
-    # teachable correspondences only - and silent chunks only for the
+    # teachable correspondences only - and silent units only for the
     # letters that genuinely go silent in English spelling
     kept = {k: c for k, c in counts.items() if c >= MIN_COUNT}
     # A taught exception must be COMPETITIVE, not merely present: "a" has a
@@ -213,7 +330,7 @@ def main():
     prob = to_logprob(kept)
     print(f"{len(prob)} teachable correspondences")
 
-    # Initialisms are not words: "dvd" is said as letter names, cannot be
+    # Initializms are not words: "dvd" is said as letter names, cannot be
     # sounded out, and must not count against coverage either.
     def is_word(w):
         return any(c in "aeiouy" for c in w)
@@ -221,12 +338,12 @@ def main():
     lines, aligned_common, total_common = [], 0, 0
     aligned_all = 0
     for w, ph in entries:
-        a = align(w, ph, prob, bonus=CHUNK_BONUS)
+        a = align_best(w, ph, prob, UNIT_BONUS)
         if w in common and is_word(w):
             total_common += 1
         if a is None:
             continue
-        # fold silent chunks into the previous chunk for display
+        # fold silent units into the previous unit for display
         merged = []
         for g, p in a:
             if not p and merged:
@@ -238,7 +355,7 @@ def main():
                 merged.append((g, p))
         if any(not p for _, p in merged):
             continue  # a word that is ONLY silence is not a word
-        # A whole word as ONE chunk has no buildup - "is=ɪz" is just the
+        # A whole word as ONE unit has no buildup - "is=ɪz" is just the
         # word repeated. When letters and sounds pair one to one, split
         # them; the runtime applies the same guard to older data.
         if len(merged) == 1 and len(w) > 1:
@@ -255,15 +372,33 @@ def main():
     OUT.write_text(
         "# word  letters=sound ...  built by gen/build_dictionary.py\n"
         "# from CMUdict (public domain); alignment learned by EM, rare\n"
-        "# correspondences dropped so every chunk shown is teachable.\n"
+        "# correspondences dropped so every unit shown is teachable.\n"
         + "\n".join(lines) + "\n", encoding="utf-8")
     # The common words, separately: the catalog picks its example words
     # from these, because CMUdict's shortest words are names and noise -
     # "ring" teaches /ɪŋ/, "ibn" teaches nothing but doubt.
     (OUT.parent / "common.txt").write_text(
-        "\n".join(sorted(w for w in common
-                         if w.isalpha() and len(w) > 1)) + "\n",
-        encoding="utf-8")
+        "\n".join(w for w in common_order if w.isalpha() and len(w) > 1)
+        + "\n", encoding="utf-8")
+    # The grapheme-pair catalog, baked. It is derived from the file written
+    # above, so it can only change when this script runs - and deriving it
+    # walks every unit of all 110,000 entries, which is seconds nobody should
+    # pay for at startup.
+    from gen import dictionary
+
+    dictionary._cache = None          # read what we just wrote, not a stale copy
+    dictionary._catalog = None
+    pairs = dictionary.derive_pair_catalog()
+    (DICT_DIR / "pairs.txt").write_text(
+        "# ipa\tspelling\texample\twords   built by gen/build_dictionary.py\n"
+        "# Grapheme pairs: two adjacent graphemes a recording can join in one\n"
+        "# breath. Example words are gated - see dictionary.good_example.\n"
+        + "\n".join(f"{c['ipa']}\t{c['spelling']}\t{c['example']}\t{c['words']}"
+                    for c in pairs) + "\n", encoding="utf-8")
+    print(f"wrote {len(pairs)} grapheme pairs")
+
+    n_syl = build_syllables({w for w, _ in entries})
+    print(f"wrote {n_syl} syllable splits")
     print(f"wrote {aligned_all} aligned words "
           f"({aligned_all * 100 // len(entries)}% of all)")
     print(f"common words aligned: {aligned_common}/{total_common} "

@@ -387,7 +387,7 @@ def test_save_clips_writes_wavs_and_a_manifest(tmp_path):
 
 
 def test_save_clips_does_not_overwrite_on_a_name_clash(tmp_path):
-    clips = [clip("Mum", buzz(0.6)), clip("mum!", buzz(0.6))]
+    clips = [clip("Mom", buzz(0.6)), clip("mom!", buzz(0.6))]
     paths = R.save_clips(clips, tmp_path, part="words")
     assert len({p.name for p in paths}) == 2
 
@@ -436,10 +436,10 @@ def test_hold_and_crisp_match_what_she_was_told():
     by = {}
     for k, p in R.PHONEMES.items():
         by.setdefault(p.length, set()).add(k)
-    assert {"s", "f", "m", "n", "l", "r", "v", "z", "sh", "th", "ng"} <= by["hold"]
-    assert by["crisp"] == {"p", "t", "k", "b", "d", "g", "ch", "j"}
+    assert {"s", "f", "m", "n", "l", "r", "v", "z", "sh", "th", "ng"} <= by["continuant"]
+    assert by["stop"] == {"p", "t", "k", "b", "d", "g", "ch", "j"}
     assert by["free"] == {"w", "y", "h"}
-    assert all(p.length == "hold" for p in R.PHONEMES.values()
+    assert all(p.length == "continuant" for p in R.PHONEMES.values()
                if p.ipa[0] in R.VOWELS)
 
 
@@ -453,8 +453,8 @@ def test_every_sound_is_classified_the_way_soundout_would():
     assert kinds["s"] == "fricative" and kinds["th-this"] == "fricative"
     assert {k for k, v in kinds.items() if v == "vowel"} == {
         k for k, p in R.PHONEMES.items() if p.example in
-        ("cat", "bed", "sit", "dog", "cup", "put", "car", "now", "hair",
-         "see", "moon", "door", "her", "day", "my", "boy", "go", "near")
+        ("cat", "bed", "sit", "dog", "cup", "put", "father", "now", "hair",
+         "see", "moon", "saw", "her", "day", "my", "boy", "go", "near")
     } - {"k", "d"}  # 'cat' and 'dog' are also consonant examples
 
 
@@ -473,8 +473,8 @@ def test_a_glide_is_not_judged_on_its_length():
 
 def test_word_labels_come_from_the_editable_list(tmp_path):
     p = tmp_path / "words.txt"
-    p.write_text("# a note\n[People]\nAlex\nMum  #ff0000\n\n[Toys]\nball\n")
-    assert R.word_labels(p) == ["Alex", "Mum", "ball"]
+    p.write_text("# a note\n[People]\nAlex\nMom  #ff0000\n\n[Toys]\nball\n")
+    assert R.word_labels(p) == ["Alex", "Mom", "ball"]
 
 
 # ----------------------------------------------------------------- cli
@@ -482,7 +482,7 @@ def test_word_labels_come_from_the_editable_list(tmp_path):
 
 def test_main_end_to_end_on_a_word_list(tmp_path, capsys):
     words = tmp_path / "words.txt"
-    words.write_text("[People]\nAlex\nMum\nNana\n")
+    words.write_text("[People]\nAlex\nMom\nGrandma\n")
     audio, _ = session([buzz(0.6), buzz(0.6, f0=160), buzz(0.6, f0=200)])
     path = write(tmp_path, audio)
     out = tmp_path / "words"
@@ -491,7 +491,7 @@ def test_main_end_to_end_on_a_word_list(tmp_path, capsys):
                    "--out", str(out)])
     text = capsys.readouterr().out
     assert code == 0, text
-    assert {p.name for p in out.glob("*.wav")} == {"alex.wav", "mum.wav", "nana.wav"}
+    assert {p.name for p in out.glob("*.wav")} == {"alex.wav", "mom.wav", "grandma.wav"}
     assert "Expected 3 items, matched up 3." in text
     assert "Everything looks good" in text
 

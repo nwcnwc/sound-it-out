@@ -24,6 +24,7 @@ import re
 import numpy as np
 
 from gen import studio
+from gen import paths
 from gen.paths import WORDLISTS
 from gen.voice import sentence_key
 
@@ -50,7 +51,7 @@ def entry_kind(text: str) -> str:
     """What sort of thing one library entry is.
 
     The library holds more than sentences, on purpose - it is the ONLY list
-    in the app, so a favourite name and a single letter live here too:
+    in the app, so a favorite name and a single letter live here too:
 
         "s"                one letter  -> its sound, from the phoneme bank
         "Chase"            one word    -> sight or sounded out, no line read
@@ -168,9 +169,9 @@ def _letter_recorded(ch: str) -> bool:
     """
     from gen import levels, voice
 
-    ipa = levels.CVC_PHONEMES.get(ch.lower(), ch.lower())
-    return (voice.VoiceSource._lookup(voice.VOICE_DIR, "phonemes", ipa) is not None
-            or voice.VoiceSource._lookup(voice.STARTER_VOICE, "phonemes", ipa)
+    ipa = levels.SINGLE_LETTER_GRAPHEMES.get(ch.lower(), ch.lower())
+    return (voice.VoiceSource._lookup(voice.VOICE_DIR, paths.SOUNDS, ipa) is not None
+            or voice.VoiceSource._lookup(voice.STARTER_VOICE, paths.SOUNDS, ipa)
             is not None)
 
 
@@ -253,25 +254,25 @@ def clips(key: str) -> list:
 
 def _piece_items(text: str) -> list:
     """The sound pieces of this entry's buildups the family has NOT
-    recorded themselves: chunks first, then single sounds. These queue in
+    recorded themselves: grapheme pairs first, then single phonemes. These queue in
     the walk-through so a sentence can become fully hers, and they shrink
     to nothing as the shared bank fills - the pieces are keyed by sound,
     recorded once, used everywhere."""
     from gen import dictionary, levels, sightwords
 
     sight = sightwords.words()
-    seen, chunks_out, singles = set(), [], []
+    seen, pairs_out, singles = set(), [], []
     for w in _unique_words(text):
         # A sight word is recorded and shown whole - its buildup never
         # happens, so its pieces are never needed.
         if not levels.decodable(w) or _clean(w).lower() in sight:
             continue
-        for g, ipa in levels.word_parts(w):
+        for g, ipa in levels.word_alignment(w):
             if ipa in seen:
                 continue
             seen.add(ipa)
             recipe = studio.sound_recipe(ipa)
-            many = len(dictionary.tokens(ipa)) > 1
+            many = len(dictionary.phonemes_in(ipa)) > 1
             it = studio.Item(
                 key=ipa, kind="phoneme", display=g.lower(), ipa=ipa,
                 length="free",
@@ -280,15 +281,15 @@ def _piece_items(text: str) -> list:
                      + f". No word around it. (/{ipa}/)"))
             if it.done():
                 continue
-            (chunks_out if len(dictionary.tokens(ipa)) > 1
+            (pairs_out if len(dictionary.phonemes_in(ipa)) > 1
              else singles).append(it)
-    return chunks_out + singles
+    return pairs_out + singles
 
 
 def walkthrough_items(key: str) -> list:
     """What to record for one entry: the whole line FIRST, then its words,
     then whatever sound pieces of the buildup are not yet in the family's
-    own voice - chunks, then single sounds. Missing means "not recorded by
+    own voice - pairs, then single phonemes. Missing means "not recorded by
     you": the shipped starter voice only ever fills gaps at video time.
 
     A single word skips the line (the word IS the line); a letter entry
@@ -324,6 +325,61 @@ def walkthrough_items(key: str) -> list:
 # as one. Two skill packs are the deliberate exception - letter sounds and
 # nonsense sounding-out practice cannot be sentences by nature, and they are
 # the mechanics the research says to drill - so they sit in their own group.
+# The word-family and longer-word packs are CURATED, and that is a
+# deliberate departure from everything around them.
+#
+# dictionary.families() derives real families correctly, and
+# dictionary.common_words() is real frequency data. Both are right about what
+# they measure - and what they measure is the web. Ranked by frequency the
+# longest common words are "contact", "business", "online", "services",
+# "copyright"; the -an family arrives carrying "jan" and "san". A web corpus
+# also carries plenty that has no business near a child at all.
+#
+# Nothing from it reaches a screen unreviewed.
+#
+# A pack is what a parent taps to put words in front of their child, so it is
+# chosen rather than computed. The derived lists stay where they are and keep
+# doing their job: families() is what the word-family LEVEL builds from, and
+# it picks whatever the voice bank can say.
+
+FAMILY_PACK = [
+    ("at", "cat hat mat sat bat rat"),
+    ("an", "can man ran pan fan van"),
+    ("ip", "lip zip rip tip dip ship"),
+    ("in", "pin win bin tin thin chin"),
+    ("op", "top hop mop pop shop stop"),
+    ("ug", "bug hug rug mug jug dug"),
+    ("ed", "bed red fed led shed sled"),
+    ("ot", "hot pot dot got not spot"),
+]
+
+# Multi-syllable words a young child actually meets: things in the room,
+# animals, family, food, the day. Short enough to hold and concrete enough
+# to picture.
+# Every word here divides under the hyphenation patterns - checked, not
+# assumed. Hyphenation will not strand a single letter on a line, so ti-ger,
+# o-ver and o-pen come back whole and would have sat in a syllable pack
+# demonstrating nothing.
+LONGER_PACK = """
+rabbit butterfly elephant monkey puppy kitten donkey zebra
+banana apple dinner water bottle carrot cookie
+mother father sister brother baby
+table window garden pillow blanket bedroom
+yellow purple happy sunny funny
+birthday morning basket pencil button
+""".split()
+
+
+def _family_words() -> list:
+    """The curated families, family by family - the ending together with
+    the words that share it, because sitting together IS the lesson."""
+    return [w for _, words in FAMILY_PACK for w in words.split()]
+
+
+def _multisyllable_words() -> list:
+    return list(LONGER_PACK)
+
+
 def _pack_defs() -> list:
     from gen import levels, wordlists
 
@@ -337,13 +393,13 @@ def _pack_defs() -> list:
         ladder += ch["words"] + [ch["sentence"]]
 
     return [
-        # ---- stories and favourites: themed sentences -------------------
-        {"id": "own-words", "group": "favourites", "name": "Your word list",
+        # ---- stories and favorites: themed sentences -------------------
+        {"id": "own-words", "group": "favorites", "name": "Your word list",
          "description": "Everything from your old word list - names, "
-                        "favourites, first words. The words a child already "
+                        "favorites, first words. The words a child already "
                         "cares about are the ones learned first.",
          "items": own_words},
-        {"id": "paw-patrol", "group": "favourites", "name": "Paw Patrol",
+        {"id": "paw-patrol", "group": "favorites", "name": "Paw Patrol",
          "description": "The pups and their lines.",
          "items": [
              "Chase is on the case.",
@@ -357,7 +413,7 @@ def _pack_defs() -> list:
              "No job is too big.",
              "No pup is too small.",
          ]},
-        {"id": "veggie-tales", "group": "favourites", "name": "VeggieTales",
+        {"id": "veggie-tales", "group": "favorites", "name": "VeggieTales",
          "description": "Bob, Larry, and the song at the end of the show.",
          "items": [
              "Bob is a tomato.",
@@ -366,7 +422,7 @@ def _pack_defs() -> list:
              "God made you special.",
              "He loves you very much.",
          ]},
-        {"id": "gods-world", "group": "favourites", "name": "God's world",
+        {"id": "gods-world", "group": "favorites", "name": "God's world",
          "description": "Short lines of faith and thanks.",
          "items": [
              "God made the sun.",
@@ -378,7 +434,7 @@ def _pack_defs() -> list:
              "Give thanks to the Lord.",
              "The Lord is my shepherd.",
          ]},
-        {"id": "family-day", "group": "favourites", "name": "Around home",
+        {"id": "family-day", "group": "favorites", "name": "Around home",
          "description": "The lines of an ordinary day.",
          "items": [
              "I love you.",
@@ -401,11 +457,34 @@ def _pack_defs() -> list:
                         "ending in whole sentences, each built only from "
                         "letters already met.",
          "items": ladder},
+        # Level 5's real words had no pack, which is why that level was the
+        # one that failed on a fresh install: its words had no route into the
+        # library, and the library is where a missing recording gets noticed
+        # and asked for. A level with a fixed word list and no pack is a
+        # level whose gaps are invisible.
+        {"id": "three-letter", "group": "skills", "name": "Three-letter words",
+         "description": "sat, pin, man - the first words that can be sounded "
+                        "out rather than remembered.",
+         "items": list(levels.CVC_REAL)},
         {"id": "nonsense", "group": "skills", "name": "Sounding-out practice",
          "description": "Made-up words like vam and zib. They cannot be "
                         "memorised as shapes, so reading one proves the "
                         "sounding-out is real.",
          "items": list(levels.CVC_NONSENSE)},
+        # Word families come BEFORE the blending packs in this list because
+        # that is where they belong in the teaching order - recognising a
+        # rime and changing the front is one thing to manipulate, where
+        # blending c-a-t is three held in order.
+        {"id": "word-families", "group": "skills", "name": "Word families",
+         "description": "One ending, many words: cat, hat, mat, sat. The "
+                        "ending stays put and only the front changes, so "
+                        "there is one sound to swap rather than three to "
+                        "hold and merge.",
+         "items": _family_words()},
+        {"id": "longer-words", "group": "skills", "name": "Longer words",
+         "description": "Words of more than one syllable, read a syllable "
+                        "at a time: rab-bit, but-ter-fly.",
+         "items": _multisyllable_words()},
         {"id": "letter-teams", "group": "skills", "name": "Letter teams",
          "description": "sh, ch, th, ck as one sound: ship, chat, duck.",
          "items": list(levels.DIGRAPH_WORDS)},
@@ -469,7 +548,7 @@ def estimate_seconds(keys=None, reps=3, pause=1.5) -> float:
 
     def word_cost(w):
         if levels.decodable(w) and _clean(w).lower() not in sight:
-            n = len(levels.word_parts(w))
+            n = len(levels.word_alignment(w))
             return passes * n * (PH + gap) + WORD + pause + 1.0
         return max(2, reps - 1) * (WORD + pause) + 1.0
 

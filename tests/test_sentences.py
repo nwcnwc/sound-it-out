@@ -16,7 +16,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from gen import levels, sentences as S, studio  # noqa: E402
+from gen import levels, paths, sentences as S, studio  # noqa: E402
 from gen.soundout import SR  # noqa: E402
 
 
@@ -127,7 +127,7 @@ def test_letter_and_word_entries_build(library, monkeypatch):
 
 
 def test_spoken_wholes_are_highlighted_and_pads_go_neutral(library, monkeypatch):
-    """Colour means "being said right now". A spoken whole word is lit; the
+    """Color means "being said right now". A spoken whole word is lit; the
     silence after it shows the same text neutral (long pads only - flicking
     the light at approach speed would be a strobe)."""
     from gen.soundout import Theme, plan_job, whole
@@ -178,7 +178,7 @@ def test_themed_packs_are_sentences(library, monkeypatch):
 
 def test_every_pack_declares_a_group(library, monkeypatch):
     monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
-    assert all(p["group"] in ("favourites", "skills") for p in S.packs())
+    assert all(p["group"] in ("favorites", "skills") for p in S.packs())
 
 
 def test_the_ladder_pack_keeps_curriculum_order(library, monkeypatch):
@@ -260,7 +260,7 @@ def test_magic_e_words_build_as_onset_and_rime():
     assert levels.split_graphemes("like") == [("l", "l"), ("ike", "aɪk")]
     # and the dictionary path is live for the real words
     assert levels.decodable("case") and levels.decodable("Chase")
-    parts = levels.word_parts("Chase")
+    parts = levels.word_alignment("Chase")
     assert "".join(g for g, _ in parts) == "Chase"
 
 
@@ -270,7 +270,7 @@ def test_voiced_s_words_are_buildable_and_voiced():
     from gen import dictionary
 
     assert levels.decodable("is")
-    sounds = "".join(p for _, p in levels.word_parts("is"))
+    sounds = "".join(p for _, p in levels.word_alignment("is"))
     assert "z" in sounds and "s" not in sounds.replace("z", "")
     assert levels.WORD_SOUNDS["is"] == [("i", "ɪ"), ("s", "z")]
 
@@ -368,33 +368,39 @@ def test_bank_display_decodes_safe_names(library):
 def test_soft_c_and_g_in_rimes():
     """"face" ends /eɪs/ and "cage" ends /eɪdʒ/ - the e softens c and g
     inside a rime, while an opening c stays hard."""
-    assert levels.word_parts("face") == [("f", "f"), ("ace", "eɪs")]
-    assert levels.word_parts("cage") == [("c", "k"), ("age", "eɪdʒ")]
+    # The rime view is where a magic-e ending is one unit. The grapheme view
+    # splits it f + a + ce, which is what shows WHY the vowel says its name.
+    from gen import dictionary as D
+
+    assert D.onset_rime("face") == (("f", "f"), ("ace", "eɪs"))
+    assert D.alignment("face") == [("f", "f"), ("a", "eɪ"), ("ce", "s")]
+    assert D.onset_rime("cage") == (("c", "k"), ("age", "eɪdʒ"))
+    assert D.alignment("cage") == [("c", "k"), ("a", "eɪ"), ("ge", "dʒ")]
 
 
 # ------------------------------------------------------------------ rimes
 
 
-def test_rimes_record_into_the_phoneme_bank(library):
+def test_magic_e_records_into_the_sound_bank(library):
     """A rime item saves under its IPA in phonemes/ - exactly where
     voice.phoneme() already looks, so a family recording one overrides the
     shipped clip with no new machinery."""
-    items = studio.plan("rimes")
+    items = studio.plan("magic-e")
     assert len(items) == 65
     ase = next(i for i in items if i.key == "ase")
     assert ase.ipa == "eɪs" and ase.kind == "phoneme"
-    assert ase.path().parent.name == "phonemes"
+    assert ase.path().parent.name == paths.SOUNDS
     assert "case" in ase.say
 
 
 def test_rime_takes_are_two(library):
-    assert studio.takes_for("rimes") == 2
+    assert studio.takes_for("magic-e") == 2
 
 
 def test_every_rime_prompt_carries_an_example_word(library):
     """"oo then j" is linguistics homework; "as in huge" is an instruction.
     Every rime must anchor its sound to a real word."""
-    for it in studio.plan("rimes"):
+    for it in studio.plan("magic-e"):
         assert "as in" in it.say, f"rime '{it.key}' has no example word"
 
 
@@ -420,10 +426,15 @@ def test_approach_sounds_compress_with_the_gaps():
             secs = 2.5 if ipa == "m" else 0.2
             return np.full(int(SR * secs), 0.2, dtype="float32")
 
-    segs = levels._approach(UnevenVoice(), levels.word_parts("dm"), 1.5, passes=3)
+    segs = levels._approach(UnevenVoice(), levels.word_alignment("dm"), 1.5, passes=3)
     per_pass = [segs[i * 2:(i + 1) * 2] for i in range(3)]
     for d, m in per_pass[:2]:
-        assert len(m.audio) / SR <= 1.11, "long holds are capped"
+        # Capped, but on a continuant's budget rather than a stop's. /m/ is
+        # a sound you hold; shortening it to a burst's length is what made
+        # "on" and "too" sound cut off at speed.
+        assert len(m.audio) / SR <= 1.5, "long holds are capped"
+        assert len(m.audio) > len(d.audio), \
+            "a continuant keeps more room than a stop, at every speed"
         assert len(d.audio) / SR == pytest.approx(0.2, abs=0.01), \
             "short sounds are untouched in the discrete passes"
     # the cap shrinks pass by pass, and the final touching pass is the
@@ -445,17 +456,17 @@ def test_the_shipped_dictionary_is_big_and_loads():
 
     d = dictionary.load()
     assert len(d) > 100_000
-    assert dictionary.chunks("said") == [("s", "s"), ("ai", "ɛ"), ("d", "d")]
-    assert dictionary.chunks("Said")[0] == ("S", "s"), "casing follows the word"
-    assert dictionary.chunks("zorble") is None
+    assert dictionary.alignment("said") == [("s", "s"), ("ai", "ɛ"), ("d", "d")]
+    assert dictionary.alignment("Said")[0] == ("S", "s"), "casing follows the word"
+    assert dictionary.alignment("zorble") is None
 
 
 def test_chunk_sounds_split_into_recordable_phonemes():
     from gen import dictionary
 
-    assert dictionary.tokens("eɪk") == ["eɪ", "k"]
-    assert dictionary.tokens("ɪz") == ["ɪ", "z"]
-    assert dictionary.tokens("s") == ["s"]
+    assert dictionary.phonemes_in("eɪk") == ["eɪ", "k"]
+    assert dictionary.phonemes_in("ɪz") == ["ɪ", "z"]
+    assert dictionary.phonemes_in("s") == ["s"]
 
 
 def test_every_aligned_chunk_is_speakable_from_the_42():
@@ -468,7 +479,7 @@ def test_every_aligned_chunk_is_speakable_from_the_42():
             "b", "d", "ð", "f", "ɡ", "h", "j", "k", "l", "m", "n", "ŋ",
             "p", "ɹ", "s", "ʃ", "t", "θ", "v", "w", "z", "ʒ"}
     sounds = {s for entry in dictionary.load().values() for _, s in entry}
-    bad = [s for s in sounds if any(t not in bank for t in dictionary.tokens(s))]
+    bad = [s for s in sounds if any(t not in bank for t in dictionary.phonemes_in(s))]
     assert not bad, f"unspeakable chunk sounds: {bad[:10]}"
 
 
@@ -479,7 +490,7 @@ def test_multi_sound_chunks_keep_all_their_sounds():
     class TwoSoundVoice(StubVoice):
         def phoneme(self, ipa):
             from gen import dictionary
-            n = len(dictionary.tokens(ipa))
+            n = len(dictionary.phonemes_in(ipa))
             return np.full(int(SR * 0.45 * n), 0.2, dtype="float32")
 
     parts = [("a", "æ"), ("an", "æn")]
@@ -492,14 +503,18 @@ def test_multi_sound_chunks_keep_all_their_sounds():
 def test_piece_prompts_carry_word_recipe_and_notation(library):
     """A lazy-record piece must say which word it came from, spell out the
     sound combination in plain words, and name the notation too."""
-    S.add("Grandma is happy.")
+    # "box" is b + o + x, and x is one of the three graphemes that genuinely
+    # spell two phonemes (/ks/), so it is the kind of piece with a recipe
+    # worth spelling out. A word made only of single-phoneme graphemes queues
+    # nothing, because every one of those is already among the 42.
+    S.add("The box is red.")
     items = S.walkthrough_items(S.status()[0]["key"])
     pieces = [i for i in items if i.kind == "phoneme"]
-    assert pieces, "buildable words must queue their missing pieces"
-    chunk = next(i for i in pieces if i.key == "æn")
-    assert "Grandma" in chunk.say          # which word
-    assert "then" in chunk.say             # the spoken recipe
-    assert "/æn/" in chunk.say             # the notation
+    assert pieces, "a word containing a grapheme pair must queue it"
+    pair = next(i for i in pieces if i.key == "ks")
+    assert "box" in pair.say.lower()       # which word
+    assert "then" in pair.say              # the spoken recipe
+    assert "/ks/" in pair.say              # the notation
 
 
 def test_the_touching_pass_never_swallows_a_stop():
@@ -533,10 +548,10 @@ def test_no_word_is_a_single_unsplittable_chunk_when_it_can_pair():
     """"is=ɪz" as one chunk made the buildup say "is" three times. When
     letters and sounds pair one to one, they pair - i gets /ɪ/, s gets
     /z/ - and the lexicon's hand splits win where they exist."""
-    assert levels.word_parts("is") == [("i", "ɪ"), ("s", "z")]
-    assert levels.word_parts("up") == [("u", "ʌ"), ("p", "p")]
-    assert levels.word_parts("an") == [("a", "æ"), ("n", "n")]
-    assert len(levels.word_parts("in")) == 2
+    assert levels.word_alignment("is") == [("i", "ɪ"), ("s", "z")]
+    assert levels.word_alignment("up") == [("u", "ʌ"), ("p", "p")]
+    assert levels.word_alignment("an") == [("a", "æ"), ("n", "n")]
+    assert len(levels.word_alignment("in")) == 2
 
 
 def test_names_follow_the_syllable_rules():
@@ -573,3 +588,84 @@ def test_stop_joins_close_gently_never_clack():
     assert float(jumps.max()) <= 0.05, "the voice closes gently, no clack"
     # and the vowel actually reaches silence before the closure
     assert float(np.abs(merged[boundary - 24:boundary + 24]).max()) < 0.05
+
+
+def test_the_buildup_matches_the_sentence_as_written(library):
+    """Every word is taught, in order, including a repeat and including one
+    that differs only in case.
+
+    "The pups save the day" used to teach The, pups, save, day - and then the
+    growth lit a lowercase "the" the child had never been shown. The video is
+    a rehearsal of the reading, so it follows the sentence: a word read twice
+    is taught twice, and "The" and "the" are different shapes to a reader
+    whose strength is visual.
+    """
+    from gen import levels
+    from gen.voice import VoiceSource
+
+    S.add("The pups save the day.")
+    segs = levels._library(VoiceSource(), ["The pups save the day."], 2, 1.2)
+
+    solo = [shown for s in segs
+            if (shown := "".join(g for g, _ in s.parts)) == "".join(
+                g for g, on in s.parts if on) and " " not in shown]
+    # In order, and both "The" and "the" present.
+    assert solo[:5] == ["The", "pups", "save", "the", "day"], solo[:5]
+
+
+def test_recording_still_asks_for_a_repeated_word_only_once(library):
+    """Teaching twice and recording twice are different questions.
+
+    The buildup follows the sentence, but saying "the" into a microphone a
+    second time buys nothing, so the walkthrough still de-duplicates.
+    """
+    S.add("The pups save the day.")
+    items = S.walkthrough_items(S.status()[0]["key"])
+    words = [i.display.lower() for i in items if i.kind == "word"]
+    assert words.count("the") == 1, words
+
+
+# ------------------------------------------------------- words to read whole
+#
+# The behaviour of this list is covered in tests/test_sightwords.py. The one
+# thing tested HERE is the distinction that is easy to lose: it is a
+# different list from wordlists/sight-words.txt, and conflating them would
+# quietly break the phonics levels.
+
+def test_the_whole_word_list_is_not_the_sight_word_list(library):
+    """Two lists, two meanings, and reusing one for the other breaks a level.
+
+    wordlists/sight-words.txt means "show these words early" and holds cat
+    and dog - right for level 2, and exactly wrong as an override, because
+    sounding out cat is the whole point of level 5.
+    """
+    from gen import sightwords, wordlists
+
+    assert sightwords.words() == set(), "nothing is overridden until asked"
+    assert "cat" in {w.lower() for w in wordlists.all_words()}, \
+        "cat IS on the early-words list"
+    assert not sightwords.is_sight("cat"), "and is still sounded out"
+
+
+def test_the_baked_pair_catalog_matches_what_it_derives_from():
+    """pairs.txt is generated, and a generated file can go stale.
+
+    It is derived from graphemes.txt, so the two are only ever in step
+    because gen/build_dictionary wrote them together. If someone rebuilds one
+    and not the other, the app ships example words for joins the dictionary
+    no longer makes - and nothing else would notice.
+    """
+    from gen import dictionary as D
+
+    baked = D.pair_catalog()
+    assert baked, "the catalog is not empty"
+    assert D.PAIRS_FILE.exists(), "it is a shipped file, not computed at runtime"
+
+    D._catalog = None
+    try:
+        derived = D.derive_pair_catalog()
+    finally:
+        D._catalog = None
+    assert [(c["ipa"], c["spelling"], c["example"]) for c in baked] == \
+           [(c["ipa"], c["spelling"], c["example"]) for c in derived], \
+        "pairs.txt is stale - re-run gen/build_dictionary"

@@ -12,6 +12,9 @@ assets/fonts/
 !assets/commons/
 *.onnx
 
+# Imagine stills, loops, and preview pages. Regenerated locally; not source.
+art/
+
 # Generated media (samples are kept, see exception below)
 *.mp4
 *.wav
@@ -58,3 +61,7 @@ wordlists/sentences.txt
 # The sight-word list typed in on the Sound Bank screen - a family's own
 # words, same doctrine as sentences.txt: never committed.
 wordlists/whole-words.txt
+
+# Re-recording keeps the old take next to the new one. That is a local
+# safety net, not shipping content - it must not go out to every install.
+assets/**/*.previous.wav

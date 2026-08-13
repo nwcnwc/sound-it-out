@@ -149,10 +149,10 @@ def m_plan(params):
             extra = _whole_items_upto(segments, target - n * one, allow_empty=True)
             segments = segments * n + extra
 
-    # Per-word colours are a fossil of the Words-tab era (Chase in his kit
-    # blue), and they break the one colour rule that matters now: the
+    # Per-word colors are a fossil of the Words-tab era (Chase in his kit
+    # blue), and they break the one color rule that matters now: the
     # highlight means "being said" and everything else is neutral. A word
-    # whose BASE colour resembles the highlight - Chase's blue against the
+    # whose BASE color resembles the highlight - Chase's blue against the
     # blue highlight of the contrast theme - makes the sweep invisible.
     base = THEMES.get(params.get("theme", "night"), THEMES["night"])
     theme = Theme(base.name, base.bg, base.fg, base.highlight, base.dim,
@@ -618,8 +618,8 @@ def m_studio_clip(params):
     path = studio.clip_path(part, params.get("key", ""),
                             params.get("order", "rows"))
     preview = False
-    if path is None and part == "chunks":
-        # Nothing recorded, but never nothing to hear: every chunk plays
+    if path is None and part == "pairs":
+        # Nothing recorded, but never nothing to hear: every pair plays
         # as an automatic blend of the recorded sounds, and the preview IS
         # that blend - what a video would use today, rendered to a temp
         # file so the ordinary player can play it.

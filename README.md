@@ -10,7 +10,81 @@ Built for early readers with Down syndrome, to play continuously on a large-scre
 
 ---
 
-## The shape of the app (0.4.0)
+## Glossary
+
+Standard phonics vocabulary is used wherever a standard term exists, and where one
+doesn't the invented name says what the thing is rather than borrowing a word that
+already means something else. These meanings hold in the code, the comments and the
+UI alike.
+
+### Standard terms
+
+| term | what it means | examples |
+|---|---|---|
+| **phoneme** | one distinct **sound**. Spoken, never written. | `/k/` `/æ/` `/t/` `/ʃ/` |
+| **grapheme** | the letter *or letters* spelling **exactly one** phoneme. Written, never spoken. | `c` `a` `t` `sh` `ck` `igh` |
+| **digraph** | a two-letter grapheme — two letters, **one** sound | `sh` `ch` `th` `ck` `ng` `ai` |
+| **trigraph** | a three-letter grapheme | `igh` `tch` `air` |
+| **blend** (cluster) | adjacent consonants that each keep their **own** sound — *not* a digraph | `st` in stop = `/s/`+`/t/` |
+| **onset** | the consonant(s) before the vowel of a syllable | `c` in cat, `str` in strap |
+| **rime** | the vowel and everything after it, in a syllable | `at` in cat, `ap` in strap |
+| **magic e** (split digraph) | vowel–consonant–`e`, where the `e` makes the vowel say its name | `a_e` in cake, `i_e` in like |
+| **continuant** | a sound that can be held for as long as your breath lasts | `/s/` `/m/` `/f/`, every vowel |
+| **stop** | a sound that is a burst and cannot be held at all | `/p/` `/t/` `/k/` `/b/` `/d/` `/ɡ/` |
+| **CVC** | a consonant–vowel–consonant word shape | cat, sun, big |
+
+The pair most often confused is **digraph vs blend**. `sh` is one sound spelled with
+two letters, so it is one grapheme. `st` is two sounds spelled with two letters, so it
+is two graphemes standing next to each other. The app must never split a digraph and
+must always split a blend.
+
+### Terms this codebase invents
+
+**Alignment unit** — some letters plus the sound they make, as one row of a word's
+entry in the dictionary. Every unit is either a grapheme (one phoneme) or a grapheme
+pair (two). "Unit" is the umbrella word when it doesn't matter which.
+
+**Grapheme pair** — an alignment unit carrying **two** phonemes: `at` = /æt/,
+`ca` = /kæ/, `ing` = /ɪŋ/.
+
+Phonics has no name for this, because it is not a unit anyone teaches. Depending on
+the word, one may happen to land on a rime (`at` in cat), on an onset plus its vowel
+(`ca` in cat), or on a blend (`st` in stop). They exist for exactly one reason: a
+recording of /kæ/ is a **single human breath**, where /k/ + /æ/ is two clips with a
+seam between them. They are an audio-smoothness device, not curriculum.
+
+Every one of them is exactly two *adjacent graphemes merged*, which is where the name
+comes from.
+
+### One word, every term
+
+```
+cat            c    =  /k/     grapheme  (onset)
+               a    =  /æ/     grapheme  (the rime's vowel)
+               t    =  /t/     grapheme  (the rime's coda)
+
+               at   =  /æt/    grapheme pair — and here also the rime
+               ca   =  /kæ/    grapheme pair — and here nothing at all
+```
+
+### Where each lives
+
+| term | in the code | count |
+|---|---|---|
+| phoneme | `recordings.PHONEME_ROWS` | 42 |
+| grapheme (single letter) | `levels.SINGLE_LETTER_GRAPHEMES` | 26 |
+| grapheme (multi-letter) | `levels.MULTI_LETTER_GRAPHEMES` | 39 |
+| magic e | `starter.all_magic_e()` | 65 |
+| grapheme pair | `dictionary.pair_catalog()` | 217 |
+| a word's alignment | `dictionary.alignment()`, `levels.word_alignment()` | — |
+| continuant / stop | `recordings.CONTINUANT`, `recordings.STOP`, `phoneme_class()` | — |
+
+Recording parts are named for what they hold: `phonemes`, `magic-e`, `pairs`, `words`,
+`sentences`.
+
+---
+
+## The app
 
 The UI is two screens:
 
@@ -25,15 +99,15 @@ The UI is two screens:
   shipped human starter voice fills in until then), the optional voice pack +
   reading passage for stories, where videos go, and backup.
 
-The curriculum below survives as **starter packs** - one tap adds a level's
-content to the list as ordinary entries - and as the pipeline's internal
-generators. The research ordering did not change; only where it lives.
+The curriculum is available as **starter packs**: one tap adds a level's content
+to the list as ordinary entries.
 
-## The curriculum (now starter packs)
+## The curriculum
 
 ### 1. Learn mode (primary)
 
-A scaffolded progression of **9 levels**. Each is mastered before the next is introduced.
+A scaffolded progression of **eleven levels**. Each is mastered before the next is
+introduced.
 
 > **Important: sight words come first, not phonics.** This reverses the obvious ordering,
 > and the reason is specific to Down syndrome. Children with DS are typically strong visual
@@ -43,20 +117,32 @@ A scaffolded progression of **9 levels**. Each is mastered before the next is in
 > all — and recommends those first words be **personally meaningful**. Reading then builds
 > the phonological awareness that phonics needs, rather than requiring it up front.
 >
-> This is why the shipped Level 1 is a favourite TV show: not decoration, but exactly the
+> This is why the shipped Level 1 is a favorite TV show: not decoration, but exactly the
 > recommended starting point.
 
 | Level | Content | Examples |
 |---|---|---|
 | 1 | Personally meaningful sight words | `Chase`, `Marshall`, `Skye`, `Rubble`, `Rocky` |
-| 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mum`, `dog`, `I like…` |
-| 3 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
-| 4 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
-| 5 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
+| 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mom`, `dog`, `I like…` |
+| 3 | Grapheme → its sound | `s` → /s/, `a` → /æ/, `sh` → /ʃ/ |
+| 14 | **Word families** — one rime, changing onsets | `at` → `cat`, `hat`, `mat`, `sat` |
+| 4 | Two sounds together | `sa`, `at`, `ip`, `um` |
+| 5 | Three-letter words | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
 | 6 | **Building up** — the whole arc in one video | `s` → `sa` → `sat` → *Sam sat on a mat.* |
-| 7 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
-| 8 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
-| 9 | Whole words → sentences | the 10k dictionary, then connected text |
+| 7 | Digraphs given their own level | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
+| 8 | Consonant blends | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
+| 9 | Whole words → sentences | the dictionary, then connected text |
+| 15 | **Longer words**, a syllable at a time | `rab-bit`, `but-ter-fly` |
+
+Levels 14 and 15 sit where they do on purpose. **Word families come before blending**,
+because blending `c-a-t` means holding three sounds in order and merging them — which
+leans on phonological working memory, the documented weakness in Down syndrome. A family
+leans on the visual strength instead: the rime is a shape that stays put and only the
+front changes, so there is one thing to manipulate rather than three. **Syllables come
+last**, because they are what a word too long to sound out in one go needs.
+
+Level 14 builds itself from words the voice bank can actually say, and gets richer as
+more is recorded — it never asks a reader for a word nobody has spoken.
 
 **Level 6 is the join.** Letters grow into words and words grow into a sentence in one
 continuous video, with each newly added letter highlighted. Separate levels teach letters
@@ -85,7 +171,7 @@ tip*. Alphabetical order makes you wait until `t` before any word is possible.
 
 ### 2. Paste mode (advanced)
 
-Paste any text — a favourite book, a birthday card, a list of family names. Each word is
+Paste any text — a favorite book, a birthday card, a list of family names. Each word is
 sounded out and blended, and at the end of each sentence the whole sentence is displayed
 and read aloud with each word highlighted in time.
 
@@ -192,7 +278,7 @@ ten minutes of them reading ordinary prose aloud is the difference between the l
 levels sounding like them and sounding like a robot wearing their voice. See
 [RECORDING.md](RECORDING.md).
 
-**Consent is not an afterthought.** This is a real person's voice being modelled. It is
+**Consent is not an afterthought.** This is a real person's voice being modeled. It is
 their own child, their own recording, their own machine, and it never leaves the house — but
 the recordings and the cloned model belong to them, and nothing here should ever be
 shipped or shared without their say-so.
@@ -227,20 +313,47 @@ gives exact control over what each nonsense string sounds like.
 *Verify early:* confirm phoneme-input works end-to-end before committing to this path. It is
 the main technical risk in the pipeline.
 
-### Letter-to-sound alignment
+### Two dictionaries, three views of a word
 
 To highlight `ch` in *chair* as one unit, the app needs to know which **letters** produce
-which **sound**. In Learn mode this is trivial — the curriculum is built from known units.
-For Paste mode's arbitrary text, three tiers falling back in order:
+which **sound**. That is one question. Where a long word divides is a different question
+with different data behind it, so there are two dictionaries.
 
-1. **The 10k dictionary**, with hand-checked grapheme-phoneme alignment.
-2. **Syllable chunking** via hyphenation dictionaries (Hunspell/`pyphen`) — universal,
-   robust, still pedagogically sound.
-3. **Letter by letter** — last resort for names and unusual words.
+**`graphemes.txt`** — 110,000 words aligned letters-to-sounds, built from CMUdict by
+expectation-maximisation over the whole corpus. Every unit is a grapheme: exactly one
+phoneme. Two-phoneme units are refused structurally, with three exceptions that are real
+— `x`→/ks/, `u`→/juː/, `qu`→/kw/, letters that genuinely make two sounds with no way to
+split the spelling. Where no grapheme-only alignment exists, one pair is allowed rather
+than refusing the word; 79.6% come out grapheme-only, and coverage is 94%.
+
+**`syllables.txt`** — where each word divides, from `en_US` hyphenation patterns. A
+separate dictionary because syllable boundaries genuinely are not derivable from a sound
+alignment: nothing in `rabbit` being `r/a/bb/i/t` says whether it divides `rab-bit` or
+`ra-bbit`. Hyphenation gives break *points* rather than true syllables — `elephant` comes
+back `ele-phant` — which is the safe failure, since a missing break teaches a longer
+piece while a wrong one teaches a wrong word shape.
+
+**Onset and rime are derived**, not stored. The rime is the first vowel grapheme and
+everything after it; the onset is what came before. Deriving it means the two views can
+never disagree about where a word divides.
+
+```
+cat     grapheme   c=/k/  a=/æ/  t=/t/
+        rime       c + at
+        syllable   —  (one syllable)
+
+rabbit  grapheme   r=/ɹ/  a=/æ/  bb=/b/  i=/ə/  t=/t/
+        rime       —  (more than one syllable)
+        syllable   rab-bit
+```
+
+Words the dictionary cannot vouch for fall through to the spelling rules
+(`levels.split_graphemes`), which serve names and nonsense words; a word whose spelling
+genuinely lies (`one`) is shown and spoken whole, as reading teachers treat it.
 
 ### Rendering
 
-- Highlight is a colour/weight change on the active letter group — not a moving bar — so
+- Highlight is a color/weight change on the active letter group — not a moving bar — so
   the whole item stays readable throughout.
 - Video assembled with a bundled **ffmpeg**, encoded for TV built-in players (H.264 High
   profile, AAC audio, `.mp4`). Static text compresses extremely well; a 20-minute 1080p
@@ -270,7 +383,7 @@ Kept deliberately few, all on one screen:
 | Include nonsense words | On (levels 2–5) |
 | Read whole sentence at end | On |
 | Text size | Extra large |
-| Colour theme | High contrast |
+| Color theme | High contrast |
 | Voice | Kokoro (female, warm) |
 
 ## Samples
@@ -290,7 +403,7 @@ Kept deliberately few, all on one screen:
 Font is **Andika** (SIL, OFL) — designed for literacy learners, with the single-story `a`
 and `g` that beginning readers are taught, rather than the two-story forms in most fonts.
 
-## Known issue: schwa on isolated consonants
+## Why there is no synthesizer
 
 Kokoro appends a schwa to isolated consonants — asked for /s/ it produces "sss-uh", asked
 for /t/, "tuh". Measured on `af_heart`, the tail is unambiguous: spectral centroid collapses
@@ -339,12 +452,13 @@ either. Standard practice is to keep them crisp and teach continuants first, whi
 "t" or "tuh" is a perceptual judgement. Every Level 3 clip needs a human listen before it
 ships. `samples/phoneme-check/all-sounds.wav` is that check.
 
-## Known open question: sentence line breaks
+## Sentence line breaks
 
-Sentences currently auto-fit to the largest size that fits, which puts "Chase is on the case."
-on two lines at large type. One line at smaller type may be better for a beginning reader —
-line returns add a tracking demand — but it trades away size on a TV viewed from a sofa.
-Undecided; it is a one-line change in `_font_size` handling either way.
+Sentences auto-fit to the largest size that fits, which puts "Chase is on the case." on two
+lines at large type. The trade is real in both directions: a line return adds a tracking
+demand for a beginning reader, while smaller type costs legibility on a TV viewed from a
+sofa. Size wins by default, on the grounds that a video nobody can read from the sofa
+teaches nothing.
 
 ## How the app is put together
 
@@ -383,26 +497,28 @@ Run it in development with `npm start` (after `./setup.sh`).
 
 ## Status
 
-**Working end to end**, verified by generating real videos through the service:
-levels 1–5, all three themes, both playback and file export.
+Every level is implemented, and releases are published for macOS, Windows and
+Linux — see [Installing it](INSTALL.md).
 
-- Levels 1–5 implemented. 6–8 designed and specified but not built — they need the
-  grapheme-phoneme alignment lexicon, not just more word lists, and the UI correctly
-  reports them as unavailable rather than failing mid-generation.
-- 51 tests passing (`.venv/bin/python -m pytest tests/ -q`).
-- Voice cloning is genuinely optional: the app is fully usable for levels 1–5 with it
-  absent, and never hard-imports torch.
+| | |
+|---|---|
+| Levels | 15 of 15 |
+| Recorded sounds | 42 phonemes, 65 magic-e endings |
+| Dictionary | 110,692 aligned words, 80,405 syllable splits |
+| Tests | 182 (`.venv/bin/python -m pytest tests/ -q`) |
 
-**Not yet verified:**
+Voice cloning is optional throughout: the app is fully usable without it, and never
+hard-imports torch. Levels 10–13 read arbitrary text and are the ones that benefit from
+a cloned voice for words nobody has recorded; everything below them runs entirely on
+recordings.
 
-- **The Electron frame renderer has never been run.** Chromium's multi-process model is
-  blocked in the development container (`/dev/shm` access returns `ESRCH`; single-process
-  mode aborts with `SIGTRAP`). The code is written and the HTML is identical to what the
-  verified Chrome path renders, but phase 2 needs one run on a real desktop. The Chrome
-  path (`render_job_chrome`) is verified and remains as the fallback.
-- No build has been produced on any platform.
-- Nothing has been heard by ear — every audio decision so far rests on measurement.
+Frames render through Electron's own bundled Chromium, with an external Chrome path as
+a fallback for environments where Chromium's multi-process model is unavailable.
 
 ## License
 
-TBD.
+MIT — see [LICENSE](LICENSE).
+
+Third-party components keep their own licenses: **Andika** (SIL Open Font
+License), **CMUdict** (public domain), and the `en_US` hyphenation patterns
+used to build the syllable dictionary.
