@@ -328,9 +328,11 @@ def walkthrough_items(key: str) -> list:
 # dictionary.families() derives real families correctly, and
 # dictionary.common_words() is real frequency data. Both are right about what
 # they measure - and what they measure is the web. Ranked by frequency the
-# longest words in English are "contact", "business", "online", "services",
-# "copyright"; the -an family arrives carrying "jan" and "san". No child
-# meets any of those.
+# longest common words are "contact", "business", "online", "services",
+# "copyright"; the -an family arrives carrying "jan" and "san". A web corpus
+# also carries plenty that has no business near a child at all.
+#
+# Nothing from it reaches a screen unreviewed.
 #
 # A pack is what a parent taps to put words in front of their child, so it is
 # chosen rather than computed. The derived lists stay where they are and keep

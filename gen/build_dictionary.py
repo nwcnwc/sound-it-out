@@ -303,9 +303,12 @@ def main():
     print(f"{len(entries)} dictionary words")
     # A LIST, in the source's frequency order. It used to be a set written
     # out sorted, which threw the frequency away - and frequency is the only
-    # thing that makes this list useful for picking words to put in front of
-    # a child. Alphabetical, the first "longer words" a learner met were
-    # abandoned, aberdeen and abortion.
+    # thing that makes this list useful at all. Sorted alphabetically it just
+    # returns the top of the alphabet, which is not the top of anything.
+    #
+    # This list is raw web-frequency data and is never shown to a child
+    # directly. It feeds derivations and example-picking; the packs a parent
+    # can tap are curated by hand.
     common_order = [w.strip().lower() for w in fetch(COMMON).splitlines()
                     if w.strip()]
     common = set(common_order)

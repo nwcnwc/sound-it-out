@@ -226,6 +226,8 @@ UNSUITABLE = frozenset("""
 ass arse bitch bastard cock crap cunt damn dick dildo fag faggot fuck fucked
 fucking hell homo jizz nigga nigger piss porn pussy queer rape rapist screw
 sex sexy shag shit slut slag spic std tit tits twat wank whore xxx nude naked
+abortion abuse abused abusive addict addiction alcohol assault
+
 nudes erotic escort viagra cialis casino gambling drug drugs weed coke booze
 beer wine vodka whisky whiskey cigarette cigarettes tobacco gun guns ammo
 kill killed killing murder dead death die died dying suicide blood gore war
@@ -310,9 +312,14 @@ _common = None
 def common_words() -> list:
     """The common-word list, in FREQUENCY order, most common first.
 
-    Order is the whole value here. Alphabetical, the first multi-syllable
-    words a learner would meet are abandoned, aberdeen and abortion; by
-    frequency they are people, little, water, about.
+    Order is the whole value here. Sorted alphabetically this list is
+    useless for choosing words - the top of the alphabet is not the top of
+    anything a child needs - so it is kept in the source's frequency order.
+
+    Frequency is still only a starting point: the corpus is web text, so the
+    commonest long words in it are things like "business" and "copyright".
+    Anything shown to a child is curated on top of this, never taken from it
+    raw. See sentences.LONGER_PACK.
     """
     global _common
     if _common is None:
