@@ -246,21 +246,25 @@ class VoiceSource:
         """A partial syllable like /sæ/ - the halfway step between a letter
         and a word.
 
-        Always generated: these are nonsense fragments, so there is nothing for
-        their to have recorded. Synthesised from IPA rather than spelling, since
-        "sa" read as text is anyone's guess but /sæ/ is exact.
+        Addressed by IPA rather than spelling, since "sa" read as text is
+        anyone's guess but /sæ/ is exact.
+
+        A recording of the whole blend wins if somebody has made one. Failing
+        that it is JOINED from its member sounds, exactly as phoneme() joins a
+        two-phoneme label - same crossfade, same clips, same bank. Nothing is
+        synthesised here and nothing is cloned.
+
+        This used to raise instead, on the grounds that only a legacy path
+        asked for blends. It was not only a legacy path: levels 4 and 6 - the
+        two-sounds-together level and the building-up journey that is the
+        centre of the whole curriculum - both go through here, and both failed
+        outright for every word.
         """
         key = "".join(ipas)
         a = self._recorded("blends", key)
         if a is not None:
             return loud(a)
-        # Only the legacy chapter builder asks for blends, and only when run
-        # from the command line. Nothing the app's own screens can reach
-        # arrives here.
-        raise MissingVoice(
-            f"The blend “{key}” has no recording, and blends cannot be "
-            "generated any more."
-        )
+        return self.phoneme(key)
 
     def sentence(self, text: str, tempo=0.68) -> np.ndarray:
         # Her own read of the whole line, if there is one.

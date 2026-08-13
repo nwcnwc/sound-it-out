@@ -8,6 +8,10 @@ echo "==> Python environment"
 python3 -m venv .venv
 .venv/bin/pip install -q --upgrade pip
 .venv/bin/pip install -q kokoro-onnx soundfile numpy pyinstaller
+# pyphen builds the syllable dictionary (gen/build_dictionary.py). It is a
+# BUILD-time dependency only - the app ships syllables.txt and never imports
+# pyphen at runtime, so the frozen sidecar does not carry it.
+.venv/bin/pip install -q pyphen
 
 echo "==> Kokoro voice model (~338MB)"
 mkdir -p models

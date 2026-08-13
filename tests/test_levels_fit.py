@@ -174,3 +174,34 @@ def test_each_pass_still_sweeps_the_highlight_left_to_right(monkeypatch):
         for j in range(3):
             parts = segs[p * 3 + j].parts
             assert [on for _, on in parts] == [i == j for i in range(3)]
+
+
+def test_every_implemented_level_builds_against_the_shipped_bank():
+    """A level that raises is a level nobody can watch.
+
+    Levels 4, 5 and 6 were all broken at once and nothing noticed, because
+    every other test drives them with a stub voice that can say anything.
+    This one uses the real VoiceSource against the real shipped starter bank,
+    which is what a person gets on a fresh install:
+
+      4  asked voice.word("sa") for a blend nobody says on its own
+      5  wanted six words absent from the starter bank
+      6  went through voice.blend(), which raised outright
+
+    Level 6 is the building-up journey - the centre of the curriculum - so
+    "nothing the app's screens reach arrives here" was not true.
+    """
+    from gen import levels as L
+    from gen.voice import VoiceSource
+
+    voice = VoiceSource()
+    fixed = sorted(n for n in L.IMPLEMENTED if n < 10 or n > 13)
+    broken = {}
+    for n in fixed:
+        try:
+            segs = L.build(n, voice, {"reps": 2, "pauseSeconds": 1.2})
+            if not segs:
+                broken[n] = "built nothing"
+        except Exception as e:                      # noqa: BLE001
+            broken[n] = f"{type(e).__name__}: {e}"
+    assert not broken, "levels that do not build: " + repr(broken)

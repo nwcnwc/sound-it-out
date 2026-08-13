@@ -454,6 +454,15 @@ def _pack_defs() -> list:
                         "ending in whole sentences, each built only from "
                         "letters already met.",
          "items": ladder},
+        # Level 5's real words had no pack, which is why that level was the
+        # one that failed on a fresh install: its words had no route into the
+        # library, and the library is where a missing recording gets noticed
+        # and asked for. A level with a fixed word list and no pack is a
+        # level whose gaps are invisible.
+        {"id": "three-letter", "group": "skills", "name": "Three-letter words",
+         "description": "sat, pin, man - the first words that can be sounded "
+                        "out rather than remembered.",
+         "items": list(levels.CVC_REAL)},
         {"id": "nonsense", "group": "skills", "name": "Sounding-out practice",
          "description": "Made-up words like vam and zib. They cannot be "
                         "memorised as shapes, so reading one proves the "

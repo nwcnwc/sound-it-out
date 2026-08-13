@@ -635,17 +635,58 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
 def sayable(voice, words):
     """The words the bank can actually say, in order.
 
-    A level with a fixed word list is only as good as what has been recorded,
-    and a word nobody has said stops the whole video rather than one item of
-    it. Six of the ten words in CVC_REAL are absent from the shipped starter
-    bank, which meant level 5 failed outright on a fresh install - the level
-    could have taught the other four and did not.
+    Whole words are never assembled, so this is not a fallback to synthesis -
+    it is teaching what there is a human voice for.
 
-    Whole words are never assembled, so this is not a fallback to synthesis:
-    it is teaching what there is a human voice for, and getting richer as
-    more is recorded.
+    It is also not the real answer to a missing recording. The app already
+    has a flow for that: a word in the sentence library shows what is still
+    to record and opens a walkthrough for it, and every starter pack puts its
+    words into that library. A level whose gaps are silently skipped here is
+    a level whose gaps are invisible there, which is how six of the ten words
+    in CVC_REAL stayed unrecorded and unnoticed long enough to break the
+    level on a fresh install.
+
+    So this keeps a video from failing outright, and needs_recording() is
+    what callers should show the reader.
     """
     return [w for w in words if voice.can_say(w)]
+
+
+def needs_recording(voice, words) -> list:
+    """The words a level wants that nobody has recorded yet.
+
+    Ready to hand to the sentence library, where the existing walkthrough
+    asks for exactly these and nothing else.
+    """
+    return [w for w in words if not voice.can_say(w)]
+
+
+# Levels whose word list is fixed, and the pack that puts those words into
+# the library so their gaps become visible and recordable. Every one of them
+# has a pack; the absence of one for level 5 is what hid its problem.
+LEVEL_PACKS = {
+    5: "three-letter", 6: "ladder", 7: "letter-teams", 8: "first-sentences",
+    14: "word-families", 15: "longer-words",
+}
+
+
+def _blends(voice, spellings, reps, pause):
+    """Two sounds closing into one another - the step between a letter and a
+    word.
+
+    Same shape as _sound_out, with one difference that matters: the arrival is
+    voice.blend(), not voice.word(). A blend like "sa" is a fragment nobody
+    ever says alone, so there is no recording of it and asking for one
+    stopped this level dead on every item.
+    """
+    segs = []
+    for parts in spellings:
+        shown = "".join(g for g, _ in parts)
+        segs += _approach(voice, parts, pause, passes=max(2, reps))
+        segs.append(whole(shown, voice.blend([s for _, s in parts]),
+                          pad=pause + 1.2))
+        segs[-1].item_end = True
+    return segs
 
 
 def _sound_out(voice, spellings, reps, pause):
@@ -967,16 +1008,20 @@ def build(level: int, voice, opts: dict) -> list:
     if level == 3:
         return _sounds(voice, SATPIN + SET2 + SET3, reps, pause)
     if level == 4:
-        return _sound_out(voice, BLENDS_2, reps, pause)
+        # Not _sound_out: these are partial syllables, not words. "sa" has
+        # no recording and never will - it is not a thing anybody says on its
+        # own - so the arrival is the JOINED blend, not voice.word("sa").
+        return _blends(voice, BLENDS_2, reps, pause)
     if level == 5:
         words = sayable(voice, CVC_REAL)
         if opts.get("nonsense", True):
             words += sayable(voice, CVC_NONSENSE)
         if not words:
+            need = needs_recording(voice, CVC_REAL)
             raise ValueError(
-                "None of this level's words have been recorded yet. Record a "
-                "few three-letter words - sat, pin, man - and it builds "
-                "itself from them.")
+                "None of this level's words have been recorded yet. Add the "
+                "“Three-letter words” pack to your list and record them - "
+                + ", ".join(need[:6]) + " - and this builds itself from them.")
         return _sound_out(voice, [spell(w) for w in words], reps, pause)
     if level == 6:
         return _build_up(voice, reps, pause)

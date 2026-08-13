@@ -75,7 +75,7 @@ cat            c    =  /k/     grapheme  (onset)
 | grapheme (single letter) | `levels.SINGLE_LETTER_GRAPHEMES` | 26 |
 | grapheme (multi-letter) | `levels.MULTI_LETTER_GRAPHEMES` | 39 |
 | magic e | `starter.all_magic_e()` | 65 |
-| grapheme pair | `dictionary.pair_catalog()` | 185 |
+| grapheme pair | `dictionary.pair_catalog()` | 217 |
 | a word's alignment | `dictionary.alignment()`, `levels.word_alignment()` | — |
 | continuant / stop | `recordings.CONTINUANT`, `recordings.STOP`, `phoneme_class()` | — |
 
@@ -106,7 +106,8 @@ to the list as ordinary entries.
 
 ### 1. Learn mode (primary)
 
-A scaffolded progression of **9 levels**. Each is mastered before the next is introduced.
+A scaffolded progression of **eleven levels**. Each is mastered before the next is
+introduced.
 
 > **Important: sight words come first, not phonics.** This reverses the obvious ordering,
 > and the reason is specific to Down syndrome. Children with DS are typically strong visual
@@ -496,14 +497,14 @@ Run it in development with `npm start` (after `./setup.sh`).
 
 ## Status
 
-All thirteen levels are implemented, and releases are published for macOS, Windows and
+Every level is implemented, and releases are published for macOS, Windows and
 Linux — see [Installing it](INSTALL.md).
 
 | | |
 |---|---|
-| Levels | 13 of 13 |
+| Levels | 15 of 15 |
 | Recorded sounds | 42 phonemes, 65 magic-e endings |
-| Dictionary | 110,737 aligned words |
+| Dictionary | 110,692 aligned words, 80,405 syllable splits |
 | Tests | 182 (`.venv/bin/python -m pytest tests/ -q`) |
 
 Voice cloning is optional throughout: the app is fully usable without it, and never
@@ -516,4 +517,8 @@ a fallback for environments where Chromium's multi-process model is unavailable.
 
 ## License
 
-TBD.
+MIT — see [LICENSE](LICENSE).
+
+Third-party components keep their own licenses: **Andika** (SIL Open Font
+License), **CMUdict** (public domain), and the `en_US` hyphenation patterns
+used to build the syllable dictionary.
