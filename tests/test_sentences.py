@@ -623,3 +623,56 @@ def test_recording_still_asks_for_a_repeated_word_only_once(library):
     items = S.walkthrough_items(S.status()[0]["key"])
     words = [i.display.lower() for i in items if i.kind == "word"]
     assert words.count("the") == 1, words
+
+
+# ------------------------------------------------------- words to read whole
+
+def test_a_listed_word_is_never_sounded_out(tmp_path, monkeypatch):
+    """The parent's list overrules the decoder.
+
+    decodable() answers whether a word CAN be built from sounds; this answers
+    whether it should be, and it wins. "Chase" comes apart neatly as c + ase
+    and is still a word a child reads by shape.
+    """
+    from gen import levels, sightwords
+    from gen import paths
+
+    monkeypatch.setattr(paths, "WORDLISTS", tmp_path)
+    sightwords.reload()
+    assert levels.decodable("Chase"), "precondition: it IS decodable"
+    assert not sightwords.is_sight("Chase"), "nothing is overridden by default"
+
+    sightwords.save(["Chase"])
+    assert sightwords.is_sight("Chase")
+    assert sightwords.is_sight("chase."), "punctuation and case do not matter"
+    assert not sightwords.is_sight("cat")
+    sightwords.reload()
+
+
+def test_the_list_starts_empty_and_is_not_the_sight_word_list(tmp_path, monkeypatch):
+    """Reusing wordlists/sight-words.txt would break the phonics levels.
+
+    That list means "show these early" and holds cat and dog - right for
+    level 2, wrong here, because sounding out cat is the point of level 5.
+    """
+    from gen import sightwords, wordlists
+    from gen import paths
+
+    monkeypatch.setattr(paths, "WORDLISTS", tmp_path)
+    sightwords.reload()
+    assert sightwords.load() == set(), "nothing is overridden until asked"
+    assert "cat" in {w.lower() for w in wordlists.all_words()}, \
+        "cat IS on the sight-word list"
+    assert not sightwords.is_sight("cat"), "and is still sounded out"
+    sightwords.reload()
+
+
+def test_the_typed_list_tolerates_however_it_is_typed(tmp_path, monkeypatch):
+    from gen import sightwords
+    from gen import paths
+
+    monkeypatch.setattr(paths, "WORDLISTS", tmp_path)
+    sightwords.reload()
+    sightwords.save("Chase, Skye\nGrandma\n# a note\n\nRubble;Rocky")
+    assert sightwords.load() == {"chase", "skye", "grandma", "rubble", "rocky"}
+    sightwords.reload()

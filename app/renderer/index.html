@@ -134,98 +134,145 @@
        Everything done once: the 42 sounds, the optional story voice, where
        videos go, and keeping the recordings safe. -->
   <section class="screen" id="screen-soundbank" role="tabpanel" aria-labelledby="tab-soundbank" tabindex="-1" hidden>
-
-    <div class="page-head">
-      <h1>Sound Bank</h1>
-      <p class="lede">
-        Everything a word is built from. Each layer starts with a working default
-        &mdash; the app maker's voice, or an automatic blend &mdash; and every piece
-        you record replaces its default everywhere, for good.
-      </p>
-    </div>
-
-    <ol class="voice-parts">
-
-      <li class="vpart" data-part="phonemes">
-        <div class="vpart-num">1</div>
-        <div class="vpart-body">
-          <h2>Record the sounds <span class="vpart-count" id="count-phonemes"></span></h2>
-          <p>The 42 letter sounds &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. Everything is
-             built from these, and an isolated sound is exactly what a computer voice gets
-             wrong &mdash; so this ten-minute session is the one that matters. Until it is
-             done, a recorded human starter voice fills in. Read
-             <a href="#" id="open-guide" class="link">the recording guide</a> first &mdash;
-             it explains the one rule that really matters.</p>
-          <div class="bar bar-slim vpart-bar" id="barwrap-phonemes" hidden>
-            <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
-          </div>
-          <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="phonemes">
-              Record them here
-            </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
-              Listen back &amp; redo
-            </button>
-            <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
-              Show what to say
-            </button>
-          </div>
-          <div class="vpart-result" id="result-phonemes" hidden></div>
-          <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
-        </div>
-      </li>
-
-      <li class="vpart" data-part="chunks">
-        <div class="vpart-num">2</div>
-        <div class="vpart-body">
-          <h2>The letter-team sounds <span class="vpart-count" id="count-chunks"></span></h2>
-          <p>Every team of sounds words are chunked into &mdash; <i>ing</i> as in bring,
-             <i>an</i> as in hand, <i>ase</i> as in case. Each one already plays as an
-             automatic blend of the sounds above (press Play on any of them to hear
-             it). Record one and your single breath replaces the blend, for that sound
-             in every word it appears in. Most useful ones first &mdash; do five, do
-             fifty, or none at all.</p>
-          <div class="bar bar-slim vpart-bar" id="barwrap-chunks" hidden>
-            <div class="bar-fill" id="bar-chunks" style="width:0%"></div>
-          </div>
-          <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="chunks">
-              Record them here
-            </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="chunks">
-              Listen &amp; record one by one
-            </button>
-          </div>
-          <div class="vpart-result" id="result-chunks" hidden></div>
-        </div>
-      </li>
-
-      <li class="vpart" data-part="bank">
-        <div class="vpart-num">3</div>
-        <div class="vpart-body">
-          <h2>Your recorded words <span class="vpart-count" id="count-bank"></span></h2>
-          <p>Every word you have recorded &mdash; from your sentences, and from before.
-             The bank is shared: record &ldquo;dog&rdquo; once and every sentence with
-             &ldquo;dog&rdquo; in it uses that recording. It grows as you record on the
-             Sentences page; this is where to listen back and redo any word.</p>
-          <div class="rowbar">
-            <button class="btn btn-primary vpart-record" type="button" data-part="starter">
-              Record what the packs still need
-            </button>
-            <button class="btn btn-second vpart-review" type="button" data-part="bank">
-              Listen back &amp; redo
-            </button>
-          </div>
-          <p class="hint">
-            One sitting: every pack word not yet in your bank, then each pack
-            sentence read whole. Stop and carry on whenever &mdash; it picks up
-            where you left off.
+        <div class="page-head">
+          <h1>Sound Bank</h1>
+          <p class="lede">
+            The sounds every word is built from, and the two things that decide
+            how a word gets read. Only the first section is needed &mdash; a
+            recorded human voice fills in for everything else until you get to it.
           </p>
         </div>
-      </li>
 
-    </ol>
-  </section>
+        <ol class="voice-parts">
+          <li class="vpart" data-part="phonemes">
+            <div class="vpart-num">1</div>
+            <div class="vpart-body">
+              <h2>The 42 sounds <span class="vpart-count" id="count-phonemes"></span></h2>
+              <p><b>Start here. Everything else is optional.</b> The letter sounds
+              &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. Every word in every video is
+              built from these, and an isolated sound is exactly what a computer
+              voice gets wrong, which is why they are recorded rather than
+              generated. About ten minutes. Read
+              <a href="#" id="open-guide" class="link">the recording guide</a>
+              first &mdash; it explains the one rule that really matters.</p>
+              <div class="bar bar-slim vpart-bar" id="barwrap-phonemes" hidden>
+                <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
+              </div>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="phonemes">
+                  Record them here
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
+                  Listen back &amp; redo
+                </button>
+                <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
+                  Show what to say
+                </button>
+              </div>
+              <div class="vpart-result" id="result-phonemes" hidden></div>
+              <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="magic-e">
+            <div class="vpart-num">2</div>
+            <div class="vpart-body">
+              <h2>Magic-e endings <span class="vpart-count" id="count-magic-e"></span></h2>
+              <p><span class="tag">Optional</span> The endings where a silent
+              <i>e</i> makes the vowel say its name &mdash; <i>ake</i> in cake,
+              <i>ice</i> in rice, <i>ome</i> in home. Each one plays as a join of
+              the sounds above until you record it; recording one replaces that
+              join wherever the ending appears.</p>
+              <div class="bar bar-slim vpart-bar" id="barwrap-magic-e" hidden>
+                <div class="bar-fill" id="bar-magic-e" style="width:0%"></div>
+              </div>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="magic-e">
+                  Record them here
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="magic-e">
+                  Listen &amp; record one by one
+                </button>
+              </div>
+              <div class="vpart-result" id="result-magic-e" hidden></div>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="pairs">
+            <div class="vpart-num">3</div>
+            <div class="vpart-body">
+              <h2>Smoothing out the joins <span class="vpart-count" id="count-pairs"></span></h2>
+              <p><span class="tag">Optional polish</span> When two sounds sit next
+              to each other &mdash; the <i>an</i> in hand, the <i>ing</i> in bring
+              &mdash; the app plays them as two clips joined together. You can hear
+              the seam. Record one and your single breath replaces that join
+              everywhere it occurs.</p>
+              <p class="hint">This teaches nothing new: these are not extra sounds,
+              they are the same sounds said in one breath instead of two. Do five,
+              do fifty, or none at all. Most useful first.</p>
+              <div class="bar bar-slim vpart-bar" id="barwrap-pairs" hidden>
+                <div class="bar-fill" id="bar-pairs" style="width:0%"></div>
+              </div>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="pairs">
+                  Record them here
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="pairs">
+                  Listen &amp; record one by one
+                </button>
+              </div>
+              <div class="vpart-result" id="result-pairs" hidden></div>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="readwhole">
+            <div class="vpart-num">4</div>
+            <div class="vpart-body">
+              <h2>Words to read whole <span class="vpart-count" id="count-readwhole"></span></h2>
+              <p><span class="tag">Nothing to record</span> The app works out which
+              words can honestly be sounded out. This is where you overrule it.
+              A word listed here is always shown and said whole &mdash; never taken
+              apart &mdash; however spellable it happens to be.</p>
+              <p class="hint">For names, favourites, and anything your child already
+              knows by its shape. &ldquo;Chase&rdquo; comes apart neatly into
+              c&ndash;ase, and taking it apart still teaches a fight rather than a
+              word. One per line.</p>
+              <textarea id="readwhole-text" class="wordbox" rows="5"
+                        placeholder="Chase&#10;Skye&#10;Grandma"></textarea>
+              <div class="rowbar">
+                <button class="btn btn-primary" type="button" id="readwhole-save">
+                  Save
+                </button>
+              </div>
+              <p class="voice-foot" id="readwhole-foot" role="status" aria-live="polite"></p>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="bank">
+            <div class="vpart-num">5</div>
+            <div class="vpart-body">
+              <h2>Your recorded words <span class="vpart-count" id="count-bank"></span></h2>
+              <p>Every word and line you have recorded. The bank is shared: record
+              &ldquo;dog&rdquo; once and every sentence containing it uses that
+              recording. It fills up as you record on the Sentences page &mdash;
+              this is where to listen back and redo any of it.</p>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="starter">
+                  Record what the packs still need
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="bank">
+                  Listen back &amp; redo
+                </button>
+              </div>
+              <p class="hint">
+                One sitting: every pack word not yet in your bank, then each pack
+                sentence read whole. Stop and carry on whenever &mdash; it picks up
+                where you left off.
+              </p>
+            </div>
+          </li>
+        </ol>
+      </section>
 
   <!-- ========================================================= SETTINGS -->
   <section class="screen" id="screen-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="-1" hidden>

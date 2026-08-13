@@ -263,7 +263,7 @@ def plan(part="phonemes", order="rows") -> list:
                 say="Read the whole line the way you would to your child - "
                     "not word by word.",
             ))
-    else:
+    elif part == "words":
         from gen import levels, wordlists
 
         # Her own list first, then any word level 6 needs that is not already
@@ -294,6 +294,15 @@ def plan(part="phonemes", order="rows") -> list:
             items.append(Item(key=w.lower(), kind="word", display=w,
                               length="free",
                               say="Say it normally, the way you would in a sentence."))
+    else:
+        # An unknown part used to fall through to the words branch and return
+        # a perfectly plausible list of the wrong thing. After the rename the
+        # UI still asked for "chunks", got 118 words back, and would have
+        # opened a recording session for them under a heading about
+        # letter-team sounds. Nothing raised, nothing looked wrong.
+        raise ValueError(
+            f"Unknown part {part!r}. Expected one of: phonemes, magic-e, "
+            f"pairs, words, sentences.")
     return items
 
 

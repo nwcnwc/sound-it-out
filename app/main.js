@@ -276,6 +276,9 @@ function registerIpc () {
 
   // The sentence library. Text in, recording status out; the walk-through
   // recording itself goes through the studio channel with part "sentence".
+  ipcMain.handle('readwhole:load', async () => sidecar.call('readwhole.load', {}))
+  ipcMain.handle('readwhole:save', async (_e, p) =>
+    sidecar.call('readwhole.save', p || {}))
   ipcMain.handle('sentences:list', async () => sidecar.call('sentences.list', {}))
   ipcMain.handle('sentences:add', async (_e, text) => {
     try {

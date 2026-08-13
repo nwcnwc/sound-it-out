@@ -940,9 +940,17 @@ def _sentences(voice, sentences, reps, pause):
 def _one_word(voice, word, reps, pause):
     """A single word met on its own: sounded out with the gaps closing if
     the grapheme table can honestly say it, shown and spoken whole if it
-    cannot (see decodable)."""
+    cannot (see decodable) - or if the parent said so (see sightwords).
+
+    Two different questions, and the parent's answer wins. decodable() knows
+    whether "Chase" CAN be built from c + ase; only the parent knows that it
+    is a cartoon dog the child reads by shape, and that sounding it out
+    teaches a fight rather than a word.
+    """
+    from gen import sightwords
+
     segs = []
-    if decodable(word):
+    if decodable(word) and not sightwords.is_sight(word):
         segs += _approach(voice, word_alignment(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))

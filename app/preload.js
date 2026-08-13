@@ -18,6 +18,10 @@ const sub = (channel) => (cb) => {
 contextBridge.exposeInMainWorld('soundout', {
   getState: () => ipcRenderer.invoke('state:get'),
   saveWordlist: (text) => ipcRenderer.invoke('wordlist:save', text),
+  // The parent's override of what may be sounded out. A list, not a
+  // recording, which is why it goes through here and not the studio.
+  readWholeLoad: () => ipcRenderer.invoke('readwhole:load'),
+  readWholeSave: (p) => ipcRenderer.invoke('readwhole:save', p),
   saveSettings: (patch) => ipcRenderer.invoke('settings:save', patch),
   generate: (opts) => ipcRenderer.invoke('job:generate', opts),
   cancelJob: (jobId) => ipcRenderer.invoke('job:cancel', jobId),

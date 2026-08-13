@@ -1,0 +1,6 @@
+# Words to read WHOLE - never sounded out, however spellable they are.
+# One per line. This is the parent's override: the app decides what CAN
+# be sounded out, and this decides what should not be.
+#
+# A name, a favourite, anything the child knows by shape and would only
+# be confused by taking apart.

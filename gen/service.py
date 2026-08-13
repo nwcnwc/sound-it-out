@@ -59,6 +59,23 @@ def m_wordlist_load(_params):
     }
 
 
+def m_readwhole_load(_params):
+    """The words the parent has said must never be sounded out."""
+    from gen import sightwords
+    from gen.paths import WORDLISTS
+
+    path = WORDLISTS / sightwords.FILENAME
+    text = path.read_text(encoding="utf-8") if path.exists() else ""
+    return {"text": text, "words": sorted(sightwords.load())}
+
+
+def m_readwhole_save(params):
+    from gen import sightwords
+
+    words = sightwords.save(params.get("text", ""))
+    return {"words": words, "count": len(words)}
+
+
 def m_wordlist_save(params):
     from gen import wordlists
 
@@ -678,6 +695,8 @@ METHODS = {
     "capabilities": m_capabilities,
     "wordlist.load": m_wordlist_load,
     "wordlist.save": m_wordlist_save,
+    "readwhole.load": m_readwhole_load,
+    "readwhole.save": m_readwhole_save,
     "sentences.list": m_sentences_list,
     "sentences.add": m_sentences_add,
     "sentences.remove": m_sentences_remove,

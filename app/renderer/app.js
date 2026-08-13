@@ -504,6 +504,9 @@ function setUpTabs () {
       const panel = $('screen-' + t.dataset.screen)
       panel.hidden = !on
       if (on && focus) t.focus()
+      // The read-whole list lives on disk, not in state, so it is read when
+      // the screen it belongs to is opened rather than at startup.
+      if (on && name === 'soundbank') loadReadWhole()
     })
   }
 
@@ -1043,8 +1046,41 @@ boot()
 // Keys are the part names the Python side uses; values are what a parent is
 // shown. The parent never meets "grapheme pair" - they are told what the
 // thing sounds like, not what it is called.
+// The words the parent has overruled the decoder on. Not a recording - a
+// list - so it has no progress bar and no studio, just a box and a Save.
+async function loadReadWhole () {
+  const box = $('readwhole-text')
+  if (!box || !api.readWholeLoad) return
+  try {
+    const r = await api.readWholeLoad()
+    box.value = r.text || ''
+    const n = (r.words || []).length
+    const c = $('count-readwhole')
+    if (c) c.textContent = n ? `${n} word${n === 1 ? '' : 's'}` : ''
+  } catch (e) { /* absent is normal - nothing is overridden */ }
+}
+
+async function saveReadWhole () {
+  const box = $('readwhole-text')
+  const foot = $('readwhole-foot')
+  if (!box || !api.readWholeSave) return
+  try {
+    const r = await api.readWholeSave({ text: box.value })
+    const n = r.count || 0
+    if (foot) {
+      foot.textContent = n
+        ? `Saved. ${n} word${n === 1 ? '' : 's'} will always be read whole.`
+        : 'Saved. Nothing is overridden — every word is sounded out if it can be.'
+    }
+    const c = $('count-readwhole')
+    if (c) c.textContent = n ? `${n} word${n === 1 ? '' : 's'}` : ''
+  } catch (e) {
+    if (foot) foot.textContent = 'Could not save that list.'
+  }
+}
+
 const PART_NAMES = {
-  phonemes: 'sounds', 'magic-e': 'magic-e endings', pairs: 'letter-team sounds',
+  phonemes: 'sounds', 'magic-e': 'magic-e endings', pairs: 'joins',
   bank: 'words', passage: 'reading passage'
 }
 
@@ -1061,8 +1097,10 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    const cs = await api.studioPlan({ part: 'pairs' })
-    showPartProgress('pairs', cs.done || 0, cs.total || 0)
+    for (const part of ['magic-e', 'pairs']) {
+      const r = await api.studioPlan({ part })
+      showPartProgress(part, r.done || 0, r.total || 0)
+    }
   } catch { /* the panel still works without a count */ }
 
   showPartProgress('phonemes', p, total)
@@ -1721,6 +1759,10 @@ async function showScript (part) {
 function initScript () {
   for (const b of document.querySelectorAll('.vpart-script')) {
     b.addEventListener('click', () => showScript(b.dataset.part))
+  }
+  const rwSave = $('readwhole-save')
+  if (rwSave) rwSave.addEventListener('click', () => { saveReadWhole() })
+  {
   }
   const close = $('script-close')
   if (close) {
