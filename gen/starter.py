@@ -77,7 +77,7 @@ def run(copy=False) -> dict:
         # path here reported every recorded line as missing.
         src = slib._line_item(text).path()
         (have_l if src.exists() else miss_l).append((text, src))
-    for spelling, ipa in all_rimes():
+    for spelling, ipa in all_magic_e():
         src = VOICE_DIR / "phonemes" / f"{_safe(ipa)}.wav"
         (have_r if src.exists() else miss_r).append((spelling, src))
 
@@ -90,7 +90,7 @@ def run(copy=False) -> dict:
                 shutil.copy2(src, d / src.name)
 
     return {
-        "words": len(words), "lines": len(lines), "rimes": len(all_rimes()),
+        "words": len(words), "lines": len(lines), "magic-e": len(all_magic_e()),
         "have_words": len(have_w), "have_lines": len(have_l),
         "have_rimes": len(have_r),
         "missing_words": [w for w, _ in miss_w],
@@ -100,14 +100,14 @@ def run(copy=False) -> dict:
     }
 
 
-def all_rimes() -> list:
+def all_magic_e() -> list:
     """Every (spelling, ipa) rime the magic-e rule can produce.
 
     The spelling doubles as what the clone is asked to SAY - "ase", "ike",
     "ome" read aloud are the rimes themselves - and the ipa is the filename
     the phoneme lookup asks for.
     """
-    from gen.levels import CVC_PHONEMES, LONG_VOWELS, MAGIC_E, RIME_CONS
+    from gen.levels import SINGLE_LETTER_GRAPHEMES, LONG_VOWELS, MAGIC_E, MAGIC_E_CONS
 
     out = []
     for v in "aeiou":
@@ -115,7 +115,7 @@ def all_rimes() -> list:
             spelling = f"{v}{c}e"
             if MAGIC_E.search(spelling):
                 out.append((spelling,
-                            LONG_VOWELS[v] + RIME_CONS.get(c, CVC_PHONEMES[c])))
+                            LONG_VOWELS[v] + MAGIC_E_CONS.get(c, SINGLE_LETTER_GRAPHEMES[c])))
     return out
 
 
@@ -144,7 +144,7 @@ def generate_missing(profile="mum", variant="english", log=print) -> dict:
             jobs.append(("line", text, dest))
     # Rimes are deliberately NOT generated: an isolated sound is what
     # cloning does worst, and a wrong sound teaches a wrong thing. They are
-    # recorded live in Setup (part "rimes") like the 42 phonemes, and
+    # recorded live in Setup (part "magic-e") like the 42 phonemes, and
     # --copy stages them from the developer's own bank.
 
     bad, done = [], 0

@@ -53,12 +53,12 @@ WORDS_PER_MINUTE = 150.0
 JOIN_SILENCE = 0.5
 
 
-def chunk_dir() -> Path:
+def section_dir() -> Path:
     return VOICE_DIR / "passage"
 
 
-def chunk_path(index: int) -> Path:
-    return chunk_dir() / f"{index:02d}.wav"
+def section_path(index: int) -> Path:
+    return section_dir() / f"{index:02d}.wav"
 
 
 def whole_path() -> Path:
@@ -77,7 +77,7 @@ class Section:
         return self.words / WORDS_PER_MINUTE * 60.0
 
     def path(self) -> Path:
-        return chunk_path(self.index)
+        return section_path(self.index)
 
     def done(self) -> bool:
         return self.path().exists()
@@ -162,7 +162,7 @@ def _preserve_legacy_whole() -> None:
     indefensible.
     """
     whole = whole_path()
-    if not whole.exists() or chunk_dir().exists():
+    if not whole.exists() or section_dir().exists():
         return
     keep = VOICE_DIR / "passage.before-sections.wav"
     if not keep.exists():
@@ -179,8 +179,8 @@ def save_section(index: int, audio: np.ndarray) -> dict:
         raise ValueError(f"There is no section {index} in the passage.")
 
     _preserve_legacy_whole()
-    chunk_dir().mkdir(parents=True, exist_ok=True)
-    sf.write(chunk_path(index), audio.astype("float32"), SR)
+    section_dir().mkdir(parents=True, exist_ok=True)
+    sf.write(section_path(index), audio.astype("float32"), SR)
     return rebuild()
 
 
@@ -220,7 +220,7 @@ def rebuild() -> dict:
 
 def remove_section(index: int) -> bool:
     """Drop one section so it can be read again."""
-    p = chunk_path(index)
+    p = section_path(index)
     if not p.exists():
         return False
     p.unlink()

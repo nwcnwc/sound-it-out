@@ -71,7 +71,7 @@ class Phoneme(NamedTuple):
     display: str  # what they sees in RECORDING.md
     example: str
     ipa: str
-    length: str   # "hold" | "crisp" | "free"
+    length: str   # "continuant" | "stop" | "free"
 
 
 # RECORDING.md gives their two lists and, deliberately, leaves three sounds off
@@ -80,31 +80,31 @@ class Phoneme(NamedTuple):
 # a puff of breath, and none of the three has a length anyone can be told to
 # hit. So they are "free" and get no duration check at all; flagging their for
 # the length of a sound they was never given a target for would be noise.
-HOLD, CRISP, FREE = "hold", "crisp", "free"
+CONTINUANT, STOP, FREE = "continuant", "stop", "free"
 
 # Rows exactly as printed: left column, right column.
 _ROWS = [
-    (("s", "s", "sun", "s", HOLD), ("m", "m", "man", "m", HOLD)),
-    (("t", "t", "top", "t", CRISP), ("n", "n", "net", "n", HOLD)),
-    (("p", "p", "pan", "p", CRISP), ("ng", "ng", "ring", "ŋ", HOLD)),
-    (("k", "k", "cat", "k", CRISP), ("l", "l", "leg", "l", HOLD)),
-    (("b", "b", "bat", "b", CRISP), ("r", "r", "run", "ɹ", HOLD)),
-    (("d", "d", "dog", "d", CRISP), ("w", "w", "wet", "w", FREE)),
-    (("g", "g", "got", "ɡ", CRISP), ("y", "y", "yes", "j", FREE)),
-    (("f", "f", "fan", "f", HOLD), ("h", "h", "hat", "h", FREE)),
-    (("v", "v", "van", "v", HOLD), ("sh", "sh", "shop", "ʃ", HOLD)),
-    (("z", "z", "zip", "z", HOLD), ("ch", "ch", "chip", "tʃ", CRISP)),
-    (("th", "th", "thin", "θ", HOLD), ("j", "j", "jam", "dʒ", CRISP)),
-    (("th-this", "th", "this", "ð", HOLD), ("zh", "zh", "vision", "ʒ", HOLD)),
-    (("a", "a", "cat", "a", HOLD), ("ee", "ee", "see", "iː", HOLD)),
-    (("e", "e", "bed", "ɛ", HOLD), ("oo", "oo", "moon", "uː", HOLD)),
-    (("i", "i", "sit", "ɪ", HOLD), ("or", "or", "door", "ɔː", HOLD)),
-    (("o", "o", "dog", "ɒ", HOLD), ("ur", "ur", "her", "ɜː", HOLD)),
-    (("u", "u", "cup", "ʌ", HOLD), ("ay", "ay", "day", "eɪ", HOLD)),
-    (("oo-put", "oo", "put", "ʊ", HOLD), ("igh", "igh", "my", "aɪ", HOLD)),
-    (("ar", "ar", "car", "ɑː", HOLD), ("oy", "oy", "boy", "ɔɪ", HOLD)),
-    (("ow", "ow", "now", "aʊ", HOLD), ("oa", "oa", "go", "əʊ", HOLD)),
-    (("air", "air", "hair", "eə", HOLD), ("ear", "ear", "near", "ɪə", HOLD)),
+    (("s", "s", "sun", "s", CONTINUANT), ("m", "m", "man", "m", CONTINUANT)),
+    (("t", "t", "top", "t", STOP), ("n", "n", "net", "n", CONTINUANT)),
+    (("p", "p", "pan", "p", STOP), ("ng", "ng", "ring", "ŋ", CONTINUANT)),
+    (("k", "k", "cat", "k", STOP), ("l", "l", "leg", "l", CONTINUANT)),
+    (("b", "b", "bat", "b", STOP), ("r", "r", "run", "ɹ", CONTINUANT)),
+    (("d", "d", "dog", "d", STOP), ("w", "w", "wet", "w", FREE)),
+    (("g", "g", "got", "ɡ", STOP), ("y", "y", "yes", "j", FREE)),
+    (("f", "f", "fan", "f", CONTINUANT), ("h", "h", "hat", "h", FREE)),
+    (("v", "v", "van", "v", CONTINUANT), ("sh", "sh", "shop", "ʃ", CONTINUANT)),
+    (("z", "z", "zip", "z", CONTINUANT), ("ch", "ch", "chip", "tʃ", STOP)),
+    (("th", "th", "thin", "θ", CONTINUANT), ("j", "j", "jam", "dʒ", STOP)),
+    (("th-this", "th", "this", "ð", CONTINUANT), ("zh", "zh", "vision", "ʒ", CONTINUANT)),
+    (("a", "a", "cat", "a", CONTINUANT), ("ee", "ee", "see", "iː", CONTINUANT)),
+    (("e", "e", "bed", "ɛ", CONTINUANT), ("oo", "oo", "moon", "uː", CONTINUANT)),
+    (("i", "i", "sit", "ɪ", CONTINUANT), ("or", "or", "door", "ɔː", CONTINUANT)),
+    (("o", "o", "dog", "ɒ", CONTINUANT), ("ur", "ur", "her", "ɜː", CONTINUANT)),
+    (("u", "u", "cup", "ʌ", CONTINUANT), ("ay", "ay", "day", "eɪ", CONTINUANT)),
+    (("oo-put", "oo", "put", "ʊ", CONTINUANT), ("igh", "igh", "my", "aɪ", CONTINUANT)),
+    (("ar", "ar", "car", "ɑː", CONTINUANT), ("oy", "oy", "boy", "ɔɪ", CONTINUANT)),
+    (("ow", "ow", "now", "aʊ", CONTINUANT), ("oa", "oa", "go", "əʊ", CONTINUANT)),
+    (("air", "air", "hair", "eə", CONTINUANT), ("ear", "ear", "near", "ɪə", CONTINUANT)),
 ]
 
 PHONEME_ROWS = [Phoneme(*c) for row in _ROWS for c in row]  # read across rows
@@ -679,7 +679,7 @@ def quality_report(clips, part=None) -> list:
                                 f"\"{p.display}uh\". Say just the sound and stop - this "
                                 f"is the one thing worth getting exactly right."))
 
-        if p.length == HOLD:
+        if p.length == CONTINUANT:
             if dur < HOLD_MIN:
                 held = p.display * 5 if len(p.display) == 1 else p.display
                 issues.append(Issue(c.label, "too-short", "fail",
@@ -690,7 +690,7 @@ def quality_report(clips, part=None) -> list:
                 issues.append(Issue(c.label, "too-long", "check",
                                     f"{who} - {dur:.1f} seconds, longer than expected. "
                                     f"Have a listen in case two got joined together."))
-        elif p.length == CRISP:
+        elif p.length == STOP:
             if dur < STOP_MIN:
                 issues.append(Issue(c.label, "too-short", "fail",
                                     f"{who} - {dur:.2f} seconds, so short it may have "

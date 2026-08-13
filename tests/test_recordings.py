@@ -436,10 +436,10 @@ def test_hold_and_crisp_match_what_she_was_told():
     by = {}
     for k, p in R.PHONEMES.items():
         by.setdefault(p.length, set()).add(k)
-    assert {"s", "f", "m", "n", "l", "r", "v", "z", "sh", "th", "ng"} <= by["hold"]
-    assert by["crisp"] == {"p", "t", "k", "b", "d", "g", "ch", "j"}
+    assert {"s", "f", "m", "n", "l", "r", "v", "z", "sh", "th", "ng"} <= by["continuant"]
+    assert by["stop"] == {"p", "t", "k", "b", "d", "g", "ch", "j"}
     assert by["free"] == {"w", "y", "h"}
-    assert all(p.length == "hold" for p in R.PHONEMES.values()
+    assert all(p.length == "continuant" for p in R.PHONEMES.values()
                if p.ipa[0] in R.VOWELS)
 
 

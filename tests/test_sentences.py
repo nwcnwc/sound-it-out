@@ -260,7 +260,7 @@ def test_magic_e_words_build_as_onset_and_rime():
     assert levels.split_graphemes("like") == [("l", "l"), ("ike", "aɪk")]
     # and the dictionary path is live for the real words
     assert levels.decodable("case") and levels.decodable("Chase")
-    parts = levels.word_parts("Chase")
+    parts = levels.word_alignment("Chase")
     assert "".join(g for g, _ in parts) == "Chase"
 
 
@@ -270,7 +270,7 @@ def test_voiced_s_words_are_buildable_and_voiced():
     from gen import dictionary
 
     assert levels.decodable("is")
-    sounds = "".join(p for _, p in levels.word_parts("is"))
+    sounds = "".join(p for _, p in levels.word_alignment("is"))
     assert "z" in sounds and "s" not in sounds.replace("z", "")
     assert levels.WORD_SOUNDS["is"] == [("i", "ɪ"), ("s", "z")]
 
@@ -368,8 +368,8 @@ def test_bank_display_decodes_safe_names(library):
 def test_soft_c_and_g_in_rimes():
     """"face" ends /eɪs/ and "cage" ends /eɪdʒ/ - the e softens c and g
     inside a rime, while an opening c stays hard."""
-    assert levels.word_parts("face") == [("f", "f"), ("ace", "eɪs")]
-    assert levels.word_parts("cage") == [("c", "k"), ("age", "eɪdʒ")]
+    assert levels.word_alignment("face") == [("f", "f"), ("ace", "eɪs")]
+    assert levels.word_alignment("cage") == [("c", "k"), ("age", "eɪdʒ")]
 
 
 # ------------------------------------------------------------------ rimes
@@ -379,7 +379,7 @@ def test_rimes_record_into_the_phoneme_bank(library):
     """A rime item saves under its IPA in phonemes/ - exactly where
     voice.phoneme() already looks, so a family recording one overrides the
     shipped clip with no new machinery."""
-    items = studio.plan("rimes")
+    items = studio.plan("magic-e")
     assert len(items) == 65
     ase = next(i for i in items if i.key == "ase")
     assert ase.ipa == "eɪs" and ase.kind == "phoneme"
@@ -388,13 +388,13 @@ def test_rimes_record_into_the_phoneme_bank(library):
 
 
 def test_rime_takes_are_two(library):
-    assert studio.takes_for("rimes") == 2
+    assert studio.takes_for("magic-e") == 2
 
 
 def test_every_rime_prompt_carries_an_example_word(library):
     """"oo then j" is linguistics homework; "as in huge" is an instruction.
     Every rime must anchor its sound to a real word."""
-    for it in studio.plan("rimes"):
+    for it in studio.plan("magic-e"):
         assert "as in" in it.say, f"rime '{it.key}' has no example word"
 
 
@@ -420,7 +420,7 @@ def test_approach_sounds_compress_with_the_gaps():
             secs = 2.5 if ipa == "m" else 0.2
             return np.full(int(SR * secs), 0.2, dtype="float32")
 
-    segs = levels._approach(UnevenVoice(), levels.word_parts("dm"), 1.5, passes=3)
+    segs = levels._approach(UnevenVoice(), levels.word_alignment("dm"), 1.5, passes=3)
     per_pass = [segs[i * 2:(i + 1) * 2] for i in range(3)]
     for d, m in per_pass[:2]:
         assert len(m.audio) / SR <= 1.11, "long holds are capped"
@@ -445,17 +445,17 @@ def test_the_shipped_dictionary_is_big_and_loads():
 
     d = dictionary.load()
     assert len(d) > 100_000
-    assert dictionary.chunks("said") == [("s", "s"), ("ai", "ɛ"), ("d", "d")]
-    assert dictionary.chunks("Said")[0] == ("S", "s"), "casing follows the word"
-    assert dictionary.chunks("zorble") is None
+    assert dictionary.alignment("said") == [("s", "s"), ("ai", "ɛ"), ("d", "d")]
+    assert dictionary.alignment("Said")[0] == ("S", "s"), "casing follows the word"
+    assert dictionary.alignment("zorble") is None
 
 
 def test_chunk_sounds_split_into_recordable_phonemes():
     from gen import dictionary
 
-    assert dictionary.tokens("eɪk") == ["eɪ", "k"]
-    assert dictionary.tokens("ɪz") == ["ɪ", "z"]
-    assert dictionary.tokens("s") == ["s"]
+    assert dictionary.phonemes_in("eɪk") == ["eɪ", "k"]
+    assert dictionary.phonemes_in("ɪz") == ["ɪ", "z"]
+    assert dictionary.phonemes_in("s") == ["s"]
 
 
 def test_every_aligned_chunk_is_speakable_from_the_42():
@@ -468,7 +468,7 @@ def test_every_aligned_chunk_is_speakable_from_the_42():
             "b", "d", "ð", "f", "ɡ", "h", "j", "k", "l", "m", "n", "ŋ",
             "p", "ɹ", "s", "ʃ", "t", "θ", "v", "w", "z", "ʒ"}
     sounds = {s for entry in dictionary.load().values() for _, s in entry}
-    bad = [s for s in sounds if any(t not in bank for t in dictionary.tokens(s))]
+    bad = [s for s in sounds if any(t not in bank for t in dictionary.phonemes_in(s))]
     assert not bad, f"unspeakable chunk sounds: {bad[:10]}"
 
 
@@ -479,7 +479,7 @@ def test_multi_sound_chunks_keep_all_their_sounds():
     class TwoSoundVoice(StubVoice):
         def phoneme(self, ipa):
             from gen import dictionary
-            n = len(dictionary.tokens(ipa))
+            n = len(dictionary.phonemes_in(ipa))
             return np.full(int(SR * 0.45 * n), 0.2, dtype="float32")
 
     parts = [("a", "æ"), ("an", "æn")]
@@ -533,10 +533,10 @@ def test_no_word_is_a_single_unsplittable_chunk_when_it_can_pair():
     """"is=ɪz" as one chunk made the buildup say "is" three times. When
     letters and sounds pair one to one, they pair - i gets /ɪ/, s gets
     /z/ - and the lexicon's hand splits win where they exist."""
-    assert levels.word_parts("is") == [("i", "ɪ"), ("s", "z")]
-    assert levels.word_parts("up") == [("u", "ʌ"), ("p", "p")]
-    assert levels.word_parts("an") == [("a", "æ"), ("n", "n")]
-    assert len(levels.word_parts("in")) == 2
+    assert levels.word_alignment("is") == [("i", "ɪ"), ("s", "z")]
+    assert levels.word_alignment("up") == [("u", "ʌ"), ("p", "p")]
+    assert levels.word_alignment("an") == [("a", "æ"), ("n", "n")]
+    assert len(levels.word_alignment("in")) == 2
 
 
 def test_names_follow_the_syllable_rules():

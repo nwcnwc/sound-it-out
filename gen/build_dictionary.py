@@ -9,17 +9,20 @@ letters to its sounds, and writes assets/dictionary/aligned.txt:
     said s=s ai=ɛ d=d
     nose n=n o=əʊ se=z
 
-An entry means: this word may be built up, chunk by chunk, with each
-chunk's letters highlighted while its sound plays - and the alignment is
-trusted because every chunk correspondence in it is COMMON across English
+An entry means: this word may be built up, unit by unit, with each unit's
+letters highlighted while its sound plays - and the alignment is trusted
+because every correspondence in it is COMMON across English
 (learned by expectation-maximisation over the whole dictionary, then
 thresholded). A word whose best alignment needs a rare, lying
 correspondence - "one" wanting o=/wʌ/ - is left out and shown whole,
 which is exactly what phonics teachers do with it.
 
-The aligner is deliberately small: chunks of 1-3 letters mapping to 0-2
-phonemes (0 = silent letters, folded into the previous chunk for
-display), EM-trained alignment probabilities, Viterbi decode per word.
+The aligner is deliberately small: units of 1-3 letters mapping to 0-2
+phonemes (0 = silent letters, folded into the previous unit for display),
+EM-trained alignment probabilities, Viterbi decode per word.
+
+A unit carrying one phoneme is a GRAPHEME; one carrying two is a GRAPHEME
+PAIR. See README.md for the glossary.
 """
 
 from __future__ import annotations
@@ -46,13 +49,13 @@ ARPA_TO_IPA = {
     "Y": "j", "Z": "z", "ZH": "ʒ",
 }
 
-MAX_L, MAX_P = 3, 2      # chunk sizes: letters 1-3, phonemes 0-2
+MAX_L, MAX_P = 3, 2      # unit sizes: letters 1-3, phonemes 0-2
 EM_ROUNDS = 4
-# Viterbi naturally prefers FEWER chunks (each chunk adds a negative log
-# probability), which bundles "was" into wa=wɒ s=z. A flat per-chunk bonus
+# Viterbi naturally prefers FEWER units (each adds a negative log
+# probability), which bundles "was" into wa=wɒ s=z. A flat per-unit bonus
 # tips it back toward fine splits - w=w a=ɒ s=z - which are what a child
 # should see, and which map to single recordable sounds besides.
-CHUNK_BONUS = 1.2
+UNIT_BONUS = 1.2
 # A correspondence must be seen at least this often across the whole
 # dictionary to be teachable; rarer ones are spelling lying about itself.
 MIN_COUNT = 40
@@ -76,7 +79,7 @@ TAUGHT_EXCEPTIONS = {
     ("ai", ("ə",)),            # certain, captain
     ("a", ("ɔː",)),            # water, walk, tall
     # Doubled consonants are one sound - every teacher writes that on the
-    # board - but a bare double is rarer than its bundled chunks, and
+    # board - but a bare double is rarer than the units that bundle it, and
     # rubble lost its alignment to that arithmetic.
     ("bb", ("b",)), ("cc", ("k",)), ("dd", ("d",)), ("ff", ("f",)),
     ("gg", ("ɡ",)), ("ll", ("l",)), ("mm", ("m",)), ("nn", ("n",)),
@@ -116,10 +119,10 @@ def load_cmu():
 
 
 def align(word, phons, prob, bonus=0.0):
-    """Best chunking of `word` against `phons` under `prob`. Returns a list
+    """Best alignment of `word` against `phons` under `prob`. Returns a list
     of (letters, phoneme-tuple) or None. Standard DP over (i, j).
 
-    `bonus` (per chunk, favouring fine splits) applies only to the FINAL
+    `bonus` (per unit, favouring fine splits) applies only to the FINAL
     decode. Inside EM it must stay zero: a biased decode feeds biased
     counts to the next round, and the bias compounds until the learned
     statistics are about the bonus rather than about English."""
@@ -158,9 +161,9 @@ def align(word, phons, prob, bonus=0.0):
 
 
 def train(entries):
-    """EM for chunk correspondence weights: seed uniformly over everything
+    """EM for correspondence weights: seed uniformly over everything
     plausible, decode, re-count, repeat."""
-    # seed: every chunk/phoneme-run co-occurrence within a loose window
+    # seed: every letters/phoneme-run co-occurrence within a loose window
     counts = defaultdict(float)
     for w, ph in entries:
         for i in range(len(w)):
@@ -197,7 +200,7 @@ def main():
     common = {w.strip().lower() for w in fetch(COMMON).splitlines()}
 
     counts = train(entries)
-    # teachable correspondences only - and silent chunks only for the
+    # teachable correspondences only - and silent units only for the
     # letters that genuinely go silent in English spelling
     kept = {k: c for k, c in counts.items() if c >= MIN_COUNT}
     # A taught exception must be COMPETITIVE, not merely present: "a" has a
@@ -221,12 +224,12 @@ def main():
     lines, aligned_common, total_common = [], 0, 0
     aligned_all = 0
     for w, ph in entries:
-        a = align(w, ph, prob, bonus=CHUNK_BONUS)
+        a = align(w, ph, prob, bonus=UNIT_BONUS)
         if w in common and is_word(w):
             total_common += 1
         if a is None:
             continue
-        # fold silent chunks into the previous chunk for display
+        # fold silent units into the previous unit for display
         merged = []
         for g, p in a:
             if not p and merged:
@@ -238,7 +241,7 @@ def main():
                 merged.append((g, p))
         if any(not p for _, p in merged):
             continue  # a word that is ONLY silence is not a word
-        # A whole word as ONE chunk has no buildup - "is=ɪz" is just the
+        # A whole word as ONE unit has no buildup - "is=ɪz" is just the
         # word repeated. When letters and sounds pair one to one, split
         # them; the runtime applies the same guard to older data.
         if len(merged) == 1 and len(w) > 1:
@@ -255,7 +258,7 @@ def main():
     OUT.write_text(
         "# word  letters=sound ...  built by gen/build_dictionary.py\n"
         "# from CMUdict (public domain); alignment learned by EM, rare\n"
-        "# correspondences dropped so every chunk shown is teachable.\n"
+        "# correspondences dropped so every unit shown is teachable.\n"
         + "\n".join(lines) + "\n", encoding="utf-8")
     # The common words, separately: the catalog picks its example words
     # from these, because CMUdict's shortest words are names and noise -

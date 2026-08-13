@@ -1040,15 +1040,18 @@ boot()
  * terminal. This is the way in.
  */
 
+// Keys are the part names the Python side uses; values are what a parent is
+// shown. The parent never meets "grapheme pair" - they are told what the
+// thing sounds like, not what it is called.
 const PART_NAMES = {
-  phonemes: 'sounds', rimes: 'word endings', chunks: 'letter-team sounds',
+  phonemes: 'sounds', 'magic-e': 'magic-e endings', pairs: 'letter-team sounds',
   bank: 'words', passage: 'reading passage'
 }
 
 async function voiceCounts (caps) {
   const w = (caps && caps.recorded_words) || 0
 
-  // Counts come from the plans, not from counting files: rimes save into
+  // Counts come from the plans, not from counting files: magic-e saves into
   // the same phonemes folder, so a directory count would say "65 of 42".
   let p = (caps && caps.recorded_phonemes) || 0
   let total = 42
@@ -1058,8 +1061,8 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    const cs = await api.studioPlan({ part: 'chunks' })
-    showPartProgress('chunks', cs.done || 0, cs.total || 0)
+    const cs = await api.studioPlan({ part: 'pairs' })
+    showPartProgress('pairs', cs.done || 0, cs.total || 0)
   } catch { /* the panel still works without a count */ }
 
   showPartProgress('phonemes', p, total)
@@ -1574,7 +1577,7 @@ function finishStudio () {
   if (fill) fill.style.width = Math.round((done / total) * 100) + '%'
 
   const what = studio.part === 'phonemes' ? 'sounds'
-    : studio.part === 'rimes' ? 'endings'
+    : studio.part === 'magic-e' ? 'endings'
       : studio.part === 'sentence' ? 'parts' : 'words'
   sEl('studio-word').textContent = missed ? 'Finished' : 'All done'
   sEl('studio-say').textContent = missed
@@ -1765,7 +1768,7 @@ async function openReview (part) {
   review.items = plan.items || []
   $('review-title').textContent =
     part === 'phonemes' ? 'Listen back - the sounds'
-      : part === 'chunks' ? 'The letter-team sounds'
+      : part === 'pairs' ? 'The letter-team sounds'
         : 'Listen back - your words'
   $('review-hint').textContent = part === 'bank'
     ? `${plan.total} word${plan.total === 1 ? '' : 's'} in your bank. Press one ` +
@@ -1790,7 +1793,7 @@ function renderReview () {
     // Chunks are recordable whether or not a take exists - the default
     // blend counts as recorded-enough to play, but not to keep her from
     // replacing it.
-    box.disabled = !it.done && review.part !== 'chunks'
+    box.disabled = !it.done && review.part !== 'pairs'
     box.checked = review.chosen.has(it.key)
     box.addEventListener('change', () => {
       if (box.checked) review.chosen.add(it.key)
@@ -1810,10 +1813,10 @@ function renderReview () {
     const state = document.createElement('span')
     state.className = 'rev-state'
     state.textContent = it.done ? ''
-      : review.part === 'chunks' ? 'automatic blend' : 'not recorded yet'
+      : review.part === 'pairs' ? 'automatic blend' : 'not recorded yet'
     row.appendChild(state)
 
-    if (it.done || review.part === 'chunks') {
+    if (it.done || review.part === 'pairs') {
       const play = document.createElement('button')
       play.type = 'button'
       play.className = 'btn btn-quiet rev-play'

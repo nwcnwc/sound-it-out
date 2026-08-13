@@ -49,7 +49,7 @@ BLENDS_2 = [
 CVC_REAL = ["sat", "pin", "man", "tap", "nip", "mat", "sit", "pan", "tin", "map"]
 CVC_NONSENSE = ["vam", "zib", "fot", "lun", "dat", "mip"]
 
-CVC_PHONEMES = {
+SINGLE_LETTER_GRAPHEMES = {
     "s": "s", "a": "æ", "t": "t", "p": "p", "i": "ɪ", "n": "n", "m": "m",
     "d": "d", "g": "ɡ", "o": "ɒ", "c": "k", "k": "k", "e": "ɛ", "u": "ʌ",
     "r": "ɹ", "h": "h", "b": "b", "f": "f", "l": "l", "v": "v", "z": "z",
@@ -57,7 +57,8 @@ CVC_PHONEMES = {
 }
 
 
-# Multi-letter graphemes, longest first. This is the piece levels 7-9 needed:
+# Multi-letter graphemes (digraphs and trigraphs), longest first. This is
+# the piece levels 7-9 needed:
 # "ship" must highlight "sh" as ONE unit, because that is what it is - showing
 # s-h-i-p teaches a child to look for four sounds in a three-sound word, which
 # is worse than not splitting it at all.
@@ -65,7 +66,7 @@ CVC_PHONEMES = {
 # Curated rather than general. A full grapheme-phoneme aligner for arbitrary
 # English is a research problem; a table that covers the words these levels
 # actually teach is a afternoon's work and is correct where it applies.
-GRAPHEMES = {
+MULTI_LETTER_GRAPHEMES = {
     # trigraphs first - longest match wins
     "igh": "aɪ", "air": "eə", "ear": "ɪə", "tch": "tʃ",
     # doubled consonants are one sound
@@ -85,7 +86,7 @@ GRAPHEMES = {
 # Magic-e, taught the onset-rime way: "case" is c + ase, said /k/ + /eɪs/.
 # The rime (vowel-consonant-e) stays one contiguous unit, which is both how
 # word families are taught (-ake, -ike, -ame) and what keeps the display
-# simple - the highlight sweeps left to right over whole chunks.
+# simple - the highlight sweeps left to right over whole units.
 #
 # The consonant class is deliberately narrow: no r (r-controlled vowels -
 # "care", "more" - are a different sound entirely), no v ("have", "give",
@@ -96,7 +97,7 @@ MAGIC_E = re.compile(r"[aeiou][bcdfgklmnpstz]e$")
 LONG_VOWELS = {"a": "eɪ", "e": "iː", "i": "aɪ", "o": "əʊ", "u": "uː"}
 # Inside a rime the e also softens c and g: "face" is /eɪs/, "cage" is
 # /eɪdʒ/. Everywhere else c stays /k/ and g stays /ɡ/.
-RIME_CONS = {"c": "s", "g": "dʒ"}
+MAGIC_E_CONS = {"c": "s", "g": "dʒ"}
 
 # Buildable exceptions the letter rules cannot produce: the s in these is
 # voiced. Small and explicit beats a clever rule that misfires.
@@ -119,14 +120,14 @@ def split_graphemes(word: str):
     if len(low) >= 3 and MAGIC_E.search(low):
         head = split_graphemes(word[:-3]) if len(word) > 3 else []
         c = low[-2]
-        rime = LONG_VOWELS[low[-3]] + RIME_CONS.get(c, CVC_PHONEMES.get(c, c))
+        rime = LONG_VOWELS[low[-3]] + MAGIC_E_CONS.get(c, SINGLE_LETTER_GRAPHEMES.get(c, c))
         return head + [(word[-3:], rime)]
     out, i = [], 0
     while i < len(word):
         for n in (3, 2):
-            chunk = low[i:i + n]
-            if len(chunk) == n and chunk in GRAPHEMES:
-                out.append((word[i:i + n], GRAPHEMES[chunk]))
+            candidate = low[i:i + n]
+            if len(candidate) == n and candidate in MULTI_LETTER_GRAPHEMES:
+                out.append((word[i:i + n], MULTI_LETTER_GRAPHEMES[candidate]))
                 i += n
                 break
         else:
@@ -138,31 +139,31 @@ def split_graphemes(word: str):
             # "uh" of Zuma, Nala, grandma.
             if (ch in "aeiou" and i + 2 < len(word)
                     and low[i + 1] not in "aeiou"
-                    and low[i + 1:i + 3] not in GRAPHEMES
+                    and low[i + 1:i + 3] not in MULTI_LETTER_GRAPHEMES
                     and low[i + 2] in "aeiouy"):
                 out.append((word[i], LONG_VOWELS[ch]))
             elif ch == "a" and i == len(word) - 1 and i >= 2:
                 out.append((word[i], "ə"))
             else:
-                out.append((word[i], CVC_PHONEMES.get(ch, ch)))
+                out.append((word[i], SINGLE_LETTER_GRAPHEMES.get(ch, ch)))
             i += 1
     return out
 
 
-def word_parts(word: str):
+def word_alignment(word: str):
     """The (letters, sound) pairs a word is built up from.
 
     The aligned dictionary answers first - it knows how 110,000 real words
-    actually chunk, including the taught exceptions (said is s-ai-d with ai
+    actually split, including the taught exceptions (said is s-ai-d with ai
     saying /ɛ/). The lexicon and the spelling rules serve what no
     dictionary knows: names, nonsense words, whatever a family invents.
     """
     from gen import dictionary
 
     clean = word.strip(".,!?;:‘’“”'\"")
-    aligned = dictionary.chunks(clean)
+    aligned = dictionary.alignment(clean)
     if aligned and len(aligned) == 1 and len(clean) > 1:
-        # A whole word bundled into one chunk has no journey: the buildup
+        # A whole word bundled into one unit has no journey: the buildup
         # of "is=ɪz" is just "is" said three times, which is what happened.
         # The lexicon splits the notorious ones by hand; otherwise, when
         # the letters and sounds pair one to one, pair them.
@@ -171,7 +172,7 @@ def word_parts(word: str):
             aligned = None  # fall through to the lexicon path below
         else:
             g, s = aligned[0]
-            toks = dictionary.tokens(s)
+            toks = dictionary.phonemes_in(s)
             if len(toks) == len(g):
                 aligned = list(zip(list(g), toks))
     if aligned:
@@ -190,7 +191,7 @@ def spell(word: str):
     """Split a word into (letter, phoneme) pairs. Level 5 is CVC only, so a
     straight letter-by-letter mapping is correct here; digraphs arrive at
     level 7 and will need the alignment lexicon described in the README."""
-    return [(ch, CVC_PHONEMES.get(ch.lower(), ch.lower())) for ch in word]
+    return [(ch, SINGLE_LETTER_GRAPHEMES.get(ch.lower(), ch.lower())) for ch in word]
 
 
 # Common words the grapheme table gets WRONG - not merely words it cannot
@@ -228,9 +229,9 @@ def decodable(word: str) -> bool:
 
     w = word.lower().strip(".,!?;:‘’“”'\"")
     # A word the aligned dictionary vouches for is buildable by definition:
-    # every chunk in its entry is a teachable correspondence, and every
-    # chunk's sound can be spoken (from the bank, or concatenated from it).
-    if dictionary.chunks(w):
+    # every unit in its entry is a teachable correspondence, and every
+    # unit's sound can be spoken (from the bank, or concatenated from it).
+    if dictionary.alignment(w):
         return True
     if w in WORD_SOUNDS:
         return True
@@ -505,7 +506,7 @@ def _approach(voice, parts, pause, passes):
         # blinked past the short ones - "it highlighted the wrong letters
         # and skipped some", reported on Grandma, whose m dwarfed its d.
         #
-        # The budget is PER SOUND, not per chunk: a dictionary chunk like
+        # The budget is PER SOUND, not per unit: a grapheme pair like
         # an=/æn/ carries two sounds, and capping it to one sound's length
         # amputated the second - Grandma again, this time missing her /n/.
         hold = 0.5 * (1.1 / 0.5) ** frac
@@ -525,7 +526,7 @@ def _approach(voice, parts, pause, passes):
 def _sounds_in(ipa: str) -> int:
     from gen import dictionary
 
-    return max(1, len(dictionary.tokens(ipa)))
+    return max(1, len(dictionary.phonemes_in(ipa)))
 
 
 def _hard_clip(voice, ipa: str, seconds: float):
@@ -543,7 +544,7 @@ def _hard_clip(voice, ipa: str, seconds: float):
     from gen import dictionary
     from gen.soundout import STOPS
 
-    toks = dictionary.tokens(ipa)
+    toks = dictionary.phonemes_in(ipa)
     ends_stop = toks[-1] in STOPS
     c = content(voice.phoneme(ipa))
     n = int(seconds * SR)
@@ -577,7 +578,7 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
 
     clips, starts_hard, ends_hard = [], [], []
     for _, ipa in parts:
-        toks = dictionary.tokens(ipa)
+        toks = dictionary.phonemes_in(ipa)
         starts_hard.append(toks[0] in STOPS)
         ends_hard.append(toks[-1] in STOPS)
         c = _hard_clip(voice, ipa, hold * _sounds_in(ipa))
@@ -788,7 +789,7 @@ def _one_word(voice, word, reps, pause):
     cannot (see decodable)."""
     segs = []
     if decodable(word):
-        segs += _approach(voice, word_parts(word), pause,
+        segs += _approach(voice, word_alignment(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))
     else:
@@ -818,7 +819,7 @@ def _library(voice, texts, reps, pause):
 
         if kind == "letter":
             letter = words[0].strip(".,!?;:‘’“”'\"")
-            audio = voice.phoneme(CVC_PHONEMES.get(letter.lower(),
+            audio = voice.phoneme(SINGLE_LETTER_GRAPHEMES.get(letter.lower(),
                                                    letter.lower()))
             for i in range(reps):
                 segs.append(whole(letter, audio,

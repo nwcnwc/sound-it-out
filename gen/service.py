@@ -604,8 +604,8 @@ def m_studio_clip(params):
     path = studio.clip_path(part, params.get("key", ""),
                             params.get("order", "rows"))
     preview = False
-    if path is None and part == "chunks":
-        # Nothing recorded, but never nothing to hear: every chunk plays
+    if path is None and part == "pairs":
+        # Nothing recorded, but never nothing to hear: every pair plays
         # as an automatic blend of the recorded sounds, and the preview IS
         # that blend - what a video would use today, rendered to a temp
         # file so the ordinary player can play it.

@@ -36,9 +36,9 @@ def voice_dir(tmp_path, monkeypatch):
     forty minutes to make and cannot be reproduced.
     """
     monkeypatch.setattr(P, "VOICE_DIR", tmp_path)
-    monkeypatch.setattr(P, "chunk_dir", lambda: tmp_path / "passage")
+    monkeypatch.setattr(P, "section_dir", lambda: tmp_path / "passage")
     monkeypatch.setattr(P, "whole_path", lambda: tmp_path / "passage.wav")
-    monkeypatch.setattr(P, "chunk_path",
+    monkeypatch.setattr(P, "section_path",
                         lambda i: tmp_path / "passage" / f"{i:02d}.wav")
     return tmp_path
 

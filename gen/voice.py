@@ -187,14 +187,14 @@ class VoiceSource:
         a = self._one_sound(ipa)
         if a is not None:
             return loud(a)
-        # A chunk sound with no clip of its own - "eɪk", "æn" - is said by
+        # A grapheme-pair sound with no clip of its own - "eɪk", "æn" - is said by
         # running its member sounds together, each from a real recording.
-        # This is what makes every aligned dictionary chunk speakable
+        # This is what makes every aligned dictionary unit speakable
         # without anyone recording ten thousand of them.
         from gen import dictionary
         from gen.soundout import _xfade, cap, content
 
-        parts = dictionary.tokens(ipa)
+        parts = dictionary.phonemes_in(ipa)
         if len(parts) > 1:
             clips = []
             for p in parts:

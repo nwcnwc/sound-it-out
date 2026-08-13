@@ -168,7 +168,7 @@ def _letter_recorded(ch: str) -> bool:
     """
     from gen import levels, voice
 
-    ipa = levels.CVC_PHONEMES.get(ch.lower(), ch.lower())
+    ipa = levels.SINGLE_LETTER_GRAPHEMES.get(ch.lower(), ch.lower())
     return (voice.VoiceSource._lookup(voice.VOICE_DIR, "phonemes", ipa) is not None
             or voice.VoiceSource._lookup(voice.STARTER_VOICE, "phonemes", ipa)
             is not None)
@@ -253,22 +253,22 @@ def clips(key: str) -> list:
 
 def _piece_items(text: str) -> list:
     """The sound pieces of this entry's buildups the family has NOT
-    recorded themselves: chunks first, then single sounds. These queue in
+    recorded themselves: grapheme pairs first, then single phonemes. These queue in
     the walk-through so a sentence can become fully hers, and they shrink
     to nothing as the shared bank fills - the pieces are keyed by sound,
     recorded once, used everywhere."""
     from gen import dictionary, levels
 
-    seen, chunks_out, singles = set(), [], []
+    seen, pairs_out, singles = set(), [], []
     for w in _unique_words(text):
         if not levels.decodable(w):
             continue
-        for g, ipa in levels.word_parts(w):
+        for g, ipa in levels.word_alignment(w):
             if ipa in seen:
                 continue
             seen.add(ipa)
             recipe = studio.sound_recipe(ipa)
-            many = len(dictionary.tokens(ipa)) > 1
+            many = len(dictionary.phonemes_in(ipa)) > 1
             it = studio.Item(
                 key=ipa, kind="phoneme", display=g.lower(), ipa=ipa,
                 length="free",
@@ -277,15 +277,15 @@ def _piece_items(text: str) -> list:
                      + f". No word around it. (/{ipa}/)"))
             if it.done():
                 continue
-            (chunks_out if len(dictionary.tokens(ipa)) > 1
+            (pairs_out if len(dictionary.phonemes_in(ipa)) > 1
              else singles).append(it)
-    return chunks_out + singles
+    return pairs_out + singles
 
 
 def walkthrough_items(key: str) -> list:
     """What to record for one entry: the whole line FIRST, then its words,
     then whatever sound pieces of the buildup are not yet in the family's
-    own voice - chunks, then single sounds. Missing means "not recorded by
+    own voice - pairs, then single phonemes. Missing means "not recorded by
     you": the shipped starter voice only ever fills gaps at video time.
 
     A single word skips the line (the word IS the line); a letter entry
@@ -465,7 +465,7 @@ def estimate_seconds(keys=None, reps=3, pause=1.5) -> float:
 
     def word_cost(w):
         if levels.decodable(w):
-            n = len(levels.word_parts(w))
+            n = len(levels.word_alignment(w))
             return passes * n * (PH + gap) + WORD + pause + 1.0
         return max(2, reps - 1) * (WORD + pause) + 1.0
 

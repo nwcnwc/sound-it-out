@@ -10,6 +10,92 @@ Built for early readers with Down syndrome, to play continuously on a large-scre
 
 ---
 
+## Glossary
+
+Standard phonics vocabulary is used wherever a standard term exists, and where one
+doesn't the invented name says what the thing is rather than borrowing a word that
+already means something else. These meanings hold in the code, the comments and the
+UI alike.
+
+### Standard terms
+
+| term | what it means | examples |
+|---|---|---|
+| **phoneme** | one distinct **sound**. Spoken, never written. | `/k/` `/æ/` `/t/` `/ʃ/` |
+| **grapheme** | the letter *or letters* spelling **exactly one** phoneme. Written, never spoken. | `c` `a` `t` `sh` `ck` `igh` |
+| **digraph** | a two-letter grapheme — two letters, **one** sound | `sh` `ch` `th` `ck` `ng` `ai` |
+| **trigraph** | a three-letter grapheme | `igh` `tch` `air` |
+| **blend** (cluster) | adjacent consonants that each keep their **own** sound — *not* a digraph | `st` in stop = `/s/`+`/t/` |
+| **onset** | the consonant(s) before the vowel of a syllable | `c` in cat, `str` in strap |
+| **rime** | the vowel and everything after it, in a syllable | `at` in cat, `ap` in strap |
+| **magic e** (split digraph) | vowel–consonant–`e`, where the `e` makes the vowel say its name | `a_e` in cake, `i_e` in like |
+| **continuant** | a sound that can be held for as long as your breath lasts | `/s/` `/m/` `/f/`, every vowel |
+| **stop** | a sound that is a burst and cannot be held at all | `/p/` `/t/` `/k/` `/b/` `/d/` `/ɡ/` |
+| **CVC** | a consonant–vowel–consonant word shape | cat, sun, big |
+
+The pair most often confused is **digraph vs blend**. `sh` is one sound spelled with
+two letters, so it is one grapheme. `st` is two sounds spelled with two letters, so it
+is two graphemes standing next to each other. The app must never split a digraph and
+must always split a blend.
+
+### Terms this codebase invents
+
+**Alignment unit** — some letters plus the sound they make, as one row of a word's
+entry in the dictionary. Every unit is either a grapheme (one phoneme) or a grapheme
+pair (two). "Unit" is the umbrella word when it doesn't matter which.
+
+**Grapheme pair** — an alignment unit carrying **two** phonemes: `at` = /æt/,
+`ca` = /kæ/, `ing` = /ɪŋ/.
+
+Phonics has no name for this, because it is not a unit anyone teaches. Depending on
+the word, one may happen to land on a rime (`at` in cat), on an onset plus its vowel
+(`ca` in cat), or on a blend (`st` in stop). They exist for exactly one reason: a
+recording of /kæ/ is a **single human breath**, where /k/ + /æ/ is two clips with a
+seam between them. They are an audio-smoothness device, not curriculum.
+
+Every one of them is exactly two *adjacent graphemes merged*, which is where the name
+comes from.
+
+### One word, every term
+
+```
+cat            c    =  /k/     grapheme  (onset)
+               a    =  /æ/     grapheme  (the rime's vowel)
+               t    =  /t/     grapheme  (the rime's coda)
+
+               at   =  /æt/    grapheme pair — and here also the rime
+               ca   =  /kæ/    grapheme pair — and here nothing at all
+```
+
+### Where each lives
+
+| term | in the code | count |
+|---|---|---|
+| phoneme | `recordings.PHONEME_ROWS` | 42 |
+| grapheme (single letter) | `levels.SINGLE_LETTER_GRAPHEMES` | 26 |
+| grapheme (multi-letter) | `levels.MULTI_LETTER_GRAPHEMES` | 39 |
+| magic e | `starter.all_magic_e()` | 65 |
+| grapheme pair | `dictionary.pair_catalog()` | 398 |
+| a word's alignment | `dictionary.alignment()`, `levels.word_alignment()` | — |
+| continuant / stop | `recordings.CONTINUANT`, `recordings.STOP`, `phoneme_class()` | — |
+
+Recording parts are named for what they hold: `phonemes`, `magic-e`, `pairs`, `words`,
+`sentences`.
+
+### Renamed, if you are reading old commits
+
+Two words used to mean something here that they do not mean in phonics, which made a
+real bug hard to see:
+
+- **"chunk"** meant both *any* alignment unit and, elsewhere, specifically the
+  two-phoneme ones. Now: **unit** for the umbrella, **grapheme pair** for the
+  two-phoneme kind.
+- **"rime"** was used only for the magic-e set (`ake`, `ice`, `ome`), which is far
+  narrower than the standard meaning. Now: **magic e** for those, and **rime** kept
+  for its real meaning.
+
+---
+
 ## The shape of the app (0.4.0)
 
 The UI is two screens:
