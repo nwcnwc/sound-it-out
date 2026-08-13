@@ -302,3 +302,28 @@ def families(min_words: int = 4, max_len: int = 4, min_len: int = 3):
         ]
         _families.sort(key=lambda f: -len(f["words"]))
     return _families
+
+
+_common = None
+
+
+def common_words() -> list:
+    """The common-word list, in FREQUENCY order, most common first.
+
+    Order is the whole value here. Alphabetical, the first multi-syllable
+    words a learner would meet are abandoned, aberdeen and abortion; by
+    frequency they are people, little, water, about.
+    """
+    global _common
+    if _common is None:
+        try:
+            _common = (DICT_DIR / "common.txt").read_text(
+                encoding="utf-8").split()
+        except OSError:
+            _common = []
+    return _common
+
+
+def frequency_rank() -> dict:
+    """word -> position in the common list. Missing words rank last."""
+    return {w: i for i, w in enumerate(common_words())}

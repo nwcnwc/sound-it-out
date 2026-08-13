@@ -301,7 +301,14 @@ def build_syllables(words) -> int:
 def main():
     entries = load_cmu()
     print(f"{len(entries)} dictionary words")
-    common = {w.strip().lower() for w in fetch(COMMON).splitlines()}
+    # A LIST, in the source's frequency order. It used to be a set written
+    # out sorted, which threw the frequency away - and frequency is the only
+    # thing that makes this list useful for picking words to put in front of
+    # a child. Alphabetical, the first "longer words" a learner met were
+    # abandoned, aberdeen and abortion.
+    common_order = [w.strip().lower() for w in fetch(COMMON).splitlines()
+                    if w.strip()]
+    common = set(common_order)
 
     counts = train(entries)
     # teachable correspondences only - and silent units only for the
@@ -368,9 +375,8 @@ def main():
     # from these, because CMUdict's shortest words are names and noise -
     # "ring" teaches /ɪŋ/, "ibn" teaches nothing but doubt.
     (OUT.parent / "common.txt").write_text(
-        "\n".join(sorted(w for w in common
-                         if w.isalpha() and len(w) > 1)) + "\n",
-        encoding="utf-8")
+        "\n".join(w for w in common_order if w.isalpha() and len(w) > 1)
+        + "\n", encoding="utf-8")
     n_syl = build_syllables({w for w, _ in entries})
     print(f"wrote {n_syl} syllable splits")
     print(f"wrote {aligned_all} aligned words "

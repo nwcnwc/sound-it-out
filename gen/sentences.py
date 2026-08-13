@@ -322,6 +322,59 @@ def walkthrough_items(key: str) -> list:
 # as one. Two skill packs are the deliberate exception - letter sounds and
 # nonsense sounding-out practice cannot be sentences by nature, and they are
 # the mechanics the research says to drill - so they sit in their own group.
+# The word-family and longer-word packs are CURATED, and that is a
+# deliberate departure from everything around them.
+#
+# dictionary.families() derives real families correctly, and
+# dictionary.common_words() is real frequency data. Both are right about what
+# they measure - and what they measure is the web. Ranked by frequency the
+# longest words in English are "contact", "business", "online", "services",
+# "copyright"; the -an family arrives carrying "jan" and "san". No child
+# meets any of those.
+#
+# A pack is what a parent taps to put words in front of their child, so it is
+# chosen rather than computed. The derived lists stay where they are and keep
+# doing their job: families() is what the word-family LEVEL builds from, and
+# it picks whatever the voice bank can say.
+
+FAMILY_PACK = [
+    ("at", "cat hat mat sat bat rat"),
+    ("an", "can man ran pan fan van"),
+    ("ip", "lip zip rip tip dip ship"),
+    ("in", "pin win bin tin thin chin"),
+    ("op", "top hop mop pop shop stop"),
+    ("ug", "bug hug rug mug jug dug"),
+    ("ed", "bed red fed led shed sled"),
+    ("ot", "hot pot dot got not spot"),
+]
+
+# Multi-syllable words a young child actually meets: things in the room,
+# animals, family, food, the day. Short enough to hold and concrete enough
+# to picture.
+# Every word here divides under the hyphenation patterns - checked, not
+# assumed. Hyphenation will not strand a single letter on a line, so ti-ger,
+# o-ver and o-pen come back whole and would have sat in a syllable pack
+# demonstrating nothing.
+LONGER_PACK = """
+rabbit butterfly elephant monkey puppy kitten donkey zebra
+banana apple dinner water bottle carrot cookie
+mother father sister brother baby
+table window garden pillow blanket bedroom
+yellow purple happy sunny funny
+birthday morning basket pencil button
+""".split()
+
+
+def _family_words() -> list:
+    """The curated families, family by family - the ending together with
+    the words that share it, because sitting together IS the lesson."""
+    return [w for _, words in FAMILY_PACK for w in words.split()]
+
+
+def _multisyllable_words() -> list:
+    return list(LONGER_PACK)
+
+
 def _pack_defs() -> list:
     from gen import levels, wordlists
 
@@ -404,6 +457,20 @@ def _pack_defs() -> list:
                         "memorised as shapes, so reading one proves the "
                         "sounding-out is real.",
          "items": list(levels.CVC_NONSENSE)},
+        # Word families come BEFORE the blending packs in this list because
+        # that is where they belong in the teaching order - recognising a
+        # rime and changing the front is one thing to manipulate, where
+        # blending c-a-t is three held in order.
+        {"id": "word-families", "group": "skills", "name": "Word families",
+         "description": "One ending, many words: cat, hat, mat, sat. The "
+                        "ending stays put and only the front changes, so "
+                        "there is one sound to swap rather than three to "
+                        "hold and merge.",
+         "items": _family_words()},
+        {"id": "longer-words", "group": "skills", "name": "Longer words",
+         "description": "Words of more than one syllable, read a syllable "
+                        "at a time: rab-bit, but-ter-fly.",
+         "items": _multisyllable_words()},
         {"id": "letter-teams", "group": "skills", "name": "Letter teams",
          "description": "sh, ch, th, ck as one sound: ship, chat, duck.",
          "items": list(levels.DIGRAPH_WORDS)},
