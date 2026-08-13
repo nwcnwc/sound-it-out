@@ -588,3 +588,38 @@ def test_stop_joins_close_gently_never_clack():
     assert float(jumps.max()) <= 0.05, "the voice closes gently, no clack"
     # and the vowel actually reaches silence before the closure
     assert float(np.abs(merged[boundary - 24:boundary + 24]).max()) < 0.05
+
+
+def test_the_buildup_matches_the_sentence_as_written(library):
+    """Every word is taught, in order, including a repeat and including one
+    that differs only in case.
+
+    "The pups save the day" used to teach The, pups, save, day - and then the
+    growth lit a lowercase "the" the child had never been shown. The video is
+    a rehearsal of the reading, so it follows the sentence: a word read twice
+    is taught twice, and "The" and "the" are different shapes to a reader
+    whose strength is visual.
+    """
+    from gen import levels
+    from gen.voice import VoiceSource
+
+    S.add("The pups save the day.")
+    segs = levels._library(VoiceSource(), ["The pups save the day."], 2, 1.2)
+
+    solo = [shown for s in segs
+            if (shown := "".join(g for g, _ in s.parts)) == "".join(
+                g for g, on in s.parts if on) and " " not in shown]
+    # In order, and both "The" and "the" present.
+    assert solo[:5] == ["The", "pups", "save", "the", "day"], solo[:5]
+
+
+def test_recording_still_asks_for_a_repeated_word_only_once(library):
+    """Teaching twice and recording twice are different questions.
+
+    The buildup follows the sentence, but saying "the" into a microphone a
+    second time buys nothing, so the walkthrough still de-duplicates.
+    """
+    S.add("The pups save the day.")
+    items = S.walkthrough_items(S.status()[0]["key"])
+    words = [i.display.lower() for i in items if i.kind == "word"]
+    assert words.count("the") == 1, words

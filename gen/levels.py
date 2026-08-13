@@ -989,13 +989,27 @@ def _library(voice, texts, reps, pause):
 
         word_clips = [voice.word(w.strip(".,!?;:‘’“”'\"")) for w in words]
 
-        # 1. Each word on its own, first time it appears.
-        seen = set()
+        # 1. Every word on its own, in the order the sentence has them.
+        #
+        # No de-duplication, deliberately. This used to teach each word only
+        # the first time it appeared, so "The pups save the day" taught The,
+        # pups, save, day - and then the growth in step 2 lit a "the" the
+        # child had never been shown. Two reasons that is wrong here:
+        #
+        #   the build-up should match the sentence. A word that appears twice
+        #   is read twice, and the video is a rehearsal of the reading.
+        #
+        #   "The" and "the" are different shapes. For a reader whose strength
+        #   is visual, collapsing them because they are the same word is
+        #   collapsing the very thing they are reading by.
+        #
+        # Recording still happens once per word - sentences.walkthrough_items
+        # de-duplicates there, correctly, because saying "the" twice into a
+        # microphone buys nothing.
         for w in words:
             clean = w.strip(".,!?;:‘’“”'\"")
-            if not clean or clean.lower() in seen:
+            if not clean:
                 continue
-            seen.add(clean.lower())
             segs += _one_word(voice, clean, reps, pause)
 
         # 2. Grow the sentence word by word.
