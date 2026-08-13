@@ -1850,12 +1850,22 @@ function renderReview () {
     label.setAttribute('for', box.id)
     label.className = 'rev-name'
     label.textContent = it.display
+    // Which two sounds this joins, always - "le" alone does not say what the
+    // blend is, and that is the only question a person scanning this list is
+    // asking. The example word says which one it is when the spelling is
+    // ambiguous.
+    if (it.join) {
+      const j = document.createElement('span')
+      j.className = 'rev-join'
+      j.textContent = it.join + (it.example ? `  ·  as in ${it.example}` : '')
+      label.appendChild(j)
+    }
     row.appendChild(label)
 
     const state = document.createElement('span')
     state.className = 'rev-state'
-    state.textContent = it.done ? ''
-      : review.part === 'pairs' ? 'automatic blend' : 'not recorded yet'
+    state.textContent = it.done ? 'your voice'
+      : review.part === 'pairs' ? 'joined automatically' : 'not recorded yet'
     row.appendChild(state)
 
     if (it.done || review.part === 'pairs') {
@@ -1885,7 +1895,7 @@ async function playClip (it, btn) {
     }
     if (note) {
       note.textContent = r.preview
-        ? 'the automatic blend — record it to make it one breath'
+        ? 'joined automatically — record it to make it one breath'
         : `${r.seconds}s, level ${Math.round(r.peak * 100)}%`
     }
 

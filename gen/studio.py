@@ -35,6 +35,7 @@ The first two are disqualifying; the rest are weighted.
 from __future__ import annotations
 
 import base64
+import re
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -135,6 +136,35 @@ SOUND_HINTS = {
 }
 
 
+def sound_label(ipa: str) -> str:
+    """The short spoken name of one sound: “uh”, “lll”, “a”.
+
+    SOUND_HINTS is written for a prompt read aloud - “a” as in ant, a light
+    “uh” - which is right when somebody is about to say it and too long for a
+    list of two hundred rows. This pulls out just the quoted part.
+    """
+    hint = SOUND_HINTS.get(ipa)
+    if not hint:
+        return ipa
+    m = re.search(r"[“\"]([^”\"]+)[”\"]", hint)
+    return m.group(1) if m else hint
+
+
+def sound_join(ipa: str) -> str:
+    """The sounds a pair joins, as “uh - lll”.
+
+    A row saying only "le" and "automatic blend" does not say what the blend
+    IS, so a list of two hundred of them is unreadable: the whole question a
+    person is asking is which two sounds are about to be run together.
+    """
+    from gen import dictionary
+
+    parts = dictionary.phonemes_in(ipa)
+    if len(parts) < 2:
+        return ""
+    return " - ".join(sound_label(p) for p in parts)
+
+
 def sound_recipe(ipa: str) -> str:
     """The spoken recipe for a sound: its phonemes, in plain words."""
     from gen import dictionary
@@ -180,9 +210,17 @@ class Item:
         return self.path().exists()
 
     def as_dict(self):
-        return {"key": self.key, "kind": self.kind, "display": self.display,
-                "say": self.say, "length": self.length, "ipa": self.ipa,
-                "target": LENGTH_TARGET[self.length][2], "done": self.done()}
+        d = {"key": self.key, "kind": self.kind, "display": self.display,
+             "say": self.say, "length": self.length, "ipa": self.ipa,
+             "target": LENGTH_TARGET[self.length][2], "done": self.done()}
+        if self.ipa:
+            join = sound_join(self.ipa)
+            if join:
+                d["join"] = join
+        m = re.search(r"as in [“\"]([^”\"]+)[”\"]", self.say or "")
+        if m:
+            d["example"] = m.group(1)
+        return d
 
 
 def plan(part="phonemes", order="rows") -> list:
