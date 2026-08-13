@@ -37,7 +37,7 @@ import soundfile as sf
 
 from gen import sentences as slib
 from gen import studio
-from gen.paths import STARTER_VOICE, VOICE_DIR
+from gen.paths import SOUNDS, STARTER_VOICE, VOICE_DIR
 from gen.soundout import SR, tidy_word
 from gen.voice import _safe, sentence_key
 
@@ -78,12 +78,12 @@ def run(copy=False) -> dict:
         src = slib._line_item(text).path()
         (have_l if src.exists() else miss_l).append((text, src))
     for spelling, ipa in all_magic_e():
-        src = VOICE_DIR / "phonemes" / f"{_safe(ipa)}.wav"
+        src = VOICE_DIR / SOUNDS / f"{_safe(ipa)}.wav"
         (have_r if src.exists() else miss_r).append((spelling, src))
 
     if copy:
         for sub, pairs in (("words", have_w), ("sentences", have_l),
-                           ("phonemes", have_r)):
+                           (SOUNDS, have_r)):
             d = STARTER_VOICE / sub
             d.mkdir(parents=True, exist_ok=True)
             for _, src in pairs:

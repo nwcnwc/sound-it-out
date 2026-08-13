@@ -55,7 +55,35 @@ EM_ROUNDS = 4
 # probability), which bundles "was" into wa=wɒ s=z. A flat per-unit bonus
 # tips it back toward fine splits - w=w a=ɒ s=z - which are what a child
 # should see, and which map to single recordable sounds besides.
-UNIT_BONUS = 1.2
+UNIT_BONUS = 3.0
+
+# The bonus alone could not do it, and the failure is worth recording.
+#
+# At 1.2 only 2 of 63 ordinary CVC words split into single graphemes: cat
+# came out ca=kæ t=t, hat ha=hæ t=t, the whole -at family bundled so the
+# rime they share was invisible in every one of them. Raising the bonus far
+# enough to fix cat (about 5.0) began fracturing what should stay whole -
+# back became b=b ac=æ k=k, breaking the ck digraph it was meant to protect
+# - and it still plateaued at 53 of 63.
+#
+# What is actually wrong is narrower than "too few units": a unit must not
+# run from a consonant INTO a vowel. That is a syllable's onset glued to its
+# nucleus, and no phonics programme teaches it as a unit. The test is
+# structural rather than statistical:
+#
+#     starts with a consonant, contains a vowel, spans 2+ phonemes
+#
+# which catches ca, ha, ru, bu, chi, wa, lit - and by construction spares
+# the two kinds of multi-letter unit that ARE taught: digraphs (sh ch th ck
+# ng - consonants only, one sound) and rimes (at un ing ake - vowel-initial).
+ONSET_BUNDLE_PENALTY = 6.0
+VOWEL_LETTERS = set("aeiou")
+
+
+def is_onset_bundle(g: str, p: tuple) -> bool:
+    """A unit running from an onset consonant into its vowel."""
+    return (len(p) >= 2 and g and g[0].lower() not in VOWEL_LETTERS
+            and any(c in VOWEL_LETTERS for c in g.lower()))
 # A correspondence must be seen at least this often across the whole
 # dictionary to be teachable; rarer ones are spelling lying about itself.
 MIN_COUNT = 40
@@ -65,6 +93,16 @@ MIN_COUNT = 40
 # the language. Hand-vetted; a correspondence goes here only if a teacher
 # would write it on the board, never just to lift the coverage number.
 TAUGHT_EXCEPTIONS = {
+    # The five short vowels. These are the first five correspondences any
+    # phonics programme teaches, and EM had them holding 0.76%, 6.6%, 4.1%,
+    # 3.1% and - for u=ʌ - ZERO percent of their letters. That is not
+    # English being surprising, it is a local minimum: every time the
+    # decoder chose ha=hæ the bundle took the count and h= and a= took
+    # none, so the halves weakened and the bundle strengthened, round after
+    # round, until short u could not be isolated in cup or sun at any bonus.
+    ("a", ("æ",)), ("e", ("ɛ",)), ("i", ("ɪ",)),
+    ("o", ("ɒ",)), ("u", ("ʌ",)),
+
     ("ai", ("ɛ",)),            # said, again
     ("f", ("v",)),             # of
     ("o", ("uː",)),            # to, do, who
@@ -146,6 +184,12 @@ def align(word, phons, prob, bonus=0.0):
                     if s is None:
                         continue
                     cand = score + s + bonus
+                    # Rides on the same switch as `bonus`, for the same
+                    # reason: this is a teaching preference, not a fact
+                    # about English, and EM must be left to learn what the
+                    # language actually does.
+                    if bonus and is_onset_bundle(g, p):
+                        cand -= ONSET_BUNDLE_PENALTY
                     if cand > best[i + dl][j + dp][0]:
                         best[i + dl][j + dp] = (cand, (i, j, dl, dp))
     if best[n][m][0] == -math.inf:

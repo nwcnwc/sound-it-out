@@ -121,8 +121,8 @@ async function downloadUpdate (asset, onProgress) {
 
   await new Promise((resolve, reject) => {
     const out = fs.createWriteStream(dest)
-    res.on('data', (chunk) => {
-      done += chunk.length
+    res.on('data', (buf) => {
+      done += buf.length
       if (onProgress) onProgress(done, total)
     })
     res.pipe(out)

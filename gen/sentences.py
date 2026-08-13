@@ -24,6 +24,7 @@ import re
 import numpy as np
 
 from gen import studio
+from gen import paths
 from gen.paths import WORDLISTS
 from gen.voice import sentence_key
 
@@ -169,8 +170,8 @@ def _letter_recorded(ch: str) -> bool:
     from gen import levels, voice
 
     ipa = levels.SINGLE_LETTER_GRAPHEMES.get(ch.lower(), ch.lower())
-    return (voice.VoiceSource._lookup(voice.VOICE_DIR, "phonemes", ipa) is not None
-            or voice.VoiceSource._lookup(voice.STARTER_VOICE, "phonemes", ipa)
+    return (voice.VoiceSource._lookup(voice.VOICE_DIR, paths.SOUNDS, ipa) is not None
+            or voice.VoiceSource._lookup(voice.STARTER_VOICE, paths.SOUNDS, ipa)
             is not None)
 
 

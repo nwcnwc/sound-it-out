@@ -349,9 +349,9 @@ def _download(url: str, dest: Path, on_bytes) -> None:
             have = 0  # server ignored the range, or the file changed underneath us
         total = int(r.headers.get("Content-Length") or 0) + have
         with open(part, "ab" if have else "wb") as f:
-            while chunk := r.read(1 << 20):
-                f.write(chunk)
-                on_bytes(len(chunk))
+            while buf := r.read(1 << 20):
+                f.write(buf)
+                on_bytes(len(buf))
     got = part.stat().st_size
     if total and got != total:
         # Half a safetensors file fails much later and much more confusingly.

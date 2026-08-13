@@ -47,6 +47,55 @@ else:
 MODELS = RESOURCES / "models"
 FONTS = RESOURCES / "app" / "fonts"
 
+# The subdirectories of a voice bank, named for what they hold. Constants
+# rather than string literals at twenty call sites, because that is how the
+# old name drifted away from the truth without anyone noticing.
+#
+# SOUNDS holds everything keyed by an IPA label: the 42 phonemes, the magic-e
+# recordings, and any grapheme pair somebody has recorded as one breath. It
+# was called "phonemes" when phonemes were all it held, and stayed that way
+# after it stopped being true - so a directory of 126 files was named for the
+# 42 of them that fit the label.
+SOUNDS = "sounds"
+WORDS = "words"
+SENTENCES = "sentences"
+BANK_DIRS = (SOUNDS, WORDS, SENTENCES)
+
+_LEGACY_SOUNDS = "phonemes"
+
+
+def migrate_voice_layout(root) -> int:
+    """Move an old `phonemes/` bank to `sounds/`. Returns files moved.
+
+    Shipping the rename without this would make every existing user's
+    recordings invisible at the next update - the app would look in sounds/,
+    find nothing, and report a bank they spent forty minutes filling as
+    empty. Their recordings are irreplaceable and this repo has already lost
+    42 clips once (see VOICE_DIR below), so nothing here deletes: a name
+    collision moves what it safely can and leaves the rest where it is.
+    """
+    root = Path(root)
+    old, new = root / _LEGACY_SOUNDS, root / SOUNDS
+    if not old.is_dir():
+        return 0
+    if not new.exists():
+        n = len(list(old.glob("*.wav")))
+        old.rename(new)          # atomic within one filesystem
+        return n
+    moved = 0
+    for f in old.iterdir():
+        if not f.is_file():
+            continue
+        dst = new / f.name
+        if not dst.exists():     # never overwrite a newer recording
+            f.rename(dst)
+            moved += 1
+    try:
+        old.rmdir()              # only ever succeeds when it is empty
+    except OSError:
+        pass
+    return moved
+
 BUILD = DATA / "build"
 JOBS = BUILD / "jobs"
 AUDIO_CACHE = BUILD / "audio"
@@ -87,6 +136,9 @@ def ensure_user_files():
     Copy rather than symlink: they edit these, and an upgrade must not silently
     revert the user's own names back to the placeholders.
     """
+    # Before anything else looks at the bank: an install upgrading from the
+    # old layout must find its recordings where the new code expects them.
+    migrate_voice_layout(VOICE_DIR)
     for d in (BUILD, JOBS, AUDIO_CACHE, VOICE_DIR, WORDLISTS):
         d.mkdir(parents=True, exist_ok=True)
     for shipped in _shipped_wordlists():
@@ -111,5 +163,5 @@ def describe() -> dict:
         "frozen": FROZEN,
         "resources": str(RESOURCES),
         "data": str(DATA),
-        "starter_present": (STARTER_VOICE / "phonemes").exists(),
+        "starter_present": (STARTER_VOICE / SOUNDS).exists(),
     }

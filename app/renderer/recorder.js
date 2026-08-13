@@ -17,7 +17,7 @@ const Recorder = (() => {
   let sink = null
   let analyser = null
   let probe = null
-  let chunks = []
+  let blocks = []
   let capturing = false
 
   async function init () {
@@ -34,7 +34,7 @@ const Recorder = (() => {
     await ctx.audioWorklet.addModule('recorder-worklet.js')
     source = ctx.createMediaStreamSource(stream)
     node = new AudioWorkletNode(ctx, 'recorder-processor')
-    node.port.onmessage = (e) => { if (capturing) chunks.push(e.data) }
+    node.port.onmessage = (e) => { if (capturing) blocks.push(e.data) }
 
     // The worklet MUST reach the destination or the graph never pulls audio
     // through it and process() is not called - which records pure silence.
@@ -56,7 +56,7 @@ const Recorder = (() => {
   }
 
   function start () {
-    chunks = []
+    blocks = []
     capturing = true
     node.port.postMessage('start')
   }
@@ -68,7 +68,7 @@ const Recorder = (() => {
   function resume () { capturing = true; if (node) node.port.postMessage('start') }
   function seconds () {
     let n = 0
-    for (const c of chunks) n += c.length
+    for (const c of blocks) n += c.length
     return n / (ctx ? ctx.sampleRate : 48000)
   }
 
@@ -77,11 +77,11 @@ const Recorder = (() => {
     capturing = false
     if (node) node.port.postMessage('stop')
     let total = 0
-    for (const c of chunks) total += c.length
+    for (const c of blocks) total += c.length
     const flat = new Float32Array(total)
     let o = 0
-    for (const c of chunks) { flat.set(c, o); o += c.length }
-    chunks = []
+    for (const c of blocks) { flat.set(c, o); o += c.length }
+    blocks = []
 
     let peak = 0
     for (let i = 0; i < flat.length; i++) {
@@ -125,7 +125,7 @@ const Recorder = (() => {
       if (ctx) ctx.close()
     } catch { /* nothing useful to do if teardown fails */ }
     ctx = node = source = stream = sink = analyser = probe = null
-    chunks = []
+    blocks = []
     capturing = false
   }
 

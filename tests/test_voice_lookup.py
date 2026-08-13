@@ -18,6 +18,7 @@ import soundfile as sf
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from gen import paths  # noqa: E402
 from gen import voice as V  # noqa: E402
 from gen.soundout import SR  # noqa: E402
 
@@ -60,33 +61,33 @@ def test_a_recorded_a_satisfies_a_request_for_ae(voice_dir):
     voice even after she had recorded it. "a" is in the first chapter
     (s, a, t, p, i, n), so this was audible in nearly every video.
     """
-    put(voice_dir / "phonemes", "a")
+    put(voice_dir / V.SOUNDS, "a")
     v = V.VoiceSource()
-    assert v._recorded("phonemes", "æ") is not None
+    assert v._recorded(V.SOUNDS, "æ") is not None
     assert v.used["recorded"] == 1
 
 
 def test_the_alias_works_in_both_directions(voice_dir):
-    put(voice_dir / "phonemes", "æ")
-    assert V.VoiceSource()._recorded("phonemes", "a") is not None
+    put(voice_dir / V.SOUNDS, "æ")
+    assert V.VoiceSource()._recorded(V.SOUNDS, "a") is not None
 
 
 def test_script_g_and_keyboard_g_are_the_same_sound(voice_dir):
     """espeak emits U+0261; a keyboard produces U+0067."""
-    put(voice_dir / "phonemes", "g")
-    assert V.VoiceSource()._recorded("phonemes", "ɡ") is not None
+    put(voice_dir / V.SOUNDS, "g")
+    assert V.VoiceSource()._recorded(V.SOUNDS, "ɡ") is not None
 
 
 def test_an_alias_never_invents_a_recording(voice_dir):
     """Aliasing must not make a missing clip look present."""
-    (voice_dir / "phonemes").mkdir(parents=True)
-    assert V.VoiceSource()._recorded("phonemes", "æ") is None
+    (voice_dir / V.SOUNDS).mkdir(parents=True)
+    assert V.VoiceSource()._recorded(V.SOUNDS, "æ") is None
 
 
 def test_unrelated_sounds_are_not_aliased(voice_dir):
     """/s/ must never be answered with a recording of something else."""
-    put(voice_dir / "phonemes", "z")
-    assert V.VoiceSource()._recorded("phonemes", "s") is None
+    put(voice_dir / V.SOUNDS, "z")
+    assert V.VoiceSource()._recorded(V.SOUNDS, "s") is None
 
 
 # --------------------------------------------------------- starter voice
@@ -95,7 +96,7 @@ def test_unrelated_sounds_are_not_aliased(voice_dir):
 def test_the_starter_voice_answers_an_unrecorded_phoneme(voice_dir, starter_dir):
     """A fresh install has no family recordings, and the whole point of
     shipping the starter clips is that /s/ is still a human /s/."""
-    put(starter_dir / "phonemes", "s")
+    put(starter_dir / V.SOUNDS, "s")
     v = V.VoiceSource()
     assert v.phoneme("s") is not None
     assert v.used["starter"] == 1 and v.used["cloned"] == 0
@@ -104,8 +105,8 @@ def test_the_starter_voice_answers_an_unrecorded_phoneme(voice_dir, starter_dir)
 def test_a_family_recording_always_beats_the_starter_voice(voice_dir, starter_dir):
     """"Until the user replaces them": the moment she records a sound, the
     shipped clip must never be heard again."""
-    put(voice_dir / "phonemes", "s", seconds=0.9)
-    put(starter_dir / "phonemes", "s", seconds=0.3)
+    put(voice_dir / V.SOUNDS, "s", seconds=0.9)
+    put(starter_dir / V.SOUNDS, "s", seconds=0.3)
     v = V.VoiceSource()
     out = v.phoneme("s")
     assert len(out) / SR == pytest.approx(0.9, abs=0.01)
@@ -116,7 +117,7 @@ def test_the_starter_voice_understands_both_transcriptions(voice_dir, starter_di
     """The /a/ vs /ae/ alias applies to the starter bank the same as to the
     family's own - the shipped clips are named the way the recording table
     spells sounds, and levels.py asks the way espeak spells them."""
-    put(starter_dir / "phonemes", "a")
+    put(starter_dir / V.SOUNDS, "a")
     v = V.VoiceSource()
     v.phoneme("æ")
     assert v.used["starter"] == 1
@@ -125,7 +126,7 @@ def test_the_starter_voice_understands_both_transcriptions(voice_dir, starter_di
 def test_starter_clips_are_not_counted_as_genuinely_theirs(voice_dir, starter_dir):
     """The summary exists to be honest about whose voice a video is in, and
     the developer's phonemes are human but not hers."""
-    put(starter_dir / "phonemes", "s")
+    put(starter_dir / V.SOUNDS, "s")
     v = V.VoiceSource()
     v.phoneme("s")
     assert "0% genuinely their" in v.summary()
@@ -151,7 +152,7 @@ def test_the_shipped_bank_actually_resolves(monkeypatch):
 
     v = V.VoiceSource()
     missing = [p for p in sorted(asked)
-               if v._lookup(V.STARTER_VOICE, "phonemes", p) is None]
+               if v._lookup(V.STARTER_VOICE, V.SOUNDS, p) is None]
     assert not missing, f"starter bank cannot say {missing}"
 
 
@@ -227,7 +228,7 @@ def test_silence_is_not_amplified_into_noise(voice_dir):
 
 
 def test_the_lookup_levels_what_it_returns(voice_dir):
-    put(voice_dir / "phonemes", "s")  # written at 0.2 - quiet
+    put(voice_dir / V.SOUNDS, "s")  # written at 0.2 - quiet
     v = V.VoiceSource()
     out = v.phoneme("s")
     assert float(np.sqrt(np.mean(out ** 2))) > 0.06
@@ -269,7 +270,7 @@ def test_an_unrecorded_word_raises_with_directions(voice_dir, starter_dir):
 
 
 def test_capabilities_report_the_starter_bank_as_the_fallback(voice_dir, starter_dir):
-    put(starter_dir / "phonemes", "s")
+    put(starter_dir / V.SOUNDS, "s")
     caps = V.VoiceSource.capabilities()
     assert caps["fallback_voice"] is True and caps["starter_phonemes"] == 1
     assert "kokoro" not in caps
@@ -278,7 +279,55 @@ def test_capabilities_report_the_starter_bank_as_the_fallback(voice_dir, starter
 def test_schwa_is_answered_by_uh(voice_dir, starter_dir):
     """No phonics session records an isolated schwa, but the dictionary
     uses it constantly - "the" ends in one. The recorded /ʌ/ answers."""
-    put(starter_dir / "phonemes", "ʌ")
+    put(starter_dir / V.SOUNDS, "ʌ")
     v = V.VoiceSource()
     assert v.phoneme("ə") is not None
     assert v.used["starter"] == 1
+
+
+# --------------------------------------------------------------- migration
+
+def test_an_old_phonemes_bank_moves_to_sounds(tmp_path):
+    """The rename must not make an existing family's recordings vanish.
+
+    Shipping `sounds/` without this leaves every current install looking in
+    an empty directory and reporting a bank they spent forty minutes filling
+    as not recorded.
+    """
+    old = tmp_path / "phonemes"
+    old.mkdir(parents=True)
+    put(old, "s")
+    put(old, "m")
+
+    moved = paths.migrate_voice_layout(tmp_path)
+
+    assert moved == 2
+    assert not old.exists()
+    assert {p.stem for p in (tmp_path / "sounds").glob("*.wav")} == {"s", "m"}
+
+
+def test_migration_never_overwrites_a_newer_recording(tmp_path):
+    """If both directories exist, the one already in sounds/ wins.
+
+    A clip in the new location was recorded by the new code and is therefore
+    the later take. Nothing is deleted either way - a name that cannot be
+    moved safely is left exactly where it is.
+    """
+    old, new = tmp_path / "phonemes", tmp_path / "sounds"
+    old.mkdir(parents=True)
+    new.mkdir(parents=True)
+    put(old, "s", seconds=0.9)
+    put(new, "s", seconds=0.3)      # the newer take, deliberately different
+    put(old, "t")
+
+    moved = paths.migrate_voice_layout(tmp_path)
+
+    assert moved == 1                                  # only "t"
+    assert (old / "s.wav").exists(), "the older take is kept, not deleted"
+    kept, _ = sf.read(new / "s.wav")
+    assert len(kept) < 0.5 * SR, "the clip already in sounds/ was not replaced"
+
+
+def test_migration_is_a_no_op_when_there_is_nothing_to_move(tmp_path):
+    assert paths.migrate_voice_layout(tmp_path) == 0
+    assert paths.migrate_voice_layout(tmp_path / "nope") == 0

@@ -41,7 +41,7 @@ import numpy as np
 import soundfile as sf
 
 from gen import recordings as R
-from gen.paths import VOICE_DIR
+from gen.paths import SENTENCES, SOUNDS, VOICE_DIR, WORDS
 from gen.soundout import SR
 
 # Per class, the length a take should be. Continuants are held for a second
@@ -171,7 +171,7 @@ class Item:
     ipa: str = ""
 
     def path(self):
-        sub = {"phoneme": "phonemes", "sentence": "sentences"}.get(self.kind, "words")
+        sub = {"phoneme": SOUNDS, "sentence": SENTENCES}.get(self.kind, WORDS)
         key = self.ipa if self.kind == "phoneme" else self.key
         safe = "".join(f"u{ord(c):04x}" if not c.isalnum() else c for c in key)
         return VOICE_DIR / sub / f"{safe}.wav"

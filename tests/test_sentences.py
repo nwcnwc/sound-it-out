@@ -16,7 +16,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from gen import levels, sentences as S, studio  # noqa: E402
+from gen import levels, paths, sentences as S, studio  # noqa: E402
 from gen.soundout import SR  # noqa: E402
 
 
@@ -375,7 +375,7 @@ def test_soft_c_and_g_in_rimes():
 # ------------------------------------------------------------------ rimes
 
 
-def test_rimes_record_into_the_phoneme_bank(library):
+def test_magic_e_records_into_the_sound_bank(library):
     """A rime item saves under its IPA in phonemes/ - exactly where
     voice.phoneme() already looks, so a family recording one overrides the
     shipped clip with no new machinery."""
@@ -383,7 +383,7 @@ def test_rimes_record_into_the_phoneme_bank(library):
     assert len(items) == 65
     ase = next(i for i in items if i.key == "ase")
     assert ase.ipa == "eɪs" and ase.kind == "phoneme"
-    assert ase.path().parent.name == "phonemes"
+    assert ase.path().parent.name == paths.SOUNDS
     assert "case" in ase.say
 
 
@@ -492,14 +492,18 @@ def test_multi_sound_chunks_keep_all_their_sounds():
 def test_piece_prompts_carry_word_recipe_and_notation(library):
     """A lazy-record piece must say which word it came from, spell out the
     sound combination in plain words, and name the notation too."""
-    S.add("Grandma is happy.")
+    # "ring" is r + ing, and /ɪŋ/ is a GRAPHEME PAIR - two phonemes in one
+    # unit - so it is the kind of piece that has a recipe worth spelling out.
+    # A word made only of single graphemes queues nothing, because every one
+    # of them is already among the 42.
+    S.add("The king is happy.")
     items = S.walkthrough_items(S.status()[0]["key"])
     pieces = [i for i in items if i.kind == "phoneme"]
-    assert pieces, "buildable words must queue their missing pieces"
-    chunk = next(i for i in pieces if i.key == "æn")
-    assert "Grandma" in chunk.say          # which word
-    assert "then" in chunk.say             # the spoken recipe
-    assert "/æn/" in chunk.say             # the notation
+    assert pieces, "a word containing a grapheme pair must queue it"
+    pair = next(i for i in pieces if i.key == "ɪŋ")
+    assert "king" in pair.say.lower()      # which word
+    assert "then" in pair.say              # the spoken recipe
+    assert "/ɪŋ/" in pair.say              # the notation
 
 
 def test_the_touching_pass_never_swallows_a_stop():

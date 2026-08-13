@@ -60,7 +60,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-from gen.paths import BUILD, VOICE_DIR
+from gen.paths import BANK_DIRS, BUILD, SOUNDS, VOICE_DIR
 
 OUT_DIR = BUILD / "restore-preview"
 
@@ -216,11 +216,11 @@ def _label(src: Path) -> str:
 # whose whole identity is high-frequency noise, and failure to fix the clips
 # that actually measured worst.
 SAMPLE = (
-    [VOICE_DIR / "phonemes" / f"{_safe(p)}.wav"
+    [VOICE_DIR / SOUNDS / f"{_safe(p)}.wav"
      for p in ("s", "ʃ", "f", "θ", "z", "v", "tʃ", "ð")]          # fricatives
-    + [VOICE_DIR / "phonemes" / f"{_safe(p)}.wav"
+    + [VOICE_DIR / SOUNDS / f"{_safe(p)}.wav"
        for p in ("p", "k", "b", "eɪl")]                            # worst SNR
-    + [VOICE_DIR / "phonemes" / f"{_safe(p)}.wav"
+    + [VOICE_DIR / SOUNDS / f"{_safe(p)}.wav"
        for p in ("iː", "ɑː")]                                      # vowels
 )
 

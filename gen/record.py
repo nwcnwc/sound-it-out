@@ -60,7 +60,7 @@ import soundfile as sf
 
 from gen import sentences as S
 from gen import studio
-from gen.paths import STARTER_VOICE, VOICE_DIR
+from gen.paths import BANK_DIRS, STARTER_VOICE, VOICE_DIR
 from gen.soundout import SR
 from gen.voice import sentence_key
 
@@ -98,14 +98,14 @@ PARTS = ("phonemes", "magic-e", "pairs", "words", "sentences")
 #
 # Every one of its 60 distinct sounds is also in "pairs", and both parts key
 # their file by IPA - so /aɪb/ is written by the rime "ibe" and again by the
-# chunk "ib", to the same aɪb.wav. Recording both is one wasted take in sixty
+# pair "ib", to the same aɪb.wav. Recording both is one wasted take in sixty
 # and the second one silently wins. gen/studio.py already half-knows this: its
-# chunks section notes that "rime recordings made before this list existed
+# pairs section notes that "magic-e recordings made before this list existed
 # appear here as done".
 #
 # The part still exists and can be asked for by name. Its prompts are the
 # better ones for those sixty - "Say the ending 'ibe' ... No word around it",
-# against the chunk list's "Say 'ib' as in 'tribe'", which names a spelling
+# against the pair list's "Say 'ib' as in 'tribe'", which names a spelling
 # that does not appear in the anchor word.
 ALL_ORDER = ("phonemes", "pairs", "words", "sentences")
 
@@ -115,7 +115,8 @@ ALL_ORDER = ("phonemes", "pairs", "words", "sentences")
 def plan_for(part: str, path: Path | None = None) -> list:
     """What to record, for one part.
 
-    Phonemes, rimes and chunks are fixed inventories of the language and come
+    Phonemes, magic-e and grapheme pairs are fixed inventories of the language
+    and come
     from gen/studio.py unchanged. Words and sentences do NOT: both are read
     out of one file, one sentence per line, and the words are the words IN
     those sentences rather than a second list kept alongside.
@@ -413,7 +414,7 @@ def prunable() -> tuple:
     starter set can replace it.
     """
     deletable, kept = [], []
-    for sub in ("phonemes", "words", "sentences"):
+    for sub in BANK_DIRS:
         d = VOICE_DIR / sub
         if not d.exists():
             continue
@@ -442,7 +443,7 @@ def do_prune(term: Term, confirm: bool) -> int:
     say(f"    {C['grn']}keep{C['r']}    {len(kept):>4}  "
         f"{C['dim']}no usable starter counterpart{C['r']}")
     extra = [p for p in VOICE_DIR.iterdir()
-             if p.name not in ("phonemes", "words", "sentences")]
+             if p.name not in BANK_DIRS]
     say(f"    {C['grn']}keep{C['r']}    {len(extra):>4}  "
         f"{C['dim']}never a candidate: "
         f"{', '.join(sorted(p.name for p in extra)[:4])}{C['r']}")
@@ -624,7 +625,7 @@ def main(argv=None):
     # Chunks are 398 items and studio.plan() returns them most-useful-first,
     # because each one only REPLACES an automatic blend of sounds already
     # recorded - the bank works without any of them. So the sane way to
-    # record chunks is the top of the list, an evening at a time, rather
+    # record pairs is the top of the list, an evening at a time, rather
     # than treating 398 as a target.
     ap.add_argument("--limit", type=int, default=0,
                     help="stop after N items (0 = no limit)")

@@ -25,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 import soundfile as sf
 
-from gen.paths import STARTER_VOICE, VOICE_DIR
+from gen.paths import SOUNDS, STARTER_VOICE, VOICE_DIR
 from gen.soundout import SR, loud, slower, tidy_word
 
 
@@ -99,7 +99,7 @@ class VoiceSource:
     @staticmethod
     def capabilities() -> dict:
         words = VOICE_DIR / "words"
-        phon = VOICE_DIR / "phonemes"
+        phon = VOICE_DIR / SOUNDS
         n_words = len(list(words.glob("*.wav"))) if words.exists() else 0
         n_phon = len(list(phon.glob("*.wav"))) if phon.exists() else 0
         sent = VOICE_DIR / "sentences"
@@ -112,8 +112,8 @@ class VoiceSource:
         except Exception:
             cloning = False  # optional module; absence is normal, not an error
         starter = (
-            len(list((STARTER_VOICE / "phonemes").glob("*.wav")))
-            if (STARTER_VOICE / "phonemes").exists() else 0
+            len(list((STARTER_VOICE / SOUNDS).glob("*.wav")))
+            if (STARTER_VOICE / SOUNDS).exists() else 0
         )
         return {
             "recordings": n_words > 0 or n_phon > 0,
@@ -219,11 +219,11 @@ class VoiceSource:
 
     def _one_sound(self, ipa: str):
         """A single clip for `ipa`, hers first, starter second, or None."""
-        a = self._recorded("phonemes", ipa)
+        a = self._recorded(SOUNDS, ipa)
         if a is not None:
             return a
         if self.prefer_recordings:
-            a = self._lookup(STARTER_VOICE, "phonemes", ipa)
+            a = self._lookup(STARTER_VOICE, SOUNDS, ipa)
             if a is not None:
                 self.used["starter"] += 1
                 return a
