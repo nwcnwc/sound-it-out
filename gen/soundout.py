@@ -147,7 +147,12 @@ def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndar
     of room noise, and the ceiling leaves headroom rather than clipping."""
     if not a.size:
         return a
-    rms = float(np.sqrt(np.mean(a.astype("float64") ** 2)))
+    # Measured over the sounding part, not the whole clip. A recording that
+    # is mostly silence reads as very quiet, earns a large gain, and the gain
+    # lands on whatever noise IS in it - which is how a false-start blip in
+    # the /ʌ/ clip was amplified to 0.911 and became a clap.
+    body = content(a) if a.size > SR // 10 else a
+    rms = float(np.sqrt(np.mean(body.astype("float64") ** 2)))
     if rms < 1e-5:  # effectively silence: boosting it only amplifies hiss
         return a
     g = min(target_rms / rms, max_gain)
@@ -760,7 +765,38 @@ def content(a: np.ndarray, keep_ms=15) -> np.ndarray:
     on = rms > top * 0.10
     if not on.any():
         return a
-    i0 = int(np.argmax(on))
-    i1 = n - int(np.argmax(on[::-1]))
+
+    # The LONGEST sounding run, not the outer span.
+    #
+    # Taking the outer span assumes everything between the first sound and
+    # the last is the sound. A false start breaks that: the recorded /ʌ/ was
+    # a quiet blip, a second of silence, then the real vowel - and the outer
+    # span kept all 1.79s of it, so cap(keep="start") played the blip and the
+    # gap and threw the vowel away. In "pups" that came out "p - clap - p - s"
+    # with no vowel at all.
+    #
+    # Short dips are bridged first, because a real sound has them: a stop is
+    # a closure then a burst, and splitting on the closure would keep only
+    # half a /d/.
+    bridge = max(1, int(0.12 * SR / w))
+    filled, gap = on.copy(), 0
+    for i, v in enumerate(on):
+        if v:
+            if 0 < gap <= bridge:
+                filled[i - gap:i] = True
+            gap = 0
+        else:
+            gap += 1
+    best, run, start = (0, 0), 0, 0
+    for i, v in enumerate(list(filled) + [False]):
+        if v:
+            if run == 0:
+                start = i
+            run += 1
+        else:
+            if run > best[1] - best[0]:
+                best = (start, i)
+            run = 0
+    i0, i1 = best
     pad = int(SR * keep_ms / 1000)
     return a[max(0, i0 * w - pad): min(len(a), i1 * w + pad)]

@@ -511,9 +511,25 @@ def _wrap(text, width):
 
 def run_part(term: Term, part: str, device: str, redo: bool,
              start: int, limit: int = 0, seen: set | None = None,
-             path: Path | None = None, target: str = "user") -> int:
+             path: Path | None = None, target: str = "user",
+             only: str = "") -> int:
     roots = roots_for(target)
     items = plan_for(part, path)
+    if only:
+        want = {w.strip().lower() for w in only.split(",") if w.strip()}
+        # An exact key wins. Two sounds share the display "th" - the one in
+        # "thin" and the one in "this" - and their keys are th and th-this,
+        # so naming a key must mean that sound and not both of them.
+        exact = [it for it in items if it.key.lower() in want]
+        loose = [it for it in items
+                 if it.display.lower() in want or (it.ipa or "").lower() in want]
+        named = {it.key.lower() for it in exact}
+        items = exact + [it for it in loose if it.key.lower() not in named
+                         and it.display.lower() not in named]
+        if not items:
+            say(f"  nothing in {part!r} matches {sorted(want)}")
+            return 0
+        redo = True                 # naming an item is asking to redo it
     if not redo:
         # "Already recorded" means present in the PRIMARY bank. With --to both
         # that is the user's, so a clip missing only from starter is still
@@ -629,6 +645,12 @@ def main(argv=None):
     # than treating 398 as a target.
     ap.add_argument("--limit", type=int, default=0,
                     help="stop after N items (0 = no limit)")
+    # Replacing one sound is the common repair - a single bad take, found
+    # weeks later in a finished video. Without this the only way to reach it
+    # was --redo on the whole part, which re-records 42 sounds to fix one.
+    ap.add_argument("--only", default="",
+                    help="comma-separated items to record, by key or by what "
+                         "is shown (e.g. --only aw,s,th). Implies --redo.")
     ap.add_argument("--device", default="default", help="PulseAudio source")
     ap.add_argument("--to", dest="target", default="user",
                     choices=("user", "starter", "both"),
@@ -658,8 +680,17 @@ def main(argv=None):
         for r in roots_for(args.target):
             say(f"  writing to {C['b']}{r}{C['r']}")
         if args.target in ("starter", "both"):
-            say(f"  {C['yel']}the starter bank is tracked in git and ships "
-                f"in the release{C['r']}")
+            # Everyone who installs the app gets these. A bad take here is a
+            # bad take on every machine, so it is worth one keystroke.
+            say(f"  {C['yel']}The starter bank SHIPS - every install gets "
+                f"these recordings.{C['r']}")
+            say(f"  {C['dim']}They are tracked in git and replace what is "
+                f"there.{C['r']}")
+            say(f"\n  Write to the shipped bank?  {C['dim']}[y] yes   "
+                f"anything else cancels{C['r']}")
+            if term.key() != "y":
+                say("  cancelled\n")
+                return 1
         say()
         for w in missing_sight_words(path):
             say(f"  {C['yel']}sight word {w!r} is in no sentence - "
@@ -670,7 +701,7 @@ def main(argv=None):
                     f"{', '.join(PARTS)}")
                 return 2
             if run_part(term, p, args.device, args.redo, args.start,
-                        args.limit, seen, path, args.target):
+                        args.limit, seen, path, args.target, args.only):
                 return 1
     return 0
 

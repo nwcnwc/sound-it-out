@@ -395,6 +395,33 @@ def score_take(audio: np.ndarray, item: Item) -> Score:
                        "knock on the desk, or a bump on the microphone.")
             return s
 
+    # 2c. a false start: a blip, a long gap, then the real take.
+    #
+    # This is what the recorded /ʌ/ was - a quiet start, a second of silence,
+    # then the vowel - and nothing caught it, because _trim measures from the
+    # FIRST sound to the LAST and so read the whole 1.79s as one long vowel.
+    # Downstream it was worse than useless: the clip was levelled from an rms
+    # dominated by the silence, which amplified the blip, and then capped from
+    # the start, which kept the blip and threw the vowel away. In "pups" the
+    # result was "p - clap - p - s" with no vowel in it at all.
+    w = int(SR * 0.02)
+    if a.size > w * 4:
+        blocks = np.array([float(np.sqrt(np.mean(a[i * w:(i + 1) * w] ** 2)))
+                           for i in range(len(a) // w)])
+        loud_blocks = blocks > blocks.max() * 0.10
+        if loud_blocks.any():
+            first, last = int(np.argmax(loud_blocks)), len(loud_blocks) - int(
+                np.argmax(loud_blocks[::-1]))
+            gap, worst = 0, 0
+            for v in loud_blocks[first:last]:
+                gap = 0 if v else gap + 1
+                worst = max(worst, gap)
+            if worst * w / SR > 0.35:
+                s.fatal = ("There is a long gap in the middle - it sounds "
+                           "like a false start, then a pause, then the real "
+                           "one. Record it again as a single go.")
+                return s
+
     # 1. schwa on a consonant - the fatal one for teaching
     if item.kind == "phoneme" and item.ipa:
         cls = R.phoneme_class(item.ipa)
