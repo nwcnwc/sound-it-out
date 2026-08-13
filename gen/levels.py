@@ -632,6 +632,22 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
     return segs
 
 
+def sayable(voice, words):
+    """The words the bank can actually say, in order.
+
+    A level with a fixed word list is only as good as what has been recorded,
+    and a word nobody has said stops the whole video rather than one item of
+    it. Six of the ten words in CVC_REAL are absent from the shipped starter
+    bank, which meant level 5 failed outright on a fresh install - the level
+    could have taught the other four and did not.
+
+    Whole words are never assembled, so this is not a fallback to synthesis:
+    it is teaching what there is a human voice for, and getting richer as
+    more is recorded.
+    """
+    return [w for w in words if voice.can_say(w)]
+
+
 def _sound_out(voice, spellings, reps, pause):
     """Sound a word out with the gaps closing pass by pass, then blend it.
 
@@ -953,17 +969,24 @@ def build(level: int, voice, opts: dict) -> list:
     if level == 4:
         return _sound_out(voice, BLENDS_2, reps, pause)
     if level == 5:
-        spellings = [spell(w) for w in CVC_REAL]
+        words = sayable(voice, CVC_REAL)
         if opts.get("nonsense", True):
-            spellings += [spell(w) for w in CVC_NONSENSE]
-        return _sound_out(voice, spellings, reps, pause)
+            words += sayable(voice, CVC_NONSENSE)
+        if not words:
+            raise ValueError(
+                "None of this level's words have been recorded yet. Record a "
+                "few three-letter words - sat, pin, man - and it builds "
+                "itself from them.")
+        return _sound_out(voice, [spell(w) for w in words], reps, pause)
     if level == 6:
         return _build_up(voice, reps, pause)
     if level == 7:
-        return _sound_out(voice, [split_graphemes(w) for w in DIGRAPH_WORDS],
+        return _sound_out(voice, [split_graphemes(w)
+                                  for w in sayable(voice, DIGRAPH_WORDS)],
                           reps, pause)
     if level == 8:
-        return _sound_out(voice, [split_graphemes(w) for w in CLUSTER_WORDS],
+        return _sound_out(voice, [split_graphemes(w)
+                                  for w in sayable(voice, CLUSTER_WORDS)],
                           reps, pause)
     if level == 9:
         return _sentences(voice, SENTENCES, reps, pause)
@@ -979,20 +1002,20 @@ def build(level: int, voice, opts: dict) -> list:
         # the corpus, so most of its words are ones nobody has recorded -
         # picking those would raise MissingVoice at a reader rather than
         # teach them anything. The level gets richer as more is recorded.
-        sayable = [dict(f, words=[w for w in f["words"] if voice.can_say(w)])
-                   for f in fams]
-        sayable = [f for f in sayable if len(f["words"]) >= 2]
-        if not sayable:
+        teachable = [dict(f, words=sayable(voice, f["words"])) for f in fams]
+        teachable = [f for f in teachable if len(f["words"]) >= 2]
+        if not teachable:
             raise ValueError(
                 "No word family has enough recorded words yet. Record a few "
                 "short words that rhyme - cat, hat, mat - and this level "
                 "builds itself from them.")
-        fam = next((f for f in sayable if f["rime"] == want), sayable[0])
+        fam = next((f for f in teachable if f["rime"] == want), teachable[0])
         return _family(voice, dict(fam, words=fam["words"][:limit]),
                        reps, pause)
     if level == 15:
-        words = opts.get("words") or [w for w in wordlists.all_words()
-                                      if dictionary.syllables(w)]
+        words = sayable(voice, opts.get("words")
+                        or [w for w in wordlists.all_words()
+                            if dictionary.syllables(w)])
         if not words:
             raise ValueError(
                 "This level needs words of more than one syllable. Add some "

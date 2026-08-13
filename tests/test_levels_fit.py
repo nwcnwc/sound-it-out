@@ -43,6 +43,11 @@ class StubVoice:
     def sentence(self, text, tempo=0.68):
         return np.zeros(int(SR * 1.0), dtype="float32")
 
+    def can_say(self, text):
+        # The stub can say anything - this test is about where a level ENDS,
+        # not about what a particular bank happens to hold.
+        return True
+
 
 class FakeGroup:
     def __init__(self, name, words):
