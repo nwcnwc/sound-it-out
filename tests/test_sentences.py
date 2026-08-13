@@ -725,3 +725,27 @@ def test_the_blocklist_and_the_rank_cut_each_catch_what_the_other_cannot():
     # And the ordinary words still pass.
     for w in ("cat", "dog", "box", "ring", "water", "able"):
         assert D.good_example(w), w
+
+
+def test_the_baked_pair_catalog_matches_what_it_derives_from():
+    """pairs.txt is generated, and a generated file can go stale.
+
+    It is derived from graphemes.txt, so the two are only ever in step
+    because gen/build_dictionary wrote them together. If someone rebuilds one
+    and not the other, the app ships example words for joins the dictionary
+    no longer makes - and nothing else would notice.
+    """
+    from gen import dictionary as D
+
+    baked = D.pair_catalog()
+    assert baked, "the catalog is not empty"
+    assert D.PAIRS_FILE.exists(), "it is a shipped file, not computed at runtime"
+
+    D._catalog = None
+    try:
+        derived = D.derive_pair_catalog()
+    finally:
+        D._catalog = None
+    assert [(c["ipa"], c["spelling"], c["example"]) for c in baked] == \
+           [(c["ipa"], c["spelling"], c["example"]) for c in derived], \
+        "pairs.txt is stale - re-run gen/build_dictionary"

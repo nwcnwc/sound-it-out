@@ -380,6 +380,23 @@ def main():
     (OUT.parent / "common.txt").write_text(
         "\n".join(w for w in common_order if w.isalpha() and len(w) > 1)
         + "\n", encoding="utf-8")
+    # The grapheme-pair catalog, baked. It is derived from the file written
+    # above, so it can only change when this script runs - and deriving it
+    # walks every unit of all 110,000 entries, which is seconds nobody should
+    # pay for at startup.
+    from gen import dictionary
+
+    dictionary._cache = None          # read what we just wrote, not a stale copy
+    dictionary._catalog = None
+    pairs = dictionary.derive_pair_catalog()
+    (DICT_DIR / "pairs.txt").write_text(
+        "# ipa\tspelling\texample\twords   built by gen/build_dictionary.py\n"
+        "# Grapheme pairs: two adjacent graphemes a recording can join in one\n"
+        "# breath. Example words are gated - see dictionary.good_example.\n"
+        + "\n".join(f"{c['ipa']}\t{c['spelling']}\t{c['example']}\t{c['words']}"
+                    for c in pairs) + "\n", encoding="utf-8")
+    print(f"wrote {len(pairs)} grapheme pairs")
+
     n_syl = build_syllables({w for w, _ in entries})
     print(f"wrote {n_syl} syllable splits")
     print(f"wrote {aligned_all} aligned words "

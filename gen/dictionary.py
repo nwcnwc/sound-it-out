@@ -138,7 +138,13 @@ def alignment(word: str):
 _catalog = None
 
 
-def pair_catalog():
+def derive_pair_catalog():
+    """Work the catalog out from scratch. Build time only - see pair_catalog.
+
+    Every guard lives here: the example gate, the shortest-and-commonest
+    ranking, dropping a pair no ordinary word demonstrates, and the hand-
+    picked magic-e anchors.
+    """
     """Every GRAPHEME PAIR the dictionary uses, most useful first.
 
     Each entry: {ipa, spelling, example, words} - the spelling is the most
@@ -147,8 +153,7 @@ def pair_catalog():
     the Sound Bank's pair list: everything here plays as a crossfade of the
     two recorded phonemes until somebody records it as one breath.
     """
-    global _catalog
-    if _catalog is None:
+    if True:
         from collections import Counter, defaultdict
 
         common = set()
@@ -227,8 +232,54 @@ def pair_catalog():
     return _catalog
 
 
+PAIRS_FILE = DICT_DIR / "pairs.txt"
+
+
+def pair_catalog():
+    """Every GRAPHEME PAIR the dictionary uses, most useful first.
+
+    Read from a shipped file, not worked out on demand. Deriving it means
+    walking all 110,000 entries and every unit in them, which took seconds -
+    paid by whoever opened the Sound Bank, every time the sidecar started.
+    It derives from a dictionary that only changes when gen/build_dictionary
+    runs, so it is computed there and shipped alongside it, the same as
+    graphemes.txt and syllables.txt.
+
+    Each entry: {ipa, spelling, example, words} - the spelling is the most
+    common way that sound is written, the example a short real word carrying
+    it, and words how many dictionary words use it.
+    """
+    global _catalog
+    if _catalog is None:
+        _catalog = []
+        try:
+            for line in PAIRS_FILE.read_text(encoding="utf-8").splitlines():
+                if not line or line.startswith("#"):
+                    continue
+                ipa, spelling, example, n = line.split("\t")
+                _catalog.append({"ipa": ipa, "spelling": spelling,
+                                 "example": example, "words": int(n)})
+        except OSError:
+            # Running from a checkout with no baked file. Derive it rather
+            # than return nothing, and pay the seconds once.
+            _catalog = derive_pair_catalog()
+    return _catalog
+
+
+_split_cache = {}
+
+
 def phonemes_in(sound: str):
-    """Split a unit's sound into single phonemes ("eɪk" -> eɪ, k)."""
+    """Split a unit's sound into single phonemes ("eɪk" -> eɪ, k).
+
+    Memoised. There are a few thousand distinct sounds in the dictionary and
+    this is asked about every unit of every one of 110,000 words - 671,556
+    calls building the same few thousand answers, and 17 million startswith()
+    against the 43-phoneme table to do it.
+    """
+    hit = _split_cache.get(sound)
+    if hit is not None:
+        return hit
     out, i = [], 0
     while i < len(sound):
         for p in PHONEMES:
@@ -239,6 +290,7 @@ def phonemes_in(sound: str):
         else:
             out.append(sound[i])
             i += 1
+    _split_cache[sound] = out
     return out
 
 
@@ -412,6 +464,19 @@ def common_words() -> list:
     return _common
 
 
+_rank = None
+
+
 def frequency_rank() -> dict:
-    """word -> position in the common list. Missing words rank last."""
-    return {w: i for i, w in enumerate(common_words())}
+    """word -> position in the common list. Missing words rank last.
+
+    Cached. It was not, and it is called from inside the loop over 110,000
+    dictionary entries - twice per candidate, once by good_example() and once
+    to rank it - so it rebuilt a ten-thousand-entry dict several tens of
+    thousands of times. pair_catalog() took 74 seconds, and the app blocks on
+    it the first time anything asks for a sound's example.
+    """
+    global _rank
+    if _rank is None:
+        _rank = {w: i for i, w in enumerate(common_words())}
+    return _rank
