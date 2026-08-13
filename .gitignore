@@ -58,3 +58,7 @@ wordlists/sight-words.txt
 # The family's own sentence library, like the live word list above: written
 # by the app, holds their real sentences, never for git.
 wordlists/sentences.txt
+
+# Re-recording keeps the old take next to the new one. That is a local
+# safety net, not shipping content - it must not go out to every install.
+assets/**/*.previous.wav
