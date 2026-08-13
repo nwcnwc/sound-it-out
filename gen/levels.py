@@ -20,7 +20,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from gen import openended, wordlists
+from gen import dictionary, openended, wordlists
 from gen.soundout import SR, Segment, _fade, _xfade, cap, content, whole
 
 # ---------------------------------------------------------------- content
@@ -269,6 +269,10 @@ LEVELS = [
     Level(1, "Paw Patrol", "The pups' names as whole words. Where a new reader starts.", "recorded"),
     Level(2, "Family and home", "Their own name, the people they love, everyday things.", "recorded"),
     Level(3, "Letter sounds", "One letter at a time, with its sound. s a t p i n first.", "recorded"),
+    Level(14, "Word families",
+          "One ending, many words: at -> cat, hat, mat, sat. The gentlest "
+          "way in - the ending stays put and only the front changes.",
+          "recorded"),
     Level(4, "Two sounds together", "Joining two sounds: sa, at, ip, um.", "recorded"),
     Level(5, "Three-letter words", "sat, pin, man - and some nonsense words too.", "recorded"),
     Level(6, "Building up",
@@ -277,6 +281,9 @@ LEVELS = [
     Level(7, "Letter teams", "sh, ch, th, ck treated as one sound.", "generated"),
     Level(8, "Harder words", "Longer words with clusters: stop, black, hand.", "generated"),
     Level(9, "Sentences", "Whole sentences, read word by word then together.", "generated"),
+    Level(15, "Longer words",
+          "Words of more than one syllable, a syllable at a time: "
+          "rab-bit, but-ter-fly.", "recorded"),
 
     # Levels 10-12 have no fixed content. What they read depends on what the
     # parent pastes in, the names in their word list, and how far the child has
@@ -390,7 +397,7 @@ _check_ladder()
 # All nine are built now. Levels 7-9 still lean on generation for the parts
 # nobody can record - nonsense blends, and whole sentences read with real
 # intonation - which is what the "install the extra voice" note is about.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 
 
 def level_status(capabilities: dict) -> list:
@@ -640,6 +647,68 @@ def _sound_out(voice, spellings, reps, pause):
         word = "".join(g for g, _ in parts)
         segs += _approach(voice, parts, pause, passes=max(2, reps))
         segs.append(whole(word, voice.word(word, slow=True), pad=pause + 1.2))
+        segs[-1].item_end = True
+    return segs
+
+
+def _family(voice, family, reps, pause):
+    """One word family: the rime, then the same rime behind changing onsets.
+
+    This is the gentlest way into decoding for the readers this is built for,
+    and the reason is specific. Sounding out c-a-t means holding three sounds
+    in order and merging them, which leans on phonological working memory -
+    the documented weakness in Down syndrome. A family leans on the visual
+    strength instead: the rime is a shape that stays put, and only the front
+    changes. One thing to manipulate, not three.
+
+    So the rime is established FIRST and alone, and every word after it is
+    that same known ending with one new sound in front.
+    """
+    rime, sound, words = family["rime"], family["sound"], family["words"]
+    segs = [whole(rime, voice.phoneme(sound), pad=pause + 0.6)]
+    segs[-1].item_end = True
+    for word in words:
+        pair = dictionary.onset_rime(word)
+        if not pair:
+            continue
+        (onset_g, onset_s), (rime_g, rime_s) = pair
+        # The onset alone, then the known rime, then the word - the two
+        # pieces lit in turn so the join is visible as well as audible.
+        segs.append(Segment([(onset_g, True), (rime_g, False)],
+                            voice.phoneme(onset_s), pad=0.35))
+        segs.append(Segment([(onset_g, False), (rime_g, True)],
+                            voice.phoneme(rime_s), pad=0.5))
+        segs.append(whole(word, voice.word(word, slow=True), pad=pause + 0.9))
+        segs[-1].item_end = True
+    return segs
+
+
+def _syllable_words(voice, words, reps, pause):
+    """Longer words, one syllable at a time, then whole.
+
+    Syllables come from the second dictionary rather than from the letter
+    alignment, because where a word divides is not something the sounds can
+    tell you - nothing in rabbit being r/a/bb/i/t says rab-bit rather than
+    ra-bbit.
+
+    A word with no entry is one syllable as far as we know, and is read
+    whole rather than guessed at.
+    """
+    segs = []
+    for word in words:
+        parts = dictionary.syllables(word)
+        if not parts:
+            segs.append(whole(word, voice.word(word, slow=True), pad=pause))
+            segs[-1].item_end = True
+            continue
+        for i, syl in enumerate(parts):
+            shown = [(s, j == i) for j, s in enumerate(parts)]
+            # A syllable is not a recorded clip. phoneme() already joins a
+            # multi-sound label out of the bank's single sounds, which is
+            # exactly what a syllable is: rab = /r/ + /ae/ + /b/.
+            sound = "".join(s for _, s in split_graphemes(syl))
+            segs.append(Segment(shown, voice.phoneme(sound), pad=0.4))
+        segs.append(whole(word, voice.word(word, slow=True), pad=pause + 1.0))
         segs[-1].item_end = True
     return segs
 
@@ -898,6 +967,37 @@ def build(level: int, voice, opts: dict) -> list:
                           reps, pause)
     if level == 9:
         return _sentences(voice, SENTENCES, reps, pause)
+    if level == 14:
+        # Which family to teach is the caller's choice; the default is the
+        # one the most short common words share.
+        fams = dictionary.families()
+        if not fams:
+            raise ValueError("No word families are available.")
+        want = opts.get("family")
+        limit = int(opts.get("familyWords", 6))
+        # Only words the bank can actually say. The family list comes from
+        # the corpus, so most of its words are ones nobody has recorded -
+        # picking those would raise MissingVoice at a reader rather than
+        # teach them anything. The level gets richer as more is recorded.
+        sayable = [dict(f, words=[w for w in f["words"] if voice.can_say(w)])
+                   for f in fams]
+        sayable = [f for f in sayable if len(f["words"]) >= 2]
+        if not sayable:
+            raise ValueError(
+                "No word family has enough recorded words yet. Record a few "
+                "short words that rhyme - cat, hat, mat - and this level "
+                "builds itself from them.")
+        fam = next((f for f in sayable if f["rime"] == want), sayable[0])
+        return _family(voice, dict(fam, words=fam["words"][:limit]),
+                       reps, pause)
+    if level == 15:
+        words = opts.get("words") or [w for w in wordlists.all_words()
+                                      if dictionary.syllables(w)]
+        if not words:
+            raise ValueError(
+                "This level needs words of more than one syllable. Add some "
+                "to your word list first.")
+        return _syllable_words(voice, words, reps, pause)
 
     # ---- open-ended levels: content comes from the parent, not from here ----
     if level == 10:

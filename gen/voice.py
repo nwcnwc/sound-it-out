@@ -25,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 import soundfile as sf
 
-from gen.paths import SOUNDS, STARTER_VOICE, VOICE_DIR
+from gen.paths import SENTENCES, SOUNDS, STARTER_VOICE, VOICE_DIR, WORDS
 from gen.soundout import SR, loud, slower, tidy_word
 
 
@@ -182,6 +182,19 @@ class VoiceSource:
             "page, or install the voice pack so new words can be said in "
             "your voice."
         )
+
+    def can_say(self, text: str) -> bool:
+        """Is there a recording of this whole word, in either bank?
+
+        Whole words are never assembled, so "can this be said" is exactly
+        "has somebody said it". Callers that choose their own words - the
+        word-family level picks from a corpus list - use this to pick words
+        the bank actually has rather than raising at the reader.
+        """
+        key = sentence_key(text) if " " in text else text.lower()
+        kind = SENTENCES if " " in text else WORDS
+        return (self._lookup(VOICE_DIR, kind, key) is not None
+                or self._lookup(STARTER_VOICE, kind, key) is not None)
 
     def phoneme(self, ipa: str) -> np.ndarray:
         a = self._one_sound(ipa)

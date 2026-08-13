@@ -123,13 +123,25 @@ A scaffolded progression of **9 levels**. Each is mastered before the next is in
 |---|---|---|
 | 1 | Personally meaningful sight words | `Chase`, `Marshall`, `Skye`, `Rubble`, `Rocky` |
 | 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mom`, `dog`, `I like…` |
-| 3 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
-| 4 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
-| 5 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
+| 3 | Grapheme → its sound | `s` → /s/, `a` → /æ/, `sh` → /ʃ/ |
+| 14 | **Word families** — one rime, changing onsets | `at` → `cat`, `hat`, `mat`, `sat` |
+| 4 | Two sounds together | `sa`, `at`, `ip`, `um` |
+| 5 | Three-letter words | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
 | 6 | **Building up** — the whole arc in one video | `s` → `sa` → `sat` → *Sam sat on a mat.* |
-| 7 | Digraphs as single units | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
-| 8 | Consonant clusters | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
-| 9 | Whole words → sentences | the 10k dictionary, then connected text |
+| 7 | Digraphs given their own level | `sh`, `ch`, `th`, `ck` → `ship`, `chat`, `duck` |
+| 8 | Consonant blends | `st`, `bl`, `-nd`, `-mp` → `stop`, `black`, `hand` |
+| 9 | Whole words → sentences | the dictionary, then connected text |
+| 15 | **Longer words**, a syllable at a time | `rab-bit`, `but-ter-fly` |
+
+Levels 14 and 15 sit where they do on purpose. **Word families come before blending**,
+because blending `c-a-t` means holding three sounds in order and merging them — which
+leans on phonological working memory, the documented weakness in Down syndrome. A family
+leans on the visual strength instead: the rime is a shape that stays put and only the
+front changes, so there is one thing to manipulate rather than three. **Syllables come
+last**, because they are what a word too long to sound out in one go needs.
+
+Level 14 builds itself from words the voice bank can actually say, and gets richer as
+more is recorded — it never asks a reader for a word nobody has spoken.
 
 **Level 6 is the join.** Letters grow into words and words grow into a sentence in one
 continuous video, with each newly added letter highlighted. Separate levels teach letters
@@ -300,16 +312,43 @@ gives exact control over what each nonsense string sounds like.
 *Verify early:* confirm phoneme-input works end-to-end before committing to this path. It is
 the main technical risk in the pipeline.
 
-### Letter-to-sound alignment
+### Two dictionaries, three views of a word
 
 To highlight `ch` in *chair* as one unit, the app needs to know which **letters** produce
-which **sound**. In Learn mode this is trivial — the curriculum is built from known units.
-For Paste mode's arbitrary text, three tiers falling back in order:
+which **sound**. That is one question. Where a long word divides is a different question
+with different data behind it, so there are two dictionaries.
 
-1. **The 10k dictionary**, with hand-checked grapheme-phoneme alignment.
-2. **Syllable chunking** via hyphenation dictionaries (Hunspell/`pyphen`) — universal,
-   robust, still pedagogically sound.
-3. **Letter by letter** — last resort for names and unusual words.
+**`graphemes.txt`** — 110,000 words aligned letters-to-sounds, built from CMUdict by
+expectation-maximisation over the whole corpus. Every unit is a grapheme: exactly one
+phoneme. Two-phoneme units are refused structurally, with three exceptions that are real
+— `x`→/ks/, `u`→/juː/, `qu`→/kw/, letters that genuinely make two sounds with no way to
+split the spelling. Where no grapheme-only alignment exists, one pair is allowed rather
+than refusing the word; 79.6% come out grapheme-only, and coverage is 94%.
+
+**`syllables.txt`** — where each word divides, from `en_US` hyphenation patterns. A
+separate dictionary because syllable boundaries genuinely are not derivable from a sound
+alignment: nothing in `rabbit` being `r/a/bb/i/t` says whether it divides `rab-bit` or
+`ra-bbit`. Hyphenation gives break *points* rather than true syllables — `elephant` comes
+back `ele-phant` — which is the safe failure, since a missing break teaches a longer
+piece while a wrong one teaches a wrong word shape.
+
+**Onset and rime are derived**, not stored. The rime is the first vowel grapheme and
+everything after it; the onset is what came before. Deriving it means the two views can
+never disagree about where a word divides.
+
+```
+cat     grapheme   c=/k/  a=/æ/  t=/t/
+        rime       c + at
+        syllable   —  (one syllable)
+
+rabbit  grapheme   r=/ɹ/  a=/æ/  bb=/b/  i=/ə/  t=/t/
+        rime       —  (more than one syllable)
+        syllable   rab-bit
+```
+
+Words the dictionary cannot vouch for fall through to the spelling rules
+(`levels.split_graphemes`), which serve names and nonsense words; a word whose spelling
+genuinely lies (`one`) is shown and spoken whole, as reading teachers treat it.
 
 ### Rendering
 
