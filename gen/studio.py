@@ -373,6 +373,28 @@ def score_take(audio: np.ndarray, item: Item) -> Score:
         s.fatal = "Too loud - it distorted. Move back a little."
         return s
 
+    # 2b. a click, tick or thump - and it is worth being strict about.
+    #
+    # A clip is levelled on the way out (soundout.loud), and a quiet
+    # recording earns a lot of gain: /s/ recorded at peak 0.116 was played
+    # back with 6.3x on it, which took a small mouth click and turned it into
+    # a sample-to-sample jump larger than full scale - a bang, in the middle
+    # of a sound a child is being asked to listen to. Reported as "a clapping
+    # noise".
+    #
+    # Measured against the clip's OWN loudness rather than an absolute, so a
+    # quiet recording is judged the way it will actually be heard. A stop is
+    # exempt: /p/, /t/ and /k/ are bursts, and a burst is a step change by
+    # definition - that is the sound, not a fault in it.
+    cls = R.phoneme_class(item.ipa) if item.kind == "phoneme" and item.ipa else ""
+    if cls != "stop" and a.size > 2:
+        step = float(np.abs(np.diff(a)).max())
+        body = float(np.sqrt(np.mean(a ** 2))) or 1e-6
+        if step > 12.0 * body:
+            s.fatal = ("There is a click or a thump in it - a tongue tick, a "
+                       "knock on the desk, or a bump on the microphone.")
+            return s
+
     # 1. schwa on a consonant - the fatal one for teaching
     if item.kind == "phoneme" and item.ipa:
         cls = R.phoneme_class(item.ipa)

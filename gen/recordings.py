@@ -98,7 +98,7 @@ _ROWS = [
     (("th-this", "th", "this", "ð", CONTINUANT), ("zh", "zh", "vision", "ʒ", CONTINUANT)),
     (("a", "a", "cat", "a", CONTINUANT), ("ee", "ee", "see", "iː", CONTINUANT)),
     (("e", "e", "bed", "ɛ", CONTINUANT), ("oo", "oo", "moon", "uː", CONTINUANT)),
-    (("i", "i", "sit", "ɪ", CONTINUANT), ("or", "or", "door", "ɔː", CONTINUANT)),
+    (("i", "i", "sit", "ɪ", CONTINUANT), ("aw", "aw", "saw", "ɔː", CONTINUANT)),
     (("o", "o", "dog", "ɒ", CONTINUANT), ("ur", "ur", "her", "ɜː", CONTINUANT)),
     (("u", "u", "cup", "ʌ", CONTINUANT), ("ay", "ay", "day", "eɪ", CONTINUANT)),
     (("oo-put", "oo", "put", "ʊ", CONTINUANT), ("igh", "igh", "my", "aɪ", CONTINUANT)),

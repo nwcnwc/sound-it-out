@@ -520,7 +520,8 @@ def _approach(voice, parts, pause, passes):
         for j, (_, ipa) in enumerate(parts):
             shown = [(g, k == j) for k, (g, _) in enumerate(parts)]
             segs.append(Segment(shown,
-                                _hard_clip(voice, ipa, hold * _sounds_in(ipa)),
+                                _hard_clip(voice, ipa,
+                                            _hold_for(ipa, hold * _sounds_in(ipa))),
                                 pad=gap))
         # A breath between rounds: each pass is its own attempt, and the
         # boundary should be audible - within-round gaps alone made one
@@ -534,6 +535,33 @@ def _sounds_in(ipa: str) -> int:
     from gen import dictionary
 
     return max(1, len(dictionary.phonemes_in(ipa)))
+
+
+# How much of a sound's budget each class actually needs.
+#
+# A stop is a burst: /p/ is 0.2s of mouth and there is nothing to shorten, so
+# a uniform budget gives it room it cannot use. A continuant IS its duration -
+# /s/, /m/, /ɒ/ exist for as long as the breath does - so the same uniform
+# budget is the thing that cuts it off.
+#
+# Reported on "on" and "too": at the fastest pass the continuant was clipped
+# to the same length as a stop, which is the one place the difference between
+# them should still be audible. Blending speeds the sounds up; it does not
+# turn a held sound into a burst.
+HOLD_BY_CLASS = {"stop": 0.65, "fricative": 1.35, "sonorant": 1.35,
+                 "vowel": 1.35}
+
+
+def _hold_for(ipa: str, seconds: float) -> float:
+    """`seconds` adjusted for what kind of sound this is."""
+    from gen.recordings import phoneme_class
+    from gen import dictionary
+
+    toks = dictionary.phonemes_in(ipa)
+    # A pair takes the more generous of its members: capping /æn/ to a stop's
+    # budget amputates the /n/.
+    return seconds * max(HOLD_BY_CLASS.get(phoneme_class(tok), 1.0)
+                         for tok in toks)
 
 
 def _hard_clip(voice, ipa: str, seconds: float):
@@ -588,7 +616,7 @@ def _touching(voice, parts, hold=0.40, edge_ms=20, xfade_ms=30):
         toks = dictionary.phonemes_in(ipa)
         starts_hard.append(toks[0] in STOPS)
         ends_hard.append(toks[-1] in STOPS)
-        c = _hard_clip(voice, ipa, hold * _sounds_in(ipa))
+        c = _hard_clip(voice, ipa, _hold_for(ipa, hold * _sounds_in(ipa)))
         e = min(int(SR * edge_ms / 1000), int(len(c) * 0.15))
         # A stop is nothing but its burst, and the burst lives at the edge.
         # Trim the edge and the sound is gone - "the d gets completely

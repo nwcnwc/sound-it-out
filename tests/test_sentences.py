@@ -429,7 +429,12 @@ def test_approach_sounds_compress_with_the_gaps():
     segs = levels._approach(UnevenVoice(), levels.word_alignment("dm"), 1.5, passes=3)
     per_pass = [segs[i * 2:(i + 1) * 2] for i in range(3)]
     for d, m in per_pass[:2]:
-        assert len(m.audio) / SR <= 1.11, "long holds are capped"
+        # Capped, but on a continuant's budget rather than a stop's. /m/ is
+        # a sound you hold; shortening it to a burst's length is what made
+        # "on" and "too" sound cut off at speed.
+        assert len(m.audio) / SR <= 1.5, "long holds are capped"
+        assert len(m.audio) > len(d.audio), \
+            "a continuant keeps more room than a stop, at every speed"
         assert len(d.audio) / SR == pytest.approx(0.2, abs=0.01), \
             "short sounds are untouched in the discrete passes"
     # the cap shrinks pass by pass, and the final touching pass is the

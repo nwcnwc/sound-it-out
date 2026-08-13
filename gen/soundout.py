@@ -560,6 +560,33 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
     # the closing gaps of a blending buildup are a fast rhythm, and flicking
     # the color at that rate is a strobe, not a cue.
     NEUTRAL_PAD = 0.35
+
+    # The highlight must change when the SOUND starts, not when the clip does.
+    #
+    # Every recorded clip keeps about 60ms of room tone in front of it -
+    # recordings._trim leaves it deliberately, so a sound is never shaved at
+    # the front. But a frame's duration is the length of its clip, so the
+    # light moved at the clip's first sample and the voice arrived 60ms later.
+    # Reported as "the words were highlighted before the sound actually
+    # played", and it is systematic: sixty milliseconds is well inside what
+    # the eye and ear will fuse, and whole-line reads carry more lead-in than
+    # single words, which is why sentences read worst.
+    #
+    # The lead-in is not removed - it is moved. It plays under the PREVIOUS
+    # frame, so the total duration is unchanged to the sample and only the
+    # boundary moves.
+    LEAD_FLOOR = 0.012
+
+    def lead_in(a):
+        if not a.size:
+            return 0
+        env = np.abs(a)
+        peak = float(env.max())
+        if peak <= 0:
+            return 0
+        onset = int(np.argmax(env > peak * 0.08))
+        return onset if onset > int(SR * LEAD_FLOOR) else 0
+
     seen, timeline, audio = {}, [], []
 
     def add_frame(parts, scale, color, duration):
@@ -571,7 +598,14 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
         timeline.append({"frame": seen[sig][0], "duration": round(duration, 4)})
 
     for seg in segments:
-        talk = len(seg.audio) / SR
+        # Hand this clip's silent head to the frame before it.
+        lead = lead_in(seg.audio) / SR
+        if lead and timeline:
+            timeline[-1]["duration"] = round(timeline[-1]["duration"] + lead, 4)
+        elif lead:
+            lead = 0.0            # nothing to hand it to; leave the first alone
+
+        talk = len(seg.audio) / SR - lead
         dark = seg.pad >= NEUTRAL_PAD and any(on for _, on in seg.parts)
         add_frame(seg.parts, seg.scale, seg.color,
                   talk if dark else talk + seg.pad)
