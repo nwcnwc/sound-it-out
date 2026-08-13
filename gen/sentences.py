@@ -51,7 +51,7 @@ def entry_kind(text: str) -> str:
     """What sort of thing one library entry is.
 
     The library holds more than sentences, on purpose - it is the ONLY list
-    in the app, so a favourite name and a single letter live here too:
+    in the app, so a favorite name and a single letter live here too:
 
         "s"                one letter  -> its sound, from the phoneme bank
         "Chase"            one word    -> sight or sounded out, no line read
@@ -335,13 +335,13 @@ def _pack_defs() -> list:
         ladder += ch["words"] + [ch["sentence"]]
 
     return [
-        # ---- stories and favourites: themed sentences -------------------
-        {"id": "own-words", "group": "favourites", "name": "Your word list",
+        # ---- stories and favorites: themed sentences -------------------
+        {"id": "own-words", "group": "favorites", "name": "Your word list",
          "description": "Everything from your old word list - names, "
-                        "favourites, first words. The words a child already "
+                        "favorites, first words. The words a child already "
                         "cares about are the ones learned first.",
          "items": own_words},
-        {"id": "paw-patrol", "group": "favourites", "name": "Paw Patrol",
+        {"id": "paw-patrol", "group": "favorites", "name": "Paw Patrol",
          "description": "The pups and their lines.",
          "items": [
              "Chase is on the case.",
@@ -355,7 +355,7 @@ def _pack_defs() -> list:
              "No job is too big.",
              "No pup is too small.",
          ]},
-        {"id": "veggie-tales", "group": "favourites", "name": "VeggieTales",
+        {"id": "veggie-tales", "group": "favorites", "name": "VeggieTales",
          "description": "Bob, Larry, and the song at the end of the show.",
          "items": [
              "Bob is a tomato.",
@@ -364,7 +364,7 @@ def _pack_defs() -> list:
              "God made you special.",
              "He loves you very much.",
          ]},
-        {"id": "gods-world", "group": "favourites", "name": "God's world",
+        {"id": "gods-world", "group": "favorites", "name": "God's world",
          "description": "Short lines of faith and thanks.",
          "items": [
              "God made the sun.",
@@ -376,7 +376,7 @@ def _pack_defs() -> list:
              "Give thanks to the Lord.",
              "The Lord is my shepherd.",
          ]},
-        {"id": "family-day", "group": "favourites", "name": "Around home",
+        {"id": "family-day", "group": "favorites", "name": "Around home",
          "description": "The lines of an ordinary day.",
          "items": [
              "I love you.",

@@ -75,28 +75,16 @@ cat            c    =  /k/     grapheme  (onset)
 | grapheme (single letter) | `levels.SINGLE_LETTER_GRAPHEMES` | 26 |
 | grapheme (multi-letter) | `levels.MULTI_LETTER_GRAPHEMES` | 39 |
 | magic e | `starter.all_magic_e()` | 65 |
-| grapheme pair | `dictionary.pair_catalog()` | 398 |
+| grapheme pair | `dictionary.pair_catalog()` | 185 |
 | a word's alignment | `dictionary.alignment()`, `levels.word_alignment()` | — |
 | continuant / stop | `recordings.CONTINUANT`, `recordings.STOP`, `phoneme_class()` | — |
 
 Recording parts are named for what they hold: `phonemes`, `magic-e`, `pairs`, `words`,
 `sentences`.
 
-### Renamed, if you are reading old commits
-
-Two words used to mean something here that they do not mean in phonics, which made a
-real bug hard to see:
-
-- **"chunk"** meant both *any* alignment unit and, elsewhere, specifically the
-  two-phoneme ones. Now: **unit** for the umbrella, **grapheme pair** for the
-  two-phoneme kind.
-- **"rime"** was used only for the magic-e set (`ake`, `ice`, `ome`), which is far
-  narrower than the standard meaning. Now: **magic e** for those, and **rime** kept
-  for its real meaning.
-
 ---
 
-## The shape of the app (0.4.0)
+## The app
 
 The UI is two screens:
 
@@ -111,11 +99,10 @@ The UI is two screens:
   shipped human starter voice fills in until then), the optional voice pack +
   reading passage for stories, where videos go, and backup.
 
-The curriculum below survives as **starter packs** - one tap adds a level's
-content to the list as ordinary entries - and as the pipeline's internal
-generators. The research ordering did not change; only where it lives.
+The curriculum is available as **starter packs**: one tap adds a level's content
+to the list as ordinary entries.
 
-## The curriculum (now starter packs)
+## The curriculum
 
 ### 1. Learn mode (primary)
 
@@ -129,13 +116,13 @@ A scaffolded progression of **9 levels**. Each is mastered before the next is in
 > all — and recommends those first words be **personally meaningful**. Reading then builds
 > the phonological awareness that phonics needs, rather than requiring it up front.
 >
-> This is why the shipped Level 1 is a favourite TV show: not decoration, but exactly the
+> This is why the shipped Level 1 is a favorite TV show: not decoration, but exactly the
 > recommended starting point.
 
 | Level | Content | Examples |
 |---|---|---|
 | 1 | Personally meaningful sight words | `Chase`, `Marshall`, `Skye`, `Rubble`, `Rocky` |
-| 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mum`, `dog`, `I like…` |
+| 2 | Sight vocabulary to ~50 words + first phrases | family names, `Mom`, `dog`, `I like…` |
 | 3 | Single grapheme → its sound | `s` → /s/, `a` → /æ/, `t` → /t/ |
 | 4 | Two-unit blends (CV, VC) | `sa`, `at`, `ip`, `um` |
 | 5 | Three-unit blends (CVC) | `sat`, `pin` (real) · `vam`, `zib` (nonsense) |
@@ -171,7 +158,7 @@ tip*. Alphabetical order makes you wait until `t` before any word is possible.
 
 ### 2. Paste mode (advanced)
 
-Paste any text — a favourite book, a birthday card, a list of family names. Each word is
+Paste any text — a favorite book, a birthday card, a list of family names. Each word is
 sounded out and blended, and at the end of each sentence the whole sentence is displayed
 and read aloud with each word highlighted in time.
 
@@ -278,7 +265,7 @@ ten minutes of them reading ordinary prose aloud is the difference between the l
 levels sounding like them and sounding like a robot wearing their voice. See
 [RECORDING.md](RECORDING.md).
 
-**Consent is not an afterthought.** This is a real person's voice being modelled. It is
+**Consent is not an afterthought.** This is a real person's voice being modeled. It is
 their own child, their own recording, their own machine, and it never leaves the house — but
 the recordings and the cloned model belong to them, and nothing here should ever be
 shipped or shared without their say-so.
@@ -326,7 +313,7 @@ For Paste mode's arbitrary text, three tiers falling back in order:
 
 ### Rendering
 
-- Highlight is a colour/weight change on the active letter group — not a moving bar — so
+- Highlight is a color/weight change on the active letter group — not a moving bar — so
   the whole item stays readable throughout.
 - Video assembled with a bundled **ffmpeg**, encoded for TV built-in players (H.264 High
   profile, AAC audio, `.mp4`). Static text compresses extremely well; a 20-minute 1080p
@@ -356,7 +343,7 @@ Kept deliberately few, all on one screen:
 | Include nonsense words | On (levels 2–5) |
 | Read whole sentence at end | On |
 | Text size | Extra large |
-| Colour theme | High contrast |
+| Color theme | High contrast |
 | Voice | Kokoro (female, warm) |
 
 ## Samples
@@ -376,7 +363,7 @@ Kept deliberately few, all on one screen:
 Font is **Andika** (SIL, OFL) — designed for literacy learners, with the single-story `a`
 and `g` that beginning readers are taught, rather than the two-story forms in most fonts.
 
-## Known issue: schwa on isolated consonants
+## Why there is no synthesizer
 
 Kokoro appends a schwa to isolated consonants — asked for /s/ it produces "sss-uh", asked
 for /t/, "tuh". Measured on `af_heart`, the tail is unambiguous: spectral centroid collapses
@@ -425,12 +412,13 @@ either. Standard practice is to keep them crisp and teach continuants first, whi
 "t" or "tuh" is a perceptual judgement. Every Level 3 clip needs a human listen before it
 ships. `samples/phoneme-check/all-sounds.wav` is that check.
 
-## Known open question: sentence line breaks
+## Sentence line breaks
 
-Sentences currently auto-fit to the largest size that fits, which puts "Chase is on the case."
-on two lines at large type. One line at smaller type may be better for a beginning reader —
-line returns add a tracking demand — but it trades away size on a TV viewed from a sofa.
-Undecided; it is a one-line change in `_font_size` handling either way.
+Sentences auto-fit to the largest size that fits, which puts "Chase is on the case." on two
+lines at large type. The trade is real in both directions: a line return adds a tracking
+demand for a beginning reader, while smaller type costs legibility on a TV viewed from a
+sofa. Size wins by default, on the grounds that a video nobody can read from the sofa
+teaches nothing.
 
 ## How the app is put together
 
@@ -469,25 +457,23 @@ Run it in development with `npm start` (after `./setup.sh`).
 
 ## Status
 
-**Working end to end**, verified by generating real videos through the service:
-levels 1–5, all three themes, both playback and file export.
+All thirteen levels are implemented, and releases are published for macOS, Windows and
+Linux — see [Installing it](INSTALL.md).
 
-- Levels 1–5 implemented. 6–8 designed and specified but not built — they need the
-  grapheme-phoneme alignment lexicon, not just more word lists, and the UI correctly
-  reports them as unavailable rather than failing mid-generation.
-- 51 tests passing (`.venv/bin/python -m pytest tests/ -q`).
-- Voice cloning is genuinely optional: the app is fully usable for levels 1–5 with it
-  absent, and never hard-imports torch.
+| | |
+|---|---|
+| Levels | 13 of 13 |
+| Recorded sounds | 42 phonemes, 65 magic-e endings |
+| Dictionary | 110,737 aligned words |
+| Tests | 182 (`.venv/bin/python -m pytest tests/ -q`) |
 
-**Not yet verified:**
+Voice cloning is optional throughout: the app is fully usable without it, and never
+hard-imports torch. Levels 10–13 read arbitrary text and are the ones that benefit from
+a cloned voice for words nobody has recorded; everything below them runs entirely on
+recordings.
 
-- **The Electron frame renderer has never been run.** Chromium's multi-process model is
-  blocked in the development container (`/dev/shm` access returns `ESRCH`; single-process
-  mode aborts with `SIGTRAP`). The code is written and the HTML is identical to what the
-  verified Chrome path renders, but phase 2 needs one run on a real desktop. The Chrome
-  path (`render_job_chrome`) is verified and remains as the fallback.
-- No build has been produced on any platform.
-- Nothing has been heard by ear — every audio decision so far rests on measurement.
+Frames render through Electron's own bundled Chromium, with an external Chrome path as
+a fallback for environments where Chromium's multi-process model is unavailable.
 
 ## License
 

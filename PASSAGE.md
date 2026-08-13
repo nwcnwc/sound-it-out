@@ -30,7 +30,7 @@ your other sock? Under the bed again, I should think.
 
 ## Two — The rescue
 
-Out beyond the harbour, past the tall grey lighthouse, a small boat had lost its
+Out beyond the harbour, past the tall gray lighthouse, a small boat had lost its
 engine. The coastguard radio crackled: three people aboard, no injuries, drifting south.
 
 Within the hour a rescue crew was launched. They wore thick orange jackets and heavy
@@ -45,7 +45,7 @@ cheered them in from the quay. It was a genuine pleasure to watch. What a day th
 
 ## Three — By the sea
 
-The beach in early June is my favourite place on earth. There's treasure everywhere if
+The beach in early June is my favorite place on earth. There's treasure everywhere if
 you're willing to look: smooth green glass, a curl of rope, a feather, a purple shell
 worn thin by the water.
 

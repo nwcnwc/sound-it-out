@@ -5,7 +5,7 @@ vocabulary. "jump", "go" and "stop" are not three drawings - they are one
 character in three poses, and the same three poses on a different character
 carry them again. Forty unrelated pictograms becomes six characters and a
 pose library, which is both cheaper to make and a better thing to watch: a
-child gets a consistent world with characters they recognise, instead of
+child gets a consistent world with characters they recognize, instead of
 forty strangers.
 
 Four ways a word can be shown, and they are not interchangeable:

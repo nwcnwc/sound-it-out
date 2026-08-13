@@ -68,7 +68,7 @@ UNIT_BONUS = 3.0
 #
 # What is actually wrong is narrower than "too few units": a unit must not
 # run from a consonant INTO a vowel. That is a syllable's onset glued to its
-# nucleus, and no phonics programme teaches it as a unit. The test is
+# nucleus, and no phonics program teaches it as a unit. The test is
 # structural rather than statistical:
 #
 #     starts with a consonant, contains a vowel, spans 2+ phonemes
@@ -94,7 +94,7 @@ MIN_COUNT = 40
 # would write it on the board, never just to lift the coverage number.
 TAUGHT_EXCEPTIONS = {
     # The five short vowels. These are the first five correspondences any
-    # phonics programme teaches, and EM had them holding 0.76%, 6.6%, 4.1%,
+    # phonics program teaches, and EM had them holding 0.76%, 6.6%, 4.1%,
     # 3.1% and - for u=ʌ - ZERO percent of their letters. That is not
     # English being surprising, it is a local minimum: every time the
     # decoder chose ha=hæ the bundle took the count and h= and a= took
@@ -260,7 +260,7 @@ def main():
     prob = to_logprob(kept)
     print(f"{len(prob)} teachable correspondences")
 
-    # Initialisms are not words: "dvd" is said as letter names, cannot be
+    # Initializms are not words: "dvd" is said as letter names, cannot be
     # sounded out, and must not count against coverage either.
     def is_word(w):
         return any(c in "aeiouy" for c in w)

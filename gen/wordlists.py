@@ -91,7 +91,7 @@ def main():
             n += 1
             print(f"    {n:3}. {w}")
         print()
-    placeholders = [w for w in words if w.lower() in {"alex", "mum", "dad", "nana", "grandad"}]
+    placeholders = [w for w in words if w.lower() in {"alex", "mom", "dad", "grandma", "grandpa"}]
     if placeholders:
         print("Note: the [People] group still has the example names in it.")
         print("      Edit wordlists/sight-words.txt to use your real ones.")

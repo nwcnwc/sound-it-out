@@ -137,7 +137,7 @@ def plan_for(part: str, path: Path | None = None) -> list:
         return studio.plan(part)
 
     if path is not None:
-        S.SENTENCES_FILE = path        # module owns the location; honour --file
+        S.SENTENCES_FILE = path        # module owns the location; honor --file
     entries = S.load()
 
     if part == "sentences":
@@ -460,7 +460,7 @@ def do_prune(term: Term, confirm: bool) -> int:
     say(f"\n  {C['yel']}Delete {len(deletable)} recordings?{C['r']}  "
         f"{C['dim']}[y] yes   anything else cancels{C['r']}")
     if term.key() != "y":
-        say("  cancelled\n")
+        say("  canceled\n")
         return 1
     n = 0
     for f in deletable:

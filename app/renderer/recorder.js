@@ -15,7 +15,7 @@ const Recorder = (() => {
   let source = null
   let stream = null
   let sink = null
-  let analyser = null
+  let analyzer = null
   let probe = null
   let blocks = []
   let capturing = false
@@ -46,13 +46,13 @@ const Recorder = (() => {
     node.connect(sink)
     sink.connect(ctx.destination)
 
-    // A separate analyser so the level meter works before and between takes,
+    // A separate analyzer so the level meter works before and between takes,
     // not only while capturing. Without it there is no way to see the
     // microphone is alive until after committing to a recording.
-    analyser = ctx.createAnalyser()
-    analyser.fftSize = 1024
-    probe = new Float32Array(analyser.fftSize)
-    source.connect(analyser)
+    analyzer = ctx.createAnalyser()
+    analyzer.fftSize = 1024
+    probe = new Float32Array(analyzer.fftSize)
+    source.connect(analyzer)
   }
 
   function start () {
@@ -105,11 +105,11 @@ const Recorder = (() => {
     }
   }
 
-  /** Live input level 0..1. Reads the analyser, so it works whether or not a
+  /** Live input level 0..1. Reads the analyzer, so it works whether or not a
    *  take is in progress - that is what makes a microphone check possible. */
   function level () {
-    if (!analyser) return 0
-    analyser.getFloatTimeDomainData(probe)
+    if (!analyzer) return 0
+    analyzer.getFloatTimeDomainData(probe)
     let s = 0
     for (let i = 0; i < probe.length; i++) s += probe[i] * probe[i]
     return Math.min(1, Math.sqrt(s / probe.length) * 4)
@@ -119,12 +119,12 @@ const Recorder = (() => {
     try {
       if (node) node.disconnect()
       if (sink) sink.disconnect()
-      if (analyser) analyser.disconnect()
+      if (analyzer) analyzer.disconnect()
       if (source) source.disconnect()
       if (stream) stream.getTracks().forEach((t) => t.stop())
       if (ctx) ctx.close()
     } catch { /* nothing useful to do if teardown fails */ }
-    ctx = node = source = stream = sink = analyser = probe = null
+    ctx = node = source = stream = sink = analyzer = probe = null
     blocks = []
     capturing = false
   }

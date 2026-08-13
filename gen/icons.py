@@ -259,7 +259,7 @@ def animated(name: str) -> bool:
 
 
 def svg(name: str, size: int = 240, stroke: float = STROKE) -> str:
-    """One icon as standalone SVG markup, inheriting the surrounding colour.
+    """One icon as standalone SVG markup, inheriting the surrounding color.
 
     `stroke` is in grid units and does NOT scale with `size` - that is the
     point of a fixed grid. An icon at 480px and the same icon at 120px are

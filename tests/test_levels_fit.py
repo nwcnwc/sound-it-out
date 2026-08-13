@@ -52,7 +52,7 @@ class FakeGroup:
 def fake_wordlist(*_a, **_k):
     return [
         FakeGroup("Paw Patrol", [("Chase", "#00a"), ("Skye", None)]),
-        FakeGroup("People", [("Mum", None)]),
+        FakeGroup("People", [("Mom", None)]),
         FakeGroup("Home", [("dog", None)]),
     ]
 

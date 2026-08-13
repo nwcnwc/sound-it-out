@@ -41,7 +41,7 @@ class Theme:
     highlight: str
     dim: str
     weight: int = 700
-    # per-word colour override, e.g. Paw Patrol character colours
+    # per-word color override, e.g. Paw Patrol character colors
     word_colors: dict = field(default_factory=dict)
 
 
@@ -139,7 +139,7 @@ def loud(a: np.ndarray, target_rms=0.09, ceiling=0.97, max_gain=12.0) -> np.ndar
 
     Measured before this existed: her word clips peaked around 0.12 and the
     finished videos came out at -30 LUFS, sixteen decibels below what any
-    streaming service plays at. Every clip is levelled here so her voice,
+    streaming service plays at. Every clip is leveled here so her voice,
     the starter voice and the synthesiser sit at the same volume, and the
     final encode then masters the whole track (see encode_job).
 
@@ -433,9 +433,9 @@ def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
     """A segment speaking `text` whole, so the whole text is lit.
 
     The rule, everywhere: whatever the audio is SAYING is in the highlight
-    colour, and everything else is neutral. It used to show spoken whole
-    words in the plain colour, which broke the child's one reliable cue -
-    colour means "this is the thing being said right now"."""
+    color, and everything else is neutral. It used to show spoken whole
+    words in the plain color, which broke the child's one reliable cue -
+    color means "this is the thing being said right now"."""
     return Segment([(text, True)], audio, pad, scale, color)
 
 
@@ -443,7 +443,7 @@ def whole(text, audio, pad=0.0, scale=1.0, color=None) -> Segment:
 
 
 # A word must NEVER break mid-word - "Chas / e" is worse than useless to a
-# child learning to recognise word shapes. Estimating glyph widths got this
+# child learning to recognize word shapes. Estimating glyph widths got this
 # wrong (Andika is wider than it looks), so the page measures itself instead:
 # binary-search the largest font size that actually fits, in the browser that
 # is actually rendering it. `white-space:nowrap` makes overflow measurable
@@ -492,8 +492,8 @@ def frame_html(seg: Segment, theme: Theme) -> str:
     """
     text = "".join(p for p, _ in seg.parts)
     # Two states only: being said (highlight) or not (neutral). There used
-    # to be a third - unsaid letters dimmed to grey whenever anything was
-    # highlighted - and three colours meaning two things read as noise.
+    # to be a third - unsaid letters dimmed to gray whenever anything was
+    # highlighted - and three colors meaning two things read as noise.
     spans = "".join(
         f'<span class="{"hl" if on else ""}">{html.escape(p)}</span>'
         for p, on in seg.parts
@@ -554,11 +554,11 @@ def plan_job(segments: list, theme: Theme, work: Path, loop_pad=1.0) -> dict:
     # A 20 minute video is a few hundred PNGs, not 36,000.
     #
     # The highlight goes out when the voice stops: a segment's pad shows the
-    # same text NEUTRAL, so colour keeps exactly one meaning - "this is what
+    # same text NEUTRAL, so color keeps exactly one meaning - "this is what
     # is being said right now". A lit letter hanging through two seconds of
     # silence taught the opposite. Below the threshold the light stays on:
     # the closing gaps of a blending buildup are a fast rhythm, and flicking
-    # the colour at that rate is a strobe, not a cue.
+    # the color at that rate is a strobe, not a cue.
     NEUTRAL_PAD = 0.35
     seen, timeline, audio = {}, [], []
 
@@ -666,7 +666,7 @@ def encode_job(work: Path, out: Path, progress=None) -> Path:
         # Raise it if any player ever objects; nothing else depends on it.
         "-r", "15", "-preset", "veryfast", "-tune", "stillimage", "-crf", "21",
         # Master the whole track to streaming loudness. The clips are already
-        # levelled individually (see loud()), so this is mostly one static
+        # leveled individually (see loud()), so this is mostly one static
         # gain rather than anything that pumps; -14 LUFS is what YouTube and
         # Spotify play at, which is exactly how loud a TV expects things to
         # be. Before this the videos measured -30 LUFS - a sixteen-decibel

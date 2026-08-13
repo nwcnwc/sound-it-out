@@ -2,7 +2,7 @@
 
 Resolution order, per item:
 
-    1. Mum's recording, if it exists          -> used verbatim, levelled
+    1. Mom's recording, if it exists          -> used verbatim, leveled
     2. The starter voice, shipped             -> the developer's recordings
     3. Their cloned voice, if installed       -> generated
 
@@ -144,7 +144,7 @@ class VoiceSource:
             else:
                 return None
         data, sr = sf.read(f, dtype="float32")
-        if sr != SR:  # recordings are normalised on import, but never assume
+        if sr != SR:  # recordings are normalized on import, but never assume
             return None
         return data
 

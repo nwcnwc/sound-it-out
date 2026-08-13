@@ -7,8 +7,8 @@
 #   - One word per line.
 #   - Lines starting with # are notes. They're ignored.
 #   - [Square brackets] start a new group.
-#   - A colour after a word is optional - it's the colour that word appears in
-#     on screen. Leave it off and the word uses the normal colour.
+#   - A color after a word is optional - it's the color that word appears in
+#     on screen. Leave it off and the word uses the normal color.
 #
 # This is the same list used for two things, so you only write it once:
 #   1. Your recording checklist - the words you'll be asked to say.
@@ -21,7 +21,7 @@
 
 
 [Paw Patrol]
-# Level 1. Colours are each pup's kit, so the word looks like the character.
+# Level 1. Colors are each pup's kit, so the word looks like the character.
 Chase        #4da6ff
 Marshall     #ff5a4d
 Skye         #ff8fc7
@@ -48,10 +48,10 @@ rescue
 #
 # Delete the ones that don't apply. Add as many as you like.
 Alex
-Mum
+Mom
 Dad
-Nana
-Grandad
+Grandma
+Grandpa
 # brother or sister names here
 Sam
 

@@ -127,7 +127,7 @@ def test_letter_and_word_entries_build(library, monkeypatch):
 
 
 def test_spoken_wholes_are_highlighted_and_pads_go_neutral(library, monkeypatch):
-    """Colour means "being said right now". A spoken whole word is lit; the
+    """Color means "being said right now". A spoken whole word is lit; the
     silence after it shows the same text neutral (long pads only - flicking
     the light at approach speed would be a strobe)."""
     from gen.soundout import Theme, plan_job, whole
@@ -178,7 +178,7 @@ def test_themed_packs_are_sentences(library, monkeypatch):
 
 def test_every_pack_declares_a_group(library, monkeypatch):
     monkeypatch.setattr(levels.wordlists, "all_words", lambda: [])
-    assert all(p["group"] in ("favourites", "skills") for p in S.packs())
+    assert all(p["group"] in ("favorites", "skills") for p in S.packs())
 
 
 def test_the_ladder_pack_keeps_curriculum_order(library, monkeypatch):

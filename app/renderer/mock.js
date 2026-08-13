@@ -22,7 +22,7 @@
 
 
 [Paw Patrol]
-# Colours are each pup's kit, so the word looks like the character.
+# Colors are each pup's kit, so the word looks like the character.
 Chase        #4da6ff
 Marshall     #ff5a4d
 Skye         #ff8fc7
@@ -39,10 +39,10 @@ rescue
 [People]
 # >>> REPLACE THESE WITH YOUR REAL NAMES. <<<
 Alex
-Mum
+Mom
 Dad
-Nana
-Grandad
+Grandma
+Grandpa
 # brother or sister names here
 # pet names here
 
@@ -83,7 +83,7 @@ down
 
   const state = {
     levels: [
-      { id: 1, name: 'Level 1 — Favourite names', description: 'Whole words he already loves, learned by sight. Chase, Marshall, Skye.', available: true },
+      { id: 1, name: 'Level 1 — Favorite names', description: 'Whole words he already loves, learned by sight. Chase, Marshall, Skye.', available: true },
       { id: 2, name: 'Level 2 — Everyday words', description: 'Family, home and first little phrases. Around fifty words.', available: true },
       { id: 3, name: 'Level 3 — Single sounds', description: 'One letter at a time: s, a, t, p, i, n.', available: true },
       { id: 4, name: 'Level 4 — Two sounds together', description: 'Joining two sounds: sa, at, ip, um.', available: true },
@@ -99,7 +99,7 @@ down
     ],
     capabilities: { fallback_voice: true, recordings: true, cloning: false },
     wordlistText: WORDLIST,
-    outputDir: '/Users/mum/Movies/Sound It Out',
+    outputDir: '/Users/mom/Movies/Sound It Out',
     settings: { level: '1', theme: 'night', reps: 3, pauseSeconds: 1.5, minutes: 20 }
   }
 
@@ -143,10 +143,10 @@ down
   ]
 
   const mockPacks = [
-    { id: 'own-words', group: 'favourites', name: 'Your word list', description: 'Everything from your old word list.', count: 44, added: 1 },
-    { id: 'paw-patrol', group: 'favourites', name: 'Paw Patrol', description: 'The pups and their lines.', count: 10, added: 0 },
-    { id: 'veggie-tales', group: 'favourites', name: 'VeggieTales', description: 'Bob, Larry, and the song at the end of the show.', count: 5, added: 0 },
-    { id: 'gods-world', group: 'favourites', name: "God's world", description: 'Short lines of faith and thanks.', count: 8, added: 0 },
+    { id: 'own-words', group: 'favorites', name: 'Your word list', description: 'Everything from your old word list.', count: 44, added: 1 },
+    { id: 'paw-patrol', group: 'favorites', name: 'Paw Patrol', description: 'The pups and their lines.', count: 10, added: 0 },
+    { id: 'veggie-tales', group: 'favorites', name: 'VeggieTales', description: 'Bob, Larry, and the song at the end of the show.', count: 5, added: 0 },
+    { id: 'gods-world', group: 'favorites', name: "God's world", description: 'Short lines of faith and thanks.', count: 8, added: 0 },
     { id: 'letters', group: 'skills', name: 'Letter sounds', description: 'One letter at a time, in phonics order.', count: 19, added: 1 },
     { id: 'ladder', group: 'skills', name: 'Building up', description: 'The whole journey in order, ending in sentences.', count: 22, added: 22 }
   ]
@@ -156,7 +156,7 @@ down
   const wait = (ms) => new Promise((r) => setTimeout(r, ms))
 
   let jobSeq = 0
-  let cancelled = null
+  let canceled = null
 
   const STAGES = [
     { stage: 'words', total: 1, message: 'Reading your word list' },
@@ -169,12 +169,12 @@ down
     await wait(400)
     for (const s of STAGES) {
       for (let done = 1; done <= s.total; done++) {
-        if (cancelled === jobId) return
+        if (canceled === jobId) return
         fire('progress', { jobId, stage: s.stage, done, total: s.total, message: s.message })
         await wait(60)
       }
     }
-    if (cancelled === jobId) return
+    if (canceled === jobId) return
     // window.__mockFail, or ?fail=1, exercises the error screen.
     if (window.__mockFail || new URLSearchParams(location.search).get('fail')) {
       fire('error', {
@@ -219,9 +219,9 @@ down
       return { jobId }
     },
 
-    async cancelJob (jobId) { cancelled = jobId; return { ok: true } },
+    async cancelJob (jobId) { canceled = jobId; return { ok: true } },
 
-    // The sentence library, in memory. Enough behaviour to exercise the
+    // The sentence library, in memory. Enough behavior to exercise the
     // whole tab: adding splits on sentence ends, statuses vary.
     async sentencesList () {
       await wait(100)

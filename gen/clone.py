@@ -7,7 +7,7 @@ this module is optional *by construction*, not by convention:
 
   * nothing heavy is imported at module scope, so `import clone` costs nothing
     and cannot fail because torch is absent;
-  * `is_available()` / `capabilities()` let the UI grey out levels 6-8 with an
+  * `is_available()` / `capabilities()` let the UI gray out levels 6-8 with an
     honest reason instead of exploding at generation time;
   * the model runs in a *separate interpreter* (`.venv-clone`), because
     chatterbox-tts pins `numpy<2` and installing it beside the app would

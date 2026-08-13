@@ -1,6 +1,6 @@
 """Tests for recording the passage a section at a time.
 
-The behaviour that matters is resumption: a parent records two sections, is
+The behavior that matters is resumption: a parent records two sections, is
 interrupted, comes back an hour later, and has to land on section three
 without deciding anything. Everything here is about that, and about the
 failure it replaced - a session cut short leaving a fraction of the script on

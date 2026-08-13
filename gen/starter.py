@@ -119,11 +119,11 @@ def all_magic_e() -> list:
     return out
 
 
-def generate_missing(profile="mum", variant="english", log=print) -> dict:
+def generate_missing(profile="mom", variant="english", log=print) -> dict:
     """Speak every gap with the developer's cloned voice and stage it.
 
     Slow on purpose: these ship to every install, so they get the
-    high-quality model, hours and all. Each clip is levelled at lookup
+    high-quality model, hours and all. Each clip is leveled at lookup
     time like everything else; words get the same conservative tidy-up
     as any generated word. A clip that comes back silent or absurdly
     long is reported and NOT written - a bad shipped default is worse

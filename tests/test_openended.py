@@ -70,7 +70,7 @@ class FakeGroup:
         self.words = [(w, None) for w in words]
 
 
-PEOPLE = FakeGroup("People", ["Alex", "Mum", "Nana"])
+PEOPLE = FakeGroup("People", ["Alex", "Mom", "Grandma"])
 THINGS = FakeGroup("Home", ["ball", "cup", "dog"])
 
 
@@ -78,7 +78,7 @@ def test_sentences_are_built_from_the_parents_own_words():
     lines = O.from_wordlist([PEOPLE, THINGS], limit=12)
     assert lines
     joined = " ".join(lines)
-    assert any(n in joined for n in ["Alex", "Mum", "Nana"])
+    assert any(n in joined for n in ["Alex", "Mom", "Grandma"])
     assert any(t in joined for t in ["ball", "cup", "dog"])
 
 
@@ -91,7 +91,7 @@ def test_the_same_list_gives_the_same_sentences():
 
 
 def test_a_different_list_gives_different_sentences():
-    other = FakeGroup("People", ["Sam", "Dad", "Grandad"])
+    other = FakeGroup("People", ["Sam", "Dad", "Grandpa"])
     assert O.from_wordlist([PEOPLE, THINGS], limit=10) != \
         O.from_wordlist([other, THINGS], limit=10)
 

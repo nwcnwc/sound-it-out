@@ -12,7 +12,7 @@
 const api = window.soundout
 const $ = (id) => document.getElementById(id)
 
-/* Theme swatch colours mirror THEMES in gen/soundout.py so the preview is the
+/* Theme swatch colors mirror THEMES in gen/soundout.py so the preview is the
    real thing. Unknown ids fall back to something neutral rather than blank. */
 const THEME_COLOURS = {
   night: { bg: '#0d1b2a', fg: '#f8f4e9', hl: '#ffd166' },
@@ -139,7 +139,7 @@ async function refreshPacks () {
   }
   host.textContent = ''
   const GROUPS = [
-    ['favourites', 'Stories and favourites'],
+    ['favorites', 'Stories and favorites'],
     ['skills', 'Learning to sound out']
   ]
   let lastGroup = null
@@ -1211,7 +1211,7 @@ const GUIDE_URL = 'https://github.com/nwcnwc/sound-it-out/blob/main/RECORDING.md
 
 const studio = {
   items: [], i: 0, takes: 3, part: 'phonemes',
-  buf: [], running: false, cancelled: false, paused: false, advanceTimer: null
+  buf: [], running: false, canceled: false, paused: false, advanceTimer: null
 }
 
 // "line" is a whole sentence read aloud to a child - unhurried, it needs
@@ -1224,7 +1224,7 @@ function sEl (id) { return $(id) }
 
 async function openStudio (part, extra) {
   studio.part = part
-  studio.cancelled = false
+  studio.canceled = false
   // `plan` is used well below, so it must not be scoped to the try block.
   let plan
   try {
@@ -1357,7 +1357,7 @@ function endMicCheck () {
 
 function closeStudio () {
   clearInterval(studio.micTimer)
-  studio.cancelled = true
+  studio.canceled = true
   studio.paused = false
   clearTimeout(studio.advanceTimer)
   studio.running = false
@@ -1421,8 +1421,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms))
  * next step instead of after the whole item. A take interrupted part-way is
  * discarded and redone on resume - half a sound is worse than none. */
 async function pauseGate () {
-  while (studio.paused && !studio.cancelled) await wait(120)
-  return !studio.cancelled
+  while (studio.paused && !studio.canceled) await wait(120)
+  return !studio.canceled
 }
 
 function setPaused (on) {
@@ -1463,7 +1463,7 @@ async function recordItem () {
     for (let c = 3; c > 0 && !interrupted; c--) {
       sEl('studio-state').textContent = `Ready… ${c}`
       await wait(360)
-      if (studio.cancelled) return
+      if (studio.canceled) return
       if (studio.paused) interrupted = true
     }
     if (interrupted) continue          // redo this take from the countdown
@@ -1478,13 +1478,13 @@ async function recordItem () {
     const step = 100
     for (let waited = 0; waited < dur; waited += step) {
       await wait(step)
-      if (studio.cancelled || studio.paused) { interrupted = true; break }
+      if (studio.canceled || studio.paused) { interrupted = true; break }
     }
     clearInterval(meter)
     sEl('studio-meter-fill').style.width = '0%'
     const take = Recorder.stop()
     sEl('studio-word').classList.remove('is-live')
-    if (studio.cancelled) return
+    if (studio.canceled) return
     if (interrupted) continue          // discard the part-take, redo it on resume
 
     studio.buf.push(take)

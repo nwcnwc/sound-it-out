@@ -32,7 +32,7 @@ const isPackaged = app.isPackaged
 // Harmless on a normal desktop.
 app.commandLine.appendSwitch('disable-dev-shm-usage')
 
-// On ChromeOS/Crostini the GPU process cannot initialise: the container's
+// On ChromeOS/Crostini the GPU process cannot initialize: the container's
 // virtio-gpu does not support the native buffers Chromium wants, so it fails,
 // retries, and floods the console with "Buffer handle is null" and
 // "StagingBuffer's SharedImage failed" - hundreds of lines that look alarming
@@ -50,7 +50,7 @@ if (process.platform === 'linux' && fs.existsSync('/opt/google/cros-containers')
 let win = null
 let player = null
 let sidecar = null
-const jobs = new Map() // jobId -> {cancelled}
+const jobs = new Map() // jobId -> {canceled}
 
 function userDataFile (name) {
   const d = app.getPath('userData')
@@ -113,9 +113,9 @@ function send (channel, payload) {
 
 async function runJob (opts) {
   const jobId = String(Date.now())
-  jobs.set(jobId, { cancelled: false })
+  jobs.set(jobId, { canceled: false })
   const state = jobs.get(jobId)
-  const check = () => { if (state.cancelled) throw new Error('CANCELLED') }
+  const check = () => { if (state.canceled) throw new Error('CANCELED') }
 
   ;(async () => {
     try {
@@ -147,7 +147,7 @@ async function runJob (opts) {
           }
         })
       } catch (err) {
-        if (String(err.message) === 'CANCELLED') throw err
+        if (String(err.message) === 'CANCELED') throw err
         // Chromium's renderer cannot start in some constrained environments
         // (containers that intercept syscalls, locked-down /dev/shm). Rather
         // than fail the whole video, hand the same HTML to the Python side,
@@ -170,7 +170,7 @@ async function runJob (opts) {
       send('job:done', { jobId, output, voice: plan.voice })
       if (opts.mode === 'play') openPlayer(output)
     } catch (err) {
-      if (String(err.message) === 'CANCELLED') {
+      if (String(err.message) === 'CANCELED') {
         send('job:error', { jobId, message: 'Stopped.', hint: '' })
       } else {
         send('job:error', {
@@ -297,7 +297,7 @@ function registerIpc () {
 
   ipcMain.handle('job:cancel', (_e, jobId) => {
     const j = jobs.get(String(jobId))
-    if (j) j.cancelled = true
+    if (j) j.canceled = true
     return { ok: true }
   })
 

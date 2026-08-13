@@ -102,7 +102,13 @@ _ROWS = [
     (("o", "o", "dog", "ɒ", CONTINUANT), ("ur", "ur", "her", "ɜː", CONTINUANT)),
     (("u", "u", "cup", "ʌ", CONTINUANT), ("ay", "ay", "day", "eɪ", CONTINUANT)),
     (("oo-put", "oo", "put", "ʊ", CONTINUANT), ("igh", "igh", "my", "aɪ", CONTINUANT)),
-    (("ar", "ar", "car", "ɑː", CONTINUANT), ("oy", "oy", "boy", "ɔɪ", CONTINUANT)),
+    # "ah" as in father, NOT "ar" as in car. In American English those are two
+    # different sounds - father is the vowel alone, car is that vowel plus an
+    # /r/ - and prompting for "ar" got the r recorded into the vowel, so any
+    # word joining this sound to a following /r/ said it twice. The hint in
+    # studio.SOUND_HINTS always said "ah as in father"; the table disagreed
+    # with it.
+    (("ah", "ah", "father", "ɑː", CONTINUANT), ("oy", "oy", "boy", "ɔɪ", CONTINUANT)),
     (("ow", "ow", "now", "aʊ", CONTINUANT), ("oa", "oa", "go", "əʊ", CONTINUANT)),
     (("air", "air", "hair", "eə", CONTINUANT), ("ear", "ear", "near", "ɪə", CONTINUANT)),
 ]
@@ -515,7 +521,7 @@ def split_recording(path, expected_labels, min_silence=MIN_SILENCE,
 
 # ------------------------------------------------------------------- qc
 
-# Everything below analyses at SR, because it reuses _buckets() from
+# Everything below analyzes at SR, because it reuses _buckets() from
 # gen/soundout.py and that reads SR from the module. split_recording() already
 # resamples, so clips arrive in the right rate.
 
@@ -612,7 +618,7 @@ def clean_phoneme(clip: Clip) -> np.ndarray:
     """
     p = PHONEMES.get(clip.label)
     # shape_phoneme branches on `ipa in STOPS/VOWELS`, i.e. on a single ASCII
-    # symbol, so hand it the normalised first symbol rather than "ɡ" or "tʃ".
+    # symbol, so hand it the normalized first symbol rather than "ɡ" or "tʃ".
     ipa = _IPA_ALIASES.get(p.ipa[:1], p.ipa[:1]) if p else ""
     return shape_phoneme(np.asarray(clip.audio, dtype="float32"), ipa)
 
@@ -761,7 +767,7 @@ def save_clips(clips, outdir, source=None, issues=(), review=(), part=None,
     items, written, used = [], [], set()
     for c in clips:
         name = _slug(c.label)
-        while name in used:  # two words that slug the same, e.g. "Mum" / "mum!"
+        while name in used:  # two words that slug the same, e.g. "Mom" / "mom!"
             name += "-2"
         used.add(name)
         path = outdir / f"{name}.wav"

@@ -114,7 +114,7 @@ def split_graphemes(word: str):
     low = word.lower()
     # Consonant-le: the -ble/-dle/-tle family ends in its own little
     # syllable, /əl/. "Rubble" is r-u-bb-le, the way every phonics
-    # programme teaches it.
+    # program teaches it.
     if len(low) >= 4 and low.endswith("le") and low[-3] not in "aeiou":
         return split_graphemes(word[:-2]) + [(word[-2:], "əl")]
     if len(low) >= 3 and MAGIC_E.search(low):
@@ -283,7 +283,7 @@ LEVELS = [
     # got - so it cannot be listed here, cannot be recorded in advance, and is
     # different for every family. This is what the cloned voice is for.
     Level(10, "Anything you paste in",
-          "A page of a book, a card from Nana, a note about the day. "
+          "A page of a book, a card from Grandma, a note about the day. "
           "Read word by word, then whole.", "open"),
     Level(11, "Their own sentences",
           "Sentences built from the names and things in your word list. "
@@ -536,7 +536,7 @@ def _hard_clip(voice, ipa: str, seconds: float):
     in a stop then keeps a window CENTRED ON ITS BURST - located, not
     assumed, because bursts turn up wherever the person put them - with
     the sound's body before it and the release after. The burst is
-    levelled by peak only when it IS a burst (peak well above the window's
+    leveled by peak only when it IS a burst (peak well above the window's
     own rms): boosting a window that has no transient just manufactures
     static, which is what lollipop's op became."""
     import numpy as np
