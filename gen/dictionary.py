@@ -189,7 +189,12 @@ def derive_pair_catalog():
                 # "during" for -ing and "information" for -ati, both perfectly
                 # common and neither a word a child would pick out. A short
                 # word is also a word they can read.
-                fit = (0 if len(word) <= 5 else 1 if len(word) <= 7 else 2,
+                # A child's word beats a short word beats a common one. The
+                # ordering matters: ranking by frequency first gave "during"
+                # for -ing and "station" for -ati, both ordinary and neither
+                # a word a child would pick out of a list.
+                fit = (0 if word in CHILD_WORDS else 1,
+                       0 if len(word) <= 5 else 1 if len(word) <= 7 else 2,
                        0 if roomy and len(entry) <= 3 else 1,
                        frequency_rank().get(word, 10 ** 6), len(word), word)
                 if sound not in example or fit < example[sound]:
@@ -202,10 +207,15 @@ def derive_pair_catalog():
         # just noise in a list of two hundred. This is what drops mc, tz, ce,
         # lu, rew and yo, which were there because the corpus contains
         # mcdonald and pizza and this app never will.
+        # A letter name is its own best example: /ɛs/ shown as "espn" tells
+        # nobody it is the letter S.
         _catalog = [
             {"ipa": s, "spelling": spellings[s].most_common(1)[0][0],
-             "example": example[s][4], "words": n}
-            for s, n in count.most_common() if s in example
+             "example": (f'the letter {LETTER_NAMES[s].upper()}'
+                         if s in LETTER_NAMES else example[s][5]),
+             "words": n}
+            for s, n in count.most_common()
+            if s in example or s in LETTER_NAMES
         ]
         # The magic-e rime sounds stay listed even when the aligner never
         # chose them for a dictionary word: recordings of them serve the
@@ -264,6 +274,23 @@ def pair_catalog():
             # than return nothing, and pay the seconds once.
             _catalog = derive_pair_catalog()
     return _catalog
+
+
+# The 26 letter NAMES, which are not the same thing as the 26 letter sounds.
+# "S" is said /ɛs/ and sounds /s/, and a child needs both - the name to sing
+# the alphabet and say which letter this is, the sound to read with.
+#
+# 22 of the 26 names are two sounds or more, which is why they kept turning up
+# in the grapheme-pair list carrying examples like "espn", "dns" and "ssn".
+# Those were never initialism debris: /ɛs/ IS the name of S, and the honest
+# example for it is the letter.
+LETTER_NAMES = {
+    "eɪ": "a", "biː": "b", "siː": "c", "diː": "d", "iː": "e", "ɛf": "f",
+    "dʒiː": "g", "eɪtʃ": "h", "aɪ": "i", "dʒeɪ": "j", "keɪ": "k", "ɛl": "l",
+    "ɛm": "m", "ɛn": "n", "əʊ": "o", "piː": "p", "kjuː": "q", "ɑːɹ": "r",
+    "ɛs": "s", "tiː": "t", "juː": "u", "viː": "v", "dʌbəljuː": "w",
+    "ɛks": "x", "waɪ": "y", "ziː": "z",
+}
 
 
 _split_cache = {}
@@ -340,7 +367,90 @@ abortion miscarriage cancer tumor tumour disease infection
 # that caused trouble sits far outside: orgy 4795, suicide 5715, screw 7168,
 # cigarette 8075, orgasm 9479 - and stawski and waitzkin, both proper names
 # out of CMUdict, are not in the common list at all.
-EXAMPLE_MAX_RANK = 2500
+# The fallback cut, for joins no child word demonstrates.
+#
+# Loosening it past this buys pairs whose only example is "memorabilia" or
+# "workstation" - a join that appears nowhere a child will read is a join
+# nobody needs to smooth, so the cut is doing real work rather than being a
+# safety measure. Safety is the blocklist and the child-first ranking:
+# checked at the loosest possible setting, no unsuitable word reaches an
+# example at all.
+EXAMPLE_MAX_RANK = 5000
+
+# Words a child actually meets, which is a different question from words the
+# web says often - and the web list was answering the wrong one. Measured:
+# rabbit ranks 6548, elephant 8767, banana 9370, and kitten, carrot, zebra
+# and bucket are not in the ten thousand at all. A rank cut tuned to exclude
+# the unsuitable was throwing out 24 of 25 ordinary children's words with
+# them, and picking "station" and "during" instead.
+#
+# So this is the FIRST place an example is looked for. The frequency list
+# stays as the fallback, for joins no child word happens to demonstrate.
+CHILD_WORDS = frozenset("""
+mom dad mommy daddy mum baby brother sister grandma grandpa nana family
+boy girl kid child friend man woman people
+cat dog puppy kitten bird fish duck cow pig horse sheep goat hen chick
+rabbit bunny mouse frog bear lion tiger monkey elephant giraffe zebra
+snake turtle owl fox deer wolf whale shark dolphin penguin
+bee ant bug butterfly spider worm snail ladybug
+apple banana orange grape berry cherry lemon melon peach pear plum
+bread cake cookie candy jam honey egg cheese milk juice water
+soup rice pasta pizza sandwich burger chip carrot potato bean pea corn
+tomato onion salad dinner lunch breakfast supper snack
+head hair face eye ear nose mouth tooth teeth tongue lip chin neck
+arm hand finger thumb leg foot toe knee tummy back
+hat coat shirt sock shoe boot glove scarf dress skirt sweater pants
+house home room bed door window floor wall roof stair garden yard
+kitchen bathroom bedroom table chair sofa lamp mirror clock shelf
+cup plate bowl spoon fork knife pot pan bottle box bag basket
+toy ball doll block puzzle bike wagon kite drum bell balloon teddy
+book story page picture crayon pencil pen paper paint glue
+car bus truck train plane boat ship rocket tractor van jeep taxi
+sun moon star sky cloud rain snow wind storm rainbow
+tree leaf flower grass seed root branch wood stone rock sand
+hill river lake sea beach farm park road bridge
+red blue green yellow black white brown pink purple orange gray
+big little small tall short long fast slow hot cold wet dry
+happy sad funny silly kind good bad new old soft hard loud quiet
+run jump walk skip hop sit stand sleep eat drink play sing dance
+look see hear smell touch hold give take open shut push pull
+wash brush comb dig ride swim climb throw catch kick clap wave
+laugh cry smile hug kiss help wait stop go come stay
+day night morning today tomorrow week year birthday
+mcdonald pizza burger
+
+grew drew blew flew threw knew crew brew stew screw chew
+hook hood book look took cook shook foot wood good stood
+bull full pull push bush put bug hug rug mug jug tug dug
+went sent bent tent lent kept slept crept swept felt melt
+told sold hold gold cold fold bold held
+made came gave saved waved named
+found round sound ground pound bound
+best rest nest test west chest guest
+sing ring king wing thing bring swing string spring
+hand land sand band stand grand
+jump bump lump pump stump
+sick kick pick lick tick trick stick thick quick chick brick
+bell tell well sell fell shell smell spell
+back pack rack sack track black snack crack
+duck luck truck stuck
+bank tank thank drank sank blank
+milk silk
+lamp camp stamp
+mask task
+gift lift
+nest best
+help yelp
+belt melt
+farm arm harm
+corn horn born torn thorn
+bird third girl
+turn burn hurt
+park dark mark shark spark
+storm form
+short sport
+start smart chart
+""".split())
 
 # Junk shapes rather than junk meanings: initialisms, brands and fragments.
 # A word shown to a child should be a word, and these are strings.
@@ -352,6 +462,8 @@ ip isp faq ceo cfo cto usa uk eu un nyc la sf dc pm am est pst dns cnn bbc
 ac dc ok tv pm inc ltd corp yahoo google amazon ebay paypal microsoft apple
 doge nasdaq nato fbi cia irs dmv atm gps usb
 georgia texas florida ohio boston chicago denver dallas
+amd espn uri gen doge lucia guam kenya ecuador puerto
+dvd cpu dna rna nasa ibm att verizon comcast
 """.split())
 
 def suitable(word: str) -> bool:
@@ -379,6 +491,10 @@ def good_example(word: str) -> bool:
     # nothing shorter than three letters teaches anyone what a sound is.
     if len(w) < 3:
         return False
+    # A child's word first. Otherwise a word the web says often, which is
+    # a weaker signal but keeps a join from being dropped for want of one.
+    if w in CHILD_WORDS:
+        return True
     r = frequency_rank().get(w)
     return r is not None and r < EXAMPLE_MAX_RANK
 
