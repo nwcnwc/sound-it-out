@@ -1027,7 +1027,30 @@ def _sentences(voice, sentences, reps, pause):
     return segs
 
 
-def _one_word(voice, word, reps, pause):
+def _spell_first(voice, word, pause):
+    """Name the letters before reading the word: "C - A - T", then cat.
+
+    The names, not the sounds. Spelling a word aloud is how a child says
+    which letters are in front of them, and it is a different act from
+    sounding it out - one identifies the letters, the other reads them.
+    """
+    from gen import dictionary
+
+    by_letter = {v: k for k, v in dictionary.LETTER_NAMES.items()}
+    segs = []
+    for i, ch in enumerate(word):
+        ipa = by_letter.get(ch.lower())
+        if not ipa:
+            continue
+        segs.append(Segment([(c, j == i) for j, c in enumerate(word)],
+                            voice.phoneme(ipa), pad=0.28))
+    if segs:
+        segs[-1].pad = pause * 0.8
+    return segs
+
+
+def _one_word(voice, word, reps, pause, spell_first=False,
+              ignore_sight=False):
     """A single word met on its own: sounded out with the gaps closing if
     the grapheme table can honestly say it, shown and spoken whole if it
     cannot (see decodable) - or if the parent put it on the sight-word
@@ -1041,7 +1064,10 @@ def _one_word(voice, word, reps, pause):
     from gen import sightwords
 
     segs = []
-    if decodable(word) and not sightwords.is_sight(word):
+    if spell_first:
+        segs += _spell_first(voice, word, pause)
+    sight = (not ignore_sight) and sightwords.is_sight(word)
+    if decodable(word) and not sight:
         segs += _approach(voice, word_alignment(word), pause,
                           passes=max(2, reps))
         segs.append(whole(word, voice.word(word), pad=pause + 1.0))
@@ -1054,7 +1080,8 @@ def _one_word(voice, word, reps, pause):
     return segs
 
 
-def _library(voice, texts, reps, pause):
+def _library(voice, texts, reps, pause, spell_first=False,
+             ignore_sight=False):
     """The library's video. An entry is a letter, a word, or a sentence,
     and each gets exactly as much journey as it has:
 
@@ -1082,7 +1109,7 @@ def _library(voice, texts, reps, pause):
 
         if kind == "word":
             segs += _one_word(voice, words[0].strip(".,!?;:‘’“”'\""),
-                              reps, pause)
+                              reps, pause, spell_first, ignore_sight)
             segs[-1].item_end = True
             continue
 
@@ -1109,7 +1136,8 @@ def _library(voice, texts, reps, pause):
             clean = w.strip(".,!?;:‘’“”'\"")
             if not clean:
                 continue
-            segs += _one_word(voice, clean, reps, pause)
+            segs += _one_word(voice, clean, reps, pause, spell_first,
+                              ignore_sight)
 
         # 2. Grow the sentence word by word.
         for i, w in enumerate(words):
@@ -1245,7 +1273,9 @@ def build(level: int, voice, opts: dict) -> list:
                 "Add a sentence on the Sentences tab first - anything you "
                 "would like read, in your own words."
             )
-        return _library(voice, texts, reps, pause)
+        return _library(voice, texts, reps, pause,
+                        spell_first=bool(opts.get("spellFirst")),
+                        ignore_sight=bool(opts.get("ignoreSightWords")))
 
     raise NotImplementedError(
         f"Level {level} is designed but not built yet - see README for the plan."

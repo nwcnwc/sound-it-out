@@ -24,7 +24,7 @@
 
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button class="tab" role="tab" id="tab-sentences" aria-controls="screen-sentences"
-            aria-selected="true" data-screen="sentences">Sentences</button>
+            aria-selected="true" data-screen="sentences">Make video</button>
     <button class="tab" role="tab" id="tab-soundbank" aria-controls="screen-soundbank"
             aria-selected="false" tabindex="-1" data-screen="soundbank">Sound Bank</button>
     <button class="tab" role="tab" id="tab-settings" aria-controls="screen-settings"
@@ -41,7 +41,7 @@
   <section class="screen" id="screen-sentences" role="tabpanel" aria-labelledby="tab-sentences" tabindex="-1">
 
     <div class="page-head">
-      <h1>What gets read</h1>
+      <h1>Make a video</h1>
       <p class="lede">
         Add anything &mdash; a name, a word, a whole sentence. Record it in a couple of
         minutes, tick what to include, and make the video: the sounds build into words,
@@ -102,6 +102,37 @@
         <div class="theme-list" id="themes"></div>
       </div>
 
+      <div class="setting">
+        <span class="setting-label" id="lbl-extras">What to use</span>
+        <p class="hint">Your last choice is remembered.</p>
+        <ul class="optlist" aria-labelledby="lbl-extras">
+          <li>
+            <label><input type="checkbox" id="opt-spell-first">
+              <b>Spell it out first</b></label>
+            <span class="opt-note">Name the letters &mdash; C, A, T &mdash; before
+            reading the word.</span>
+          </li>
+          <li>
+            <label><input type="checkbox" id="opt-magic-e" checked>
+              <b>Use my magic-e recordings</b></label>
+            <span class="opt-note">Off, endings like <i>ake</i> are joined from the
+            42 sounds instead of played from your recording.</span>
+          </li>
+          <li>
+            <label><input type="checkbox" id="opt-joins" checked>
+              <b>Soften joins where I have recorded them</b></label>
+            <span class="opt-note">Off, every join is built from the 42 sounds,
+            seam and all.</span>
+          </li>
+          <li>
+            <label><input type="checkbox" id="opt-ignore-sight">
+              <b>Ignore my sight-word list</b></label>
+            <span class="opt-note">Sound out every word that can be sounded out, even
+            the ones marked to read whole.</span>
+          </li>
+        </ul>
+      </div>
+
       <p class="notice notice-warm make-slow" id="make-slow" role="status" aria-live="polite" hidden></p>
 
       <div class="makebar">
@@ -144,17 +175,55 @@
         </div>
 
         <ol class="voice-parts">
-          <li class="vpart" data-part="phonemes">
+          <li class="vpart" data-part="sentences">
             <div class="vpart-num">1</div>
             <div class="vpart-body">
+              <h2>Sentences <span class="vpart-count" id="count-sentences"></span></h2>
+              <p>The whole lines, read the way you would read to your child. This is the one
+              thing that can never be assembled from anything else &mdash; connected
+              speech has a melody that joined-up words do not.</p>
+              <div class="bar bar-slim vpart-bar" id="barwrap-sentences" hidden>
+                <div class="bar-fill" id="bar-sentences" style="width:0%"></div>
+              </div>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="starter">
+                  Record what the packs still need
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="sentences">
+                  Listen back &amp; redo
+                </button>
+              </div>
+              <div class="vpart-result" id="result-sentences" hidden></div>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="bank">
+            <div class="vpart-num">2</div>
+            <div class="vpart-body">
+              <h2>Words <span class="vpart-count" id="count-bank"></span></h2>
+              <p>Every word you have recorded. The bank is shared: record &ldquo;dog&rdquo;
+              once and every sentence containing it uses that recording.</p>
+              <div class="rowbar">
+                <button class="btn btn-primary vpart-record" type="button" data-part="starter">
+                  Record what the packs still need
+                </button>
+                <button class="btn btn-second vpart-review" type="button" data-part="bank">
+                  Listen back &amp; redo
+                </button>
+              </div>
+              <div class="vpart-result" id="result-bank" hidden></div>
+            </div>
+          </li>
+
+          <li class="vpart" data-part="phonemes">
+            <div class="vpart-num">3</div>
+            <div class="vpart-body">
               <h2>The 42 sounds <span class="vpart-count" id="count-phonemes"></span></h2>
-              <p><b>Start here. Everything else is optional.</b> The letter sounds
-              &mdash; <i>sss</i>, <i>mmm</i>, <i>t</i>. Every word in every video is
-              built from these, and an isolated sound is exactly what a computer
-              voice gets wrong, which is why they are recorded rather than
-              generated. About ten minutes. Read
-              <a href="#" id="open-guide" class="link">the recording guide</a>
-              first &mdash; it explains the one rule that really matters.</p>
+              <p><b>The one session that matters.</b> The letter sounds &mdash; <i>sss</i>,
+              <i>mmm</i>, <i>t</i>. Every word in every video is built from these, and an
+              isolated sound is exactly what a computer voice gets wrong. About ten
+              minutes. Read <a href="#" id="open-guide" class="link">the recording
+              guide</a> first.</p>
               <div class="bar bar-slim vpart-bar" id="barwrap-phonemes" hidden>
                 <div class="bar-fill" id="bar-phonemes" style="width:0%"></div>
               </div>
@@ -162,7 +231,7 @@
                 <button class="btn btn-primary vpart-record" type="button" data-part="phonemes">
                   Record them here
                 </button>
-                <button class="btn btn-second vpart-review" type="button" data-part="phonemes" hidden>
+                <button class="btn btn-second vpart-review" type="button" data-part="phonemes">
                   Listen back &amp; redo
                 </button>
                 <button class="btn btn-second vpart-script" type="button" data-part="phonemes">
@@ -170,19 +239,17 @@
                 </button>
               </div>
               <div class="vpart-result" id="result-phonemes" hidden></div>
-              <p class="voice-foot" id="voice-foot" role="status" aria-live="polite"></p>
             </div>
           </li>
 
           <li class="vpart" data-part="letters">
-            <div class="vpart-num">2</div>
+            <div class="vpart-num">4</div>
             <div class="vpart-body">
               <h2>The alphabet <span class="vpart-count" id="count-letters"></span></h2>
-              <p><span class="tag">Optional</span> The letter <b>names</b> &mdash;
-              <i>ay</i>, <i>bee</i>, <i>see</i>. Not their sounds: a child needs
-              both, and this is the half that lets them say which letter they are
-              looking at. All 26 already play, joined from the sounds above;
-              recording one replaces the join with your own voice.</p>
+              <p><span class="tag">Optional</span> The letter <b>names</b> &mdash; <i>ay</i>,
+              <i>bee</i>, <i>see</i>. Not their sounds: a child needs both, and this is the
+              half that lets them say which letter they are looking at. All 26 already
+              play, joined from the 42.</p>
               <div class="bar bar-slim vpart-bar" id="barwrap-letters" hidden>
                 <div class="bar-fill" id="bar-letters" style="width:0%"></div>
               </div>
@@ -199,14 +266,12 @@
           </li>
 
           <li class="vpart" data-part="magic-e">
-            <div class="vpart-num">3</div>
+            <div class="vpart-num">5</div>
             <div class="vpart-body">
               <h2>Magic-e endings <span class="vpart-count" id="count-magic-e"></span></h2>
-              <p><span class="tag">Optional</span> The endings where a silent
-              <i>e</i> makes the vowel say its name &mdash; <i>ake</i> in cake,
-              <i>ice</i> in rice, <i>ome</i> in home. Each one plays as a join of
-              the sounds above until you record it; recording one replaces that
-              join wherever the ending appears.</p>
+              <p><span class="tag">Optional</span> The endings where a silent <i>e</i> makes the
+              vowel say its name &mdash; <i>ake</i> in cake, <i>ice</i> in rice. Each plays
+              as a join of the 42 until you record it.</p>
               <div class="bar bar-slim vpart-bar" id="barwrap-magic-e" hidden>
                 <div class="bar-fill" id="bar-magic-e" style="width:0%"></div>
               </div>
@@ -223,17 +288,15 @@
           </li>
 
           <li class="vpart" data-part="pairs">
-            <div class="vpart-num">4</div>
+            <div class="vpart-num">6</div>
             <div class="vpart-body">
               <h2>Smoothing out the joins <span class="vpart-count" id="count-pairs"></span></h2>
-              <p><span class="tag">Optional polish</span> When two sounds sit next
-              to each other &mdash; the <i>an</i> in hand, the <i>ing</i> in bring
-              &mdash; the app plays them as two clips joined together. You can hear
-              the seam. Record one and your single breath replaces that join
-              everywhere it occurs.</p>
-              <p class="hint">This teaches nothing new: these are not extra sounds,
-              they are the same sounds said in one breath instead of two. Do five,
-              do fifty, or none at all. Most useful first.</p>
+              <p><span class="tag">Optional polish</span> When two sounds sit next to each other
+              the app plays them as two clips joined together, and you can hear the seam.
+              Record one and your single breath replaces that join.</p>
+              <p class="hint">This teaches nothing new: the same sounds said in one breath
+              instead of two. Each of these can be switched off per video on the Make video
+              page.</p>
               <div class="bar bar-slim vpart-bar" id="barwrap-pairs" hidden>
                 <div class="bar-fill" id="bar-pairs" style="width:0%"></div>
               </div>
@@ -249,8 +312,8 @@
             </div>
           </li>
 
-          <li class="vpart" data-part="sight">
-        <div class="vpart-num">5</div>
+<li class="vpart" data-part="sight">
+        <div class="vpart-num">7</div>
         <div class="vpart-body">
           <h2>Sight words <span class="vpart-count" id="count-sight"></span></h2>
           <p>Words that are read <b>whole, never sounded out</b>. Anything on this
@@ -274,30 +337,6 @@
           <p class="voice-foot" id="sight-status" role="status" aria-live="polite"></p>
         </div>
       </li>
-
-          <li class="vpart" data-part="bank">
-            <div class="vpart-num">6</div>
-            <div class="vpart-body">
-              <h2>Your recorded words <span class="vpart-count" id="count-bank"></span></h2>
-              <p>Every word and line you have recorded. The bank is shared: record
-              &ldquo;dog&rdquo; once and every sentence containing it uses that
-              recording. It fills up as you record on the Sentences page &mdash;
-              this is where to listen back and redo any of it.</p>
-              <div class="rowbar">
-                <button class="btn btn-primary vpart-record" type="button" data-part="starter">
-                  Record what the packs still need
-                </button>
-                <button class="btn btn-second vpart-review" type="button" data-part="bank">
-                  Listen back &amp; redo
-                </button>
-              </div>
-              <p class="hint">
-                One sitting: every pack word not yet in your bank, then each pack
-                sentence read whole. Stop and carry on whenever &mdash; it picks up
-                where you left off.
-              </p>
-            </div>
-          </li>
         </ol>
       </section>
 

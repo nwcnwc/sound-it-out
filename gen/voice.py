@@ -88,11 +88,40 @@ def _safe(name: str) -> str:
 class VoiceSource:
     """Resolves words and phonemes to audio, preferring real recordings."""
 
-    def __init__(self, prefer_recordings=True, clone_profile=None):
+    def __init__(self, prefer_recordings=True, clone_profile=None,
+                 use_magic_e=True, use_joins=True):
+        """`use_magic_e` and `use_joins` decide whether a RECORDED
+        multi-sound clip is allowed to replace the join it would otherwise
+        be built from.
+
+        Until now a recording always won, everywhere, with no way to say
+        otherwise - which is right while every recording is good and wrong
+        the moment one is not. A noisy magic-e take silently displaced a
+        clean join in every word containing that ending, in every video,
+        with nothing on screen saying so.
+
+        The 42 single sounds are not covered by either flag. They are not a
+        shortcut for anything; they are what everything else is built from.
+        """
         self.prefer_recordings = prefer_recordings
         self.clone_profile = clone_profile
+        self.use_magic_e = use_magic_e
+        self.use_joins = use_joins
         self._clone = None
         self.used = {"recorded": 0, "starter": 0, "cloned": 0}
+
+    def _may_use_clip_for(self, ipa: str) -> bool:
+        """May a recorded clip of this whole sound be used, or must it be
+        joined from its members?"""
+        from gen import dictionary
+
+        if len(dictionary.phonemes_in(ipa)) < 2:
+            return True                      # one of the 42; always
+        from gen.starter import all_magic_e
+
+        if ipa in {i for _, i in all_magic_e()}:
+            return self.use_magic_e
+        return self.use_joins
 
     # -- availability -----------------------------------------------------
 
@@ -197,7 +226,7 @@ class VoiceSource:
                 or self._lookup(STARTER_VOICE, kind, key) is not None)
 
     def phoneme(self, ipa: str) -> np.ndarray:
-        a = self._one_sound(ipa)
+        a = self._one_sound(ipa) if self._may_use_clip_for(ipa) else None
         if a is not None:
             return loud(a)
         # A grapheme-pair sound with no clip of its own - "eɪk", "æn" - is said by

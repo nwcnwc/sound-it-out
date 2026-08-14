@@ -122,7 +122,13 @@ def m_plan(params):
         opts = dict(opts, reps=max(2, min(14, round(minutes / 10.5) + 1)))
 
     _progress(job_id, "audio", 0, 1, "Working out the sounds...")
-    voice = VoiceSource(clone_profile=params.get("cloneProfile"))
+    # Per-video choices. Defaults keep the old behaviour, so a request that
+    # says nothing gets what it always got.
+    voice = VoiceSource(
+        clone_profile=params.get("cloneProfile"),
+        use_magic_e=opts.get("useMagicE", True),
+        use_joins=opts.get("useJoins", True),
+    )
     segments = levels.build(level, voice, opts)
 
     # Fit the running time that was actually asked for, in both directions.

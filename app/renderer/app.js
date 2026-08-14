@@ -543,6 +543,7 @@ function setUpMake () {
 
   renderThemes(chosen.theme)
   renderSegmented($('reps'), 'reps', SOUNDINGS, Number(chosen.reps) || 3)
+  applySavedToggles(chosen)
 
   // Delegated: renderSegmented() replaces its inputs on re-render, and the
   // library ticks re-render with the list.
@@ -632,7 +633,30 @@ function currentOptions () {
     reps: Number(picked('reps')) || 3,
     pauseSeconds: 1.5,
     minutes: 0,
+    // Per-video choices. They go through persistChoices() like everything
+    // else here, so the box a person ticked is the box they find next time.
+    spellFirst: ticked('opt-spell-first', false),
+    useMagicE: ticked('opt-magic-e', true),
+    useJoins: ticked('opt-joins', true),
+    ignoreSightWords: ticked('opt-ignore-sight', false),
     sentences: pickedSentences()
+  }
+}
+
+function ticked (id, fallback) {
+  const el = $(id)
+  return el ? el.checked : fallback
+}
+
+function applySavedToggles (s) {
+  for (const [id, key, dflt] of [
+    ['opt-spell-first', 'spellFirst', false],
+    ['opt-magic-e', 'useMagicE', true],
+    ['opt-joins', 'useJoins', true],
+    ['opt-ignore-sight', 'ignoreSightWords', false]
+  ]) {
+    const el = $(id)
+    if (el) el.checked = s && key in s ? !!s[key] : dflt
   }
 }
 
@@ -1047,7 +1071,7 @@ boot()
 // shown. The parent never meets "grapheme pair" - they are told what the
 // thing sounds like, not what it is called.
 const PART_NAMES = {
-  phonemes: 'sounds', letters: 'letter names',
+  phonemes: 'sounds', letters: 'letter names', sentences: 'lines',
   'magic-e': 'magic-e endings', pairs: 'joins',
   bank: 'words', passage: 'reading passage'
 }
@@ -1065,7 +1089,7 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    for (const part of ['letters', 'magic-e', 'pairs']) {
+    for (const part of ['sentences', 'letters', 'magic-e', 'pairs']) {
       const r = await api.studioPlan({ part })
       showPartProgress(part, r.done || 0, r.total || 0)
     }
@@ -1829,7 +1853,8 @@ async function openReview (part) {
   review.items = plan.items || []
   $('review-title').textContent =
     part === 'phonemes' ? 'Listen back - the sounds'
-      : part === 'letters' ? 'The alphabet'
+      : part === 'sentences' ? 'Listen back - your lines'
+        : part === 'letters' ? 'The alphabet'
         : part === 'pairs' ? 'The letter-team sounds'
         : 'Listen back - your words'
   $('review-hint').textContent = part === 'bank'
