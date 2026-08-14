@@ -420,24 +420,29 @@ def score_take(audio: np.ndarray, item: Item) -> Score:
         s.fatal = "Too loud - it distorted. Move back a little."
         return s
 
-    # 2b. a click, tick or thump - and it is worth being strict about.
+    # 2b. a click, tick or thump - on the sounds where it can be seen.
     #
-    # A clip is levelled on the way out (soundout.loud), and a quiet
-    # recording earns a lot of gain: /s/ recorded at peak 0.116 was played
-    # back with 6.3x on it, which took a small mouth click and turned it into
-    # a sample-to-sample jump larger than full scale - a bang, in the middle
-    # of a sound a child is being asked to listen to. Reported as "a clapping
-    # noise".
+    # A click is a step change. So is a fricative, all the way through: /s/ is
+    # broadband noise, which is what a click looks like, and measured across
+    # this bank the two ranges lie on top of each other -
     #
-    # Measured against the clip's OWN loudness rather than an absolute, so a
-    # quiet recording is judged the way it will actually be heard. A stop is
-    # exempt: /p/, /t/ and /k/ are bursts, and a burst is a step change by
-    # definition - that is the sound, not a fault in it.
+    #     vowels      0.3 - 2.3      a click stands out enormously
+    #     sonorants   0.4 - 1.9      same
+    #     fricatives  2.1 - 17.2     a click hides in the noise
+    #     stops       0.9 - 11.8     the burst IS the step change
+    #
+    # Checked against a listener: a tick spliced into white noise is
+    # inaudible in the measurement AND to the ear, while /f/ at 15.3 was
+    # heard as "a rough patch, not a click". An earlier version of this test
+    # flagged /s/, /f/ and /th/ and was wrong about all three.
+    #
+    # So it runs where it discriminates. On a vowel or a sonorant the ceiling
+    # is 2.3 and anything past 5 is not the sound.
     cls = R.phoneme_class(item.ipa) if item.kind == "phoneme" and item.ipa else ""
-    if cls != "stop" and a.size > 2:
+    if cls in ("vowel", "sonorant") and a.size > 2:
         step = float(np.abs(np.diff(a)).max())
         body = float(np.sqrt(np.mean(a ** 2))) or 1e-6
-        if step > 12.0 * body:
+        if step > 5.0 * body:
             s.fatal = ("There is a click or a thump in it - a tongue tick, a "
                        "knock on the desk, or a bump on the microphone.")
             return s
