@@ -268,6 +268,10 @@ class Level:
 LEVELS = [
     Level(1, "Paw Patrol", "The pups' names as whole words. Where a new reader starts.", "recorded"),
     Level(2, "Family and home", "Their own name, the people they love, everyday things.", "recorded"),
+    Level(16, "The alphabet",
+          "Every letter and its NAME - ay, bee, see. Not its sound: a child "
+          "needs both, and this is the half that lets them say which letter "
+          "they are looking at.", "recorded"),
     Level(3, "Letter sounds", "One letter at a time, with its sound. s a t p i n first.", "recorded"),
     Level(14, "Word families",
           "One ending, many words: at -> cat, hat, mat, sat. The gentlest "
@@ -397,7 +401,7 @@ _check_ladder()
 # All nine are built now. Levels 7-9 still lean on generation for the parts
 # nobody can record - nonsense blends, and whole sentences read with real
 # intonation - which is what the "install the extra voice" note is about.
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 
 
 def level_status(capabilities: dict) -> list:
@@ -791,6 +795,37 @@ def _sound_out(voice, spellings, reps, pause):
     return segs
 
 
+def _alphabet(voice, reps, pause, letters=None):
+    """The ABCs: each letter shown, and its NAME said.
+
+    Not its sound. Every other level in this app teaches sounds, because
+    sounds are what reading runs on - but a child also has to be able to say
+    which letter this is, and to sing the alphabet, and neither of those is
+    a sound. "S" is named "ess" and sounds "sss"; a reader needs both, and
+    until now the app taught only one of them.
+
+    The names come from the same bank as everything else, keyed by IPA, and
+    every one of the 26 can already be said as a join of sounds that are
+    recorded - so this level works on a fresh install with nothing extra.
+    """
+    from gen import dictionary
+
+    order = letters or "abcdefghijklmnopqrstuvwxyz"
+    by_letter = {v: k for k, v in dictionary.LETTER_NAMES.items()}
+    segs = []
+    for ch in order:
+        ipa = by_letter.get(ch)
+        if not ipa:
+            continue
+        audio = voice.phoneme(ipa)
+        for i in range(max(1, reps - 1)):
+            last = i == max(1, reps - 1) - 1
+            segs.append(whole(ch.upper() + ch, audio,
+                              pad=pause if not last else pause + 0.6))
+        segs[-1].item_end = True
+    return segs
+
+
 def _family(voice, family, reps, pause):
     """One word family: the rime, then the same rime behind changing onsets.
 
@@ -1111,6 +1146,8 @@ def build(level: int, voice, opts: dict) -> list:
     if level == 2:
         words = group("people") + group("home") + group("first")
         return _sight_words(voice, words, reps, pause)
+    if level == 16:
+        return _alphabet(voice, reps, pause, opts.get("letters"))
     if level == 3:
         return _sounds(voice, SATPIN + SET2 + SET3, reps, pause)
     if level == 4:

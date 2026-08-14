@@ -198,3 +198,41 @@ def test_the_passage_can_be_found_without_a_key(tmp_path, monkeypatch):
 def test_asking_for_the_passage_does_not_need_a_matching_item():
     """A key of "" must not be mistaken for a real item and return one."""
     assert studio.clip_path("passage", "chase") == studio.clip_path("passage", "")
+
+
+def test_the_alphabet_is_a_recordable_part_and_a_buildable_level():
+    """Letter NAMES, which the app taught not at all.
+
+    Every other level teaches sounds, because sounds are what reading runs
+    on. But a child also has to say which letter this is, and sing the
+    alphabet, and neither of those is a sound: S is named "ess" and sounds
+    "sss". A reader needs both.
+    """
+    from gen import dictionary, levels, studio
+    from gen.voice import VoiceSource
+
+    items = studio.plan("letters")
+    assert len(items) == 26, "one per letter"
+    assert [i.display for i in items] == [c.upper() for c in
+                                          "abcdefghijklmnopqrstuvwxyz"]
+    # The prompt must ask for the NAME, since asking for "S" gets the sound.
+    assert "NAME" in items[18].say and "ess" in items[18].say, items[18].say
+
+    # Every name is speakable on a fresh install, joined from recorded sounds,
+    # so the level works before anybody records anything extra.
+    voice = VoiceSource()
+    for ipa in dictionary.LETTER_NAMES:
+        assert voice.phoneme(ipa) is not None
+
+    segs = levels.build(16, voice, {"reps": 2, "pauseSeconds": 1.2})
+    assert len(segs) == 26
+    assert "".join(g for g, _ in segs[0].parts) == "Aa"
+
+
+def test_the_alphabet_comes_before_letter_sounds():
+    """Naming a letter is how a child says which one they are looking at."""
+    from gen import levels
+
+    order = [l.id for l in levels.LEVELS]
+    assert order.index(16) < order.index(3), \
+        "the alphabet is taught before the sounds"

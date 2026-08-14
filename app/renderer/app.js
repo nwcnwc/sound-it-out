@@ -1047,7 +1047,8 @@ boot()
 // shown. The parent never meets "grapheme pair" - they are told what the
 // thing sounds like, not what it is called.
 const PART_NAMES = {
-  phonemes: 'sounds', 'magic-e': 'magic-e endings', pairs: 'joins',
+  phonemes: 'sounds', letters: 'letter names',
+  'magic-e': 'magic-e endings', pairs: 'joins',
   bank: 'words', passage: 'reading passage'
 }
 
@@ -1064,7 +1065,7 @@ async function voiceCounts (caps) {
     p = ps.done || 0
   } catch { /* fall back to the numbers we know */ }
   try {
-    for (const part of ['magic-e', 'pairs']) {
+    for (const part of ['letters', 'magic-e', 'pairs']) {
       const r = await api.studioPlan({ part })
       showPartProgress(part, r.done || 0, r.total || 0)
     }
@@ -1828,7 +1829,8 @@ async function openReview (part) {
   review.items = plan.items || []
   $('review-title').textContent =
     part === 'phonemes' ? 'Listen back - the sounds'
-      : part === 'pairs' ? 'The letter-team sounds'
+      : part === 'letters' ? 'The alphabet'
+        : part === 'pairs' ? 'The letter-team sounds'
         : 'Listen back - your words'
   $('review-hint').textContent = part === 'bank'
     ? `${plan.total} word${plan.total === 1 ? '' : 's'} in your bank. Press one ` +

@@ -92,7 +92,7 @@ LEAD_SECONDS = 8.0           # give up waiting for speech after this
 HANG_MS = 900                # silence after speech before auto-stop
 FLOOR_FALLBACK = 0.004       # gate floor with no room tone measured
 
-PARTS = ("phonemes", "magic-e", "pairs", "words", "sentences")
+PARTS = ("phonemes", "letters", "magic-e", "pairs", "words", "sentences")
 
 # What --all records, and in what order. "magic-e" is deliberately absent.
 #
@@ -107,7 +107,7 @@ PARTS = ("phonemes", "magic-e", "pairs", "words", "sentences")
 # better ones for those sixty - "Say the ending 'ibe' ... No word around it",
 # against the pair list's "Say 'ib' as in 'tribe'", which names a spelling
 # that does not appear in the anchor word.
-ALL_ORDER = ("phonemes", "pairs", "words", "sentences")
+ALL_ORDER = ("phonemes", "letters", "pairs", "words", "sentences")
 
 
 # ------------------------------------------------------------------ plan
@@ -133,7 +133,7 @@ def plan_for(part: str, path: Path | None = None) -> list:
     the line - and a single letter has nothing to record here at all, because
     the 42 sounds are recorded once as phonemes and shared by everything.
     """
-    if part in ("phonemes", "magic-e", "pairs"):
+    if part in ("phonemes", "letters", "magic-e", "pairs"):
         return studio.plan(part)
 
     if path is not None:

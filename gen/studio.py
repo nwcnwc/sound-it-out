@@ -76,7 +76,8 @@ TAKES_DEFAULT = 3
 # something the speaker does correctly by reflex, and three takes of "dog"
 # turns a manageable sitting into an hour of repeating herself. One take, and
 # the scorer speaks up when it actually went wrong.
-TAKES = {"phonemes": 3, "magic-e": 2, "pairs": 2, "words": 1, "sentences": 1}
+TAKES = {"phonemes": 3, "letters": 2, "magic-e": 2, "pairs": 2,
+         "words": 1, "sentences": 1}
 
 # A real word carrying each rime's SOUND, so the prompt can always say
 # "as in ...". Every rime has one - a prompt that names a sound the reader
@@ -133,6 +134,19 @@ SOUND_HINTS = {
     "ʃ": "“sh” as in ship", "t": "“t”", "tʃ": "“ch” as in chip",
     "θ": "hard “th” as in thin", "v": "“vvv”", "w": "“w”",
     "j": "“y” as in yes", "z": "“zzz”", "ʒ": "“zh” as in treasure",
+}
+
+
+# Saying the NAME of each letter, spelled the way a person would read it out.
+# Not the sound: "S" is named "ess" and sounds "sss", and a child needs both -
+# the name to sing the alphabet and say which letter this is, the sound to
+# read with.
+LETTER_SAY = {
+    "a": "ay", "b": "bee", "c": "see", "d": "dee", "e": "ee", "f": "eff",
+    "g": "jee", "h": "aitch", "i": "eye", "j": "jay", "k": "kay", "l": "ell",
+    "m": "em", "n": "en", "o": "oh", "p": "pee", "q": "cue", "r": "ar",
+    "s": "ess", "t": "tee", "u": "you", "v": "vee", "w": "double-you",
+    "x": "ex", "y": "why", "z": "zee",
 }
 
 
@@ -246,6 +260,21 @@ def plan(part="phonemes", order="rows") -> list:
                         "keep it short and crisp." if p.length == "stop" else
                         "say it naturally.")),
             ))
+    elif part == "letters":
+        # The 26 letter NAMES. They save into sounds/ under their IPA like
+        # everything else, and every one can already be SAID as a join of
+        # sounds already recorded - so this part is a quality upgrade, not a
+        # requirement, the same as the pairs.
+        from gen import dictionary
+
+        for ipa, letter in sorted(dictionary.LETTER_NAMES.items(),
+                                  key=lambda x: x[1]):
+            items.append(Item(
+                key=f"name-{letter}", kind="phoneme", display=letter.upper(),
+                ipa=ipa, length="free",
+                say=(f"Say the NAME of the letter {letter.upper()} - "
+                     f"\u201c{LETTER_SAY[letter]}\u201d. Its name, not its "
+                     f"sound.")))
     elif part == "magic-e":
         # The magic-e rimes (ake, ice, ome), recorded live for the same reason
         # the 42 sounds are: an isolated sound is what cloning does worst,
@@ -339,8 +368,8 @@ def plan(part="phonemes", order="rows") -> list:
         # opened a recording session for them under a heading about
         # letter-team sounds. Nothing raised, nothing looked wrong.
         raise ValueError(
-            f"Unknown part {part!r}. Expected one of: phonemes, magic-e, "
-            f"pairs, words, sentences.")
+            f"Unknown part {part!r}. Expected one of: phonemes, letters, "
+            f"magic-e, pairs, words, sentences.")
     return items
 
 

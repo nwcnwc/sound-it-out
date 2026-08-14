@@ -446,6 +446,15 @@ def _pack_defs() -> list:
          ]},
 
         # ---- learning to sound out: the skills --------------------------
+        # The alphabet comes before the sounds, because naming a letter is
+        # how a child says which one they are looking at - and it is the
+        # half the app taught not at all until now.
+        {"id": "alphabet", "group": "skills", "name": "The ABCs",
+         "description": "Every letter and its NAME - ay, bee, see. Not its "
+                        "sound: a child needs both, and this is the one that "
+                        "lets them say which letter they are looking at. "
+                        "Nothing to record - it uses the sounds from Setup.",
+         "items": list("abcdefghijklmnopqrstuvwxyz")},
         {"id": "letters", "group": "skills", "name": "Letter sounds",
          "description": "One letter at a time, in phonics order - s a t p "
                         "i n first. Nothing to record: these use the sounds "
