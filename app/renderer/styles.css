@@ -289,6 +289,47 @@ textarea#wordlist {
 }
 textarea#wordlist:focus-visible { outline-offset: 1px; }
 
+/* The sight-word box on the Sound Bank.
+   Its markup arrived with a .field wrapper that was never styled, so the
+   label and the textarea laid out inline and sat on top of each other. */
+.field { display: block; margin: .9rem 0 .2rem; }
+.field > label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: .45rem;
+}
+.field textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  padding: .8rem .9rem;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-firm);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.field .hint { margin-top: .45rem; }
+
+/* "Optional" / "Nothing to record" - a badge, so it reads as a label on the
+   section rather than the first two words of the sentence. */
+.tag {
+  display: inline-block;
+  font-size: .72rem;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: .15rem .5rem;
+  margin-right: .45rem;
+  border-radius: 999px;
+  background: rgba(0,0,0,.055);
+  color: var(--ink-soft);
+  vertical-align: .08em;
+}
+
 input[type='text'] {
   width: 100%;
   padding: .7rem .85rem;
