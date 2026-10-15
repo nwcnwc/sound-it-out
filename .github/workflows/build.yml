@@ -30,10 +30,9 @@
 name: Build installers
 
 on:
+  # Manual-only CI (Nathan, 2026-10-14): no push/pull_request/schedule triggers.
+  # Run with: gh workflow run build.yml
   workflow_dispatch:
-  push:
-    tags:
-      - "v*"
 
 env:
   NODE_VERSION: "22"
